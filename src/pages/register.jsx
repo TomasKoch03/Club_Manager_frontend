@@ -4,6 +4,7 @@ import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
+import AuthLink from '../components/AuthLink.jsx';
 import { Form } from 'react-bootstrap';
 
 const Register = () => {
@@ -45,7 +46,7 @@ const Register = () => {
                     title="Registrarse"
                     onSubmit={handleRegistrarse}
                     submitText="Registrarse"
-                    submitVariant=""
+                    submitVariant="dark"
                 >
                     <FormField
                         label="Nombre completo"
@@ -71,11 +72,12 @@ const Register = () => {
                         controlId="formBasicPassword"
                     />
 
-                    <Form.Group className="text-center mb-3" controlId="formHaveAccount">
-                        <p>
-                            ¿Ya tienes una cuenta? <Link to="/">Inicia sesión</Link>
-                        </p>
-                    </Form.Group>
+                    <AuthLink
+                        text="¿Ya tienes una cuenta?"
+                        linkText="Iniciar sesión"
+                        to="/login"
+                        controlId="formBasicLoginLink"
+                    />
                 </AuthForm>
             </AuthCard>
         </BackgroundLayout>
