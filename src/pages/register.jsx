@@ -1,11 +1,9 @@
 import { React, useState } from 'react';
-import { Link } from 'react-router-dom';
 import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
 import AuthLink from '../components/AuthLink.jsx';
-import { Form } from 'react-bootstrap';
 
 const Register = () => {
     const [nombre, setNombre] = useState('');
