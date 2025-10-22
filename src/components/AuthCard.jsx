@@ -1,14 +1,19 @@
 import React from 'react';
 import { Container, Card } from 'react-bootstrap';
 
-const AuthCard = ({ children, className = "" }) => {
+const AuthCard = ({
+    children,
+    width = 'min(80vw, 600px)',
+    height = 'min(80vw, 500px)',
+    className = ""
+}) => {
     return (
         <div className="relative z-10 w-full h-full flex items-center justify-center">
             <Container fluid className="p-0 flex items-center justify-center">
                 <Card
                     style={{
-                        width: 'min(80vw, 600px)',
-                        height: 'min(80vw, 500px)',
+                        width: width,
+                        height: height,
                         backgroundColor: 'rgba(255,255,255,0.75)',
                         border: 'none',
                         borderRadius: '1rem',

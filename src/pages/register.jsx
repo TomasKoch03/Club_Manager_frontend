@@ -1,9 +1,9 @@
 import { React, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Container, Card, Form, Button } from 'react-bootstrap';
-import fondo from '../assets/fondo_landing_page.jpg';
 import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
+import AuthForm from '../components/AuthForm.jsx';
+import { Form, Button } from 'react-bootstrap';
 
 const Register = () => {
     const [nombre, setNombre] = useState('');
@@ -70,7 +70,6 @@ const Register = () => {
                                 ¿Ya tienes una cuenta? <Link to="/">Inicia sesión</Link>
                             </p>
                         </Form.Group>
-
                     </Form>
                 </div>
             </AuthCard>
