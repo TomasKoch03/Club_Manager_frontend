@@ -1,7 +1,8 @@
-import {React, useState} from 'react';
+import { React, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Card, Form, Button } from 'react-bootstrap';
 import fondo from '../assets/fondo_landing_page.jpg';
+import BackgroundLayout from '../components/BackgroundLayout';
 
 const Register = () => {
     const [nombre, setNombre] = useState('');
@@ -24,7 +25,7 @@ const Register = () => {
             });
 
             if (response.status !== 201) {
-                const errorText = await response.text().catch(()=>null);
+                const errorText = await response.text().catch(() => null);
                 throw new Error(errorText || 'Register failed');
             }
             console.log("Usuario creado con éxito");
@@ -36,19 +37,7 @@ const Register = () => {
     }
 
     return (
-        <div
-            className="fixed inset-0 overflow-hidden p-0 m-0"
-            style={{
-                backgroundImage: `url(${fondo})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-            }}
-        >
-            <div
-                className="absolute inset-0 filter backdrop-blur-md bg-black/30"
-            >
-            </div>
-
+        <BackgroundLayout>
             <div className="relative z-10 w-full h-full flex items-center justify-center">
                 <Container fluid className="p-0 flex items-center justify-center">
                     <Card
@@ -89,16 +78,16 @@ const Register = () => {
 
                                 <Form.Group className="text-center mb-3" controlId="formHaveAccount">
                                     <p>
-                                     ¿Ya tienes una cuenta? <Link to="/">Inicia sesión</Link>
+                                        ¿Ya tienes una cuenta? <Link to="/">Inicia sesión</Link>
                                     </p>
                                 </Form.Group>
-                                
+
                             </Form>
                         </div>
                     </Card>
                 </Container>
             </div>
-        </div>
+        </BackgroundLayout>
     );
 };
 
