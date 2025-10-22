@@ -1,7 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Container, Card, Form, Button } from 'react-bootstrap';
-import fondo from '../assets/fondo_landing_page.jpg';
 import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
@@ -62,7 +59,7 @@ const Overlay = () => {
                     <AuthLink
                         text="¿No tienes una cuenta?"
                         linkText="Regístrate"
-                        to="/register"
+                        to="/registrar"
                         controlId="formNoAccount"
                     />
                 </AuthForm>
