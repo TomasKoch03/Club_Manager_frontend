@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
+import FormField from '../components/FormField.jsx';
 import { Form } from 'react-bootstrap';
 
 const Register = () => {
@@ -44,25 +45,31 @@ const Register = () => {
                     title="Registrarse"
                     onSubmit={handleRegistrarse}
                     submitText="Registrarse"
-                    submitVariant="dark"
+                    submitVariant=""
                 >
-                    <Form.Group className="text-start mb-3" controlId="formBasicName">
-                        <Form.Label>Nombre completo</Form.Label>
-                        <Form.Control type="text" placeholder="Ingresar nombre" value={nombre}
-                            onChange={(e) => setNombre(e.target.value)} />
-                    </Form.Group>
-
-                    <Form.Group className="text-start mb-3" controlId="formBasicEmail">
-                        <Form.Label>Email</Form.Label>
-                        <Form.Control type="email" placeholder="Ingresar email" value={email}
-                            onChange={(e) => setEmail(e.target.value)} />
-                    </Form.Group>
-
-                    <Form.Group className="text-start mb-3" controlId="formBasicPassword">
-                        <Form.Label>Contraseña</Form.Label>
-                        <Form.Control type="password" placeholder="Ingresar contraseña" value={password}
-                            onChange={(e) => setPassword(e.target.value)} />
-                    </Form.Group>
+                    <FormField
+                        label="Nombre completo"
+                        type="text"
+                        placeholder="Ingresar nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        controlId="formBasicName"
+                    />
+                    <FormField
+                        label="Email"
+                        type="email"
+                        placeholder="Ingresar email"
+                        value={email} onChange={(e) => setEmail(e.target.value)}
+                        controlId="formBasicEmail"
+                    />
+                    <FormField
+                        label="Contraseña"
+                        type="password"
+                        placeholder="Ingresar contraseña"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        controlId="formBasicPassword"
+                    />
 
                     <Form.Group className="text-center mb-3" controlId="formHaveAccount">
                         <p>
