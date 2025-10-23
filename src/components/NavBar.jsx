@@ -1,23 +1,22 @@
 import React from "react";
 import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
 import { LuFlagTriangleRight } from "react-icons/lu";
+import NavBarLogo from './NavBarItems/NavBarLogo';
+import NavBarItem from './NavBarItems/NavBarItem';
 
 const Navbar = () => {
+  const handleNotificationClick = () => {
+    console.log('Notificaciones clicked');
+  };
+
+  const handleProfileClick = () => {
+    console.log('Perfil clicked');
+  };
   return (
     <header className="bg-gray-800 text-white shadow-md w-full"> {/* Cambia bg-gray-800 por tu color verde oscuro */}
       <nav className="w-full mx-auto px-6 py-3 flex justify-between items-center">
 
-        <div className="flex items-center">
-          <LuFlagTriangleRight className="mr-2" />
-          <a 
-            href="/club-manager/home" 
-            className="text-xl font-bold text-white lg:text-2xl hover:text-gray-300"
-            style={{textDecoration: 'none'}}
-          >
-        
-            Club Manager
-          </a>
-        </div>
+        <NavBarLogo href="/club-manager/home" title="Club Manager" />
 
         <div className="hidden md:flex items-center space-x-8">
           <div className="relative">
@@ -29,18 +28,24 @@ const Navbar = () => {
               </svg>
             </button>
           </div>
-          <a href="/mis-reservas" className="text-white hover:text-gray-300" style={{textDecoration: 'none'}}>
+          <NavBarItem href="/club-manager/mis-reservas">
             Mis Reservas
-          </a>
+          </NavBarItem>
         </div>
 
         <div className="flex items-center space-x-5">
-          <button className="text-white hover:text-gray-300 focus:outline-none bg-transparent" aria-label="Notificaciones">
-            <FaRegBell className="h-6 w-6" />
-          </button>
-          <button className="text-white hover:text-gray-300 focus:outline-none bg-transparent" aria-label="Perfil de usuario">
-            <FaRegUserCircle className="h-6 w-6" />
-          </button>
+          <NavBarItem 
+            type="button"
+            onClick={handleNotificationClick}
+            icon={FaRegBell}
+            ariaLabel="Notificaciones"
+          />
+          <NavBarItem 
+            type="button"
+            onClick={handleProfileClick}
+            icon={FaRegUserCircle}
+            ariaLabel="Perfil de usuario"
+          />
         </div>
         
       </nav>
