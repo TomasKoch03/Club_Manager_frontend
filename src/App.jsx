@@ -10,7 +10,7 @@ function App() {
     <Routes>
       <Route path='/' element={<AuthLayout />}>
         <Route path='' element={<Overlay />} />
-        <Route path='register' element={<Register />} />
+        <Route path='registrar' element={<Register />} />
       </Route>
     </Routes>
   )
