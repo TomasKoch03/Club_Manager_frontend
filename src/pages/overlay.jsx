@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
@@ -31,7 +30,6 @@ const Overlay = () => {
     };
 
     return (
-        <BackgroundLayout>
             <AuthCard>
                 <AuthForm
                     title="Iniciar sesión"
@@ -64,7 +62,7 @@ const Overlay = () => {
                     />
                 </AuthForm>
             </AuthCard>
-        </BackgroundLayout>
+    
     );
 };
 

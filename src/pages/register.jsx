@@ -1,5 +1,4 @@
 import { React, useState } from 'react';
-import BackgroundLayout from '../components/BackgroundLayout';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
@@ -38,7 +37,6 @@ const Register = () => {
     }
 
     return (
-        <BackgroundLayout>
             <AuthCard>
                 <AuthForm
                     title="Registrarse"
@@ -77,8 +75,7 @@ const Register = () => {
                         controlId="formBasicLoginLink"
                     />
                 </AuthForm>
-            </AuthCard>
-        </BackgroundLayout>
+            </AuthCard>    
     );
 };
 
