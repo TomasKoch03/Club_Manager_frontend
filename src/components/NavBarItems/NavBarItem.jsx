@@ -1,7 +1,6 @@
 import React from 'react';
 
 const NavBarItem = ({ 
-  type = 'link', 
   href, 
   onClick, 
   children, 
@@ -11,26 +10,22 @@ const NavBarItem = ({
 }) => {
   const baseClasses = 'text-white hover:text-gray-300 focus:outline-none';
   
-  if (type === 'button') {
-    return (
-      <button 
-        className={`${baseClasses} bg-transparent border-none p-0 ${className}`}
-        onClick={onClick}
-        aria-label={ariaLabel}
-      >
-        {Icon && <Icon className="h-6 w-6" />}
-        {children}
-      </button>
-    );
-  }
+  const handleClick = (e) => {
+    if (onClick && !href) {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
   return (
     <a 
-      href={href}
+      href={href || '#'}
       className={`${baseClasses} ${className}`}
       style={{ textDecoration: 'none' }}
+      onClick={handleClick}
+      aria-label={ariaLabel}
     >
-      {Icon && <Icon className="h-6 w-6 mr-2" />}
+      {Icon && <Icon className={`h-6 w-6 ${children ? 'mr-2' : ''}`} />}
       {children}
     </a>
   );
