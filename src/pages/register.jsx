@@ -71,7 +71,7 @@ const Register = () => {
                     <AuthLink
                         text="¿Ya tienes una cuenta?"
                         linkText="Iniciar sesión"
-                        to="/login"
+                        to="/"
                         controlId="formBasicLoginLink"
                     />
                 </AuthForm>
