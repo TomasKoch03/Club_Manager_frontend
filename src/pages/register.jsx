@@ -1,4 +1,6 @@
 import { React, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { register } from '../services/api.js';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
@@ -8,74 +10,64 @@ const Register = () => {
     const [nombre, setNombre] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleRegistrarse = async (e) => {
-        e.preventDefault(); // evita que el formulario recargue la página
+        e.preventDefault();
         try {
-            const response = await fetch("http://localhost:8001/auth/register", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    email: email,
-                    full_name: nombre,
-                    password: password
-                })
-            });
-
-            if (response.status !== 201) {
-                const errorText = await response.text().catch(() => null);
-                throw new Error(errorText || 'Register failed');
-            }
+            await register(email, nombre, password);
             console.log("Usuario creado con éxito");
-
+            alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+            
+            // Redirigir al login
+            navigate('/');
         } catch (error) {
-            console.error("Error crear usuario:", error);
-            alert("Error al crear usuario");
+            console.error("Error al crear usuario:", error);
+            alert("Error al crear usuario. Por favor intenta nuevamente.");
         }
-    }
+    };
 
     return (
-            <AuthCard>
-                <AuthForm
-                    title="Registrarse"
-                    onSubmit={handleRegistrarse}
-                    submitText="Registrarse"
-                    submitVariant="dark"
-                >
-                    <FormField
-                        label="Nombre completo"
-                        type="text"
-                        placeholder="Ingresar nombre"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        controlId="formBasicName"
-                    />
-                    <FormField
-                        label="Email"
-                        type="email"
-                        placeholder="Ingresar email"
-                        value={email} onChange={(e) => setEmail(e.target.value)}
-                        controlId="formBasicEmail"
-                    />
-                    <FormField
-                        label="Contraseña"
-                        type="password"
-                        placeholder="Ingresar contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        controlId="formBasicPassword"
-                    />
+        <AuthCard>
+            <AuthForm
+                title="Registrarse"
+                onSubmit={handleRegistrarse}
+                submitText="Registrarse"
+                submitVariant="dark"
+            >
+                <FormField
+                    label="Nombre completo"
+                    type="text"
+                    placeholder="Ingresar nombre"
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                    controlId="formBasicName"
+                />
+                <FormField
+                    label="Email"
+                    type="email"
+                    placeholder="Ingresar email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    controlId="formBasicEmail"
+                />
+                <FormField
+                    label="Contraseña"
+                    type="password"
+                    placeholder="Ingresar contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    controlId="formBasicPassword"
+                />
 
-                    <AuthLink
-                        text="¿Ya tienes una cuenta?"
-                        linkText="Iniciar sesión"
-                        to="/"
-                        controlId="formBasicLoginLink"
-                    />
-                </AuthForm>
-            </AuthCard>    
+                <AuthLink
+                    text="¿Ya tienes una cuenta?"
+                    linkText="Iniciar sesión"
+                    to="/"
+                    controlId="formBasicLoginLink"
+                />
+            </AuthForm>
+        </AuthCard>    
     );
 };
 
