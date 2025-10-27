@@ -4,12 +4,13 @@ import { Outlet } from 'react-router-dom';
 
 const MainLayout = () => {
     return (
-        <div className="h-screen bg-gray-100 flex flex-col"> 
+        <div className="min-h-screen bg-gray-100 flex flex-col">
             <Navbar />
+            {/* si el Navbar es fixed top-0, añade pt para compensar su altura */}
             <main className="flex-1 overflow-auto">
                 <Outlet />
             </main>
-        </div>   
+        </div>
     );
 };
 
