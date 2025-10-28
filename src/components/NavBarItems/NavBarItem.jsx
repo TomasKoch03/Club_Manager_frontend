@@ -1,34 +1,40 @@
 import React from 'react';
+import { Button } from 'react-bootstrap';
 
-const NavBarItem = ({ 
-  href, 
-  onClick, 
-  children, 
-  className = '', 
-  ariaLabel,
-  icon: Icon 
-}) => {
-  const baseClasses = 'text-white hover:text-gray-300 focus:outline-none';
-  
-  const handleClick = (e) => {
-    if (onClick && !href) {
-      e.preventDefault();
-      onClick();
-    }
-  };
+const NavBarItem = ({
+                        href,
+                        onClick,
+                        children,
+                        ariaLabel,
+                        icon: Icon
+                    }) => {
+    const handleClick = (e) => {
+        if (onClick) {
+            if (!href) {
+                e.preventDefault();
+            }
+            onClick();
+        } else if (href) {
+            window.location.href = href;
+        }
+    };
 
-  return (
-    <a 
-      href={href || '#'}
-      className={`${baseClasses} ${className}`}
-      style={{ textDecoration: 'none' }}
-      onClick={handleClick}
-      aria-label={ariaLabel}
-    >
-      {Icon && <Icon className={`h-6 w-6 ${children ? 'mr-2' : ''}`} />}
-      {children}
-    </a>
-  );
+    return (
+        <Button
+            variant="outline-dark"
+            onClick={handleClick}
+            aria-label={ariaLabel}
+            className="d-flex align-items-center mx-2"
+            style={{
+                textDecoration: 'none',
+                border: 'none',
+                boxShadow: 'none',
+            }}
+        >
+            {Icon && <Icon size={20} />}
+            {children && <span className={Icon ? 'ms-2' : ''}>{children}</span>}
+        </Button>
+    );
 };
 
 export default NavBarItem;

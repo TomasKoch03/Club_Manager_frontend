@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom'
-import { Container, Row, Col, Button, ButtonGroup } from 'react-bootstrap';
+import {Container, Row, Col, Button, ButtonGroup, Card} from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Configuración de horarios - Modifica estos valores según necesites
@@ -145,114 +145,169 @@ const BookingGrid = () => {
     };
 
     return (
-        <Container fluid className="py-4">
-            {/* <CHANGE> Título del deporte y navegación de fechas en la misma fila */}
-            <Row className="mb-4 align-items-center">
-                <Col xs={12} md={4}>
-                    <h2 className="text-capitalize mb-0">{sport}</h2>
-                </Col>
-                <Col xs={12} md={4} className="text-center">
-                    <ButtonGroup>
-                        <Button variant="outline-dark" onClick={() => changeDate(-1)}>
-                            ←
-                        </Button>
-                        <Button variant="outline-dark" disabled>
-                            {formatDate(selectedDate)}
-                        </Button>
-                        <Button variant="outline-dark" onClick={() => changeDate(1)}>
-                            →
-                        </Button>
-                    </ButtonGroup>
-                </Col>
-                <Col xs={12} md={4}>
-                    {/* Columna vacía para balance */}
-                </Col>
-            </Row>
+        <div
+            style={{
+                minHeight: "100vh",
+                backgroundAttachment: "fixed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px 20px 60px 20px", // <CHANGE> Reducido margen superior (20px) y aumentado margen inferior (60px)
+            }}
+        >
+            <Card
+                style={{
+                    backgroundColor: "rgba(255, 255, 255, 1)",
+                    backdropFilter: "blur(10px)",
+                    borderRadius: "16px",
+                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                    maxWidth: "1400px",
+                    width: "100%",
+                    border: "none",
+                }}
+                className={`d-flex align-items-center justify-content-center text-center`}
+            >
+                <Container fluid className="py-4">
+                    <Row className="mb-4 align-items-center">
+                        <Col xs={12} md={4}>
+                            <h2 className="text-capitalize mb-0">{sport}</h2>
+                        </Col>
+                        <Col xs={12} md={4} className="text-center">
+                            <ButtonGroup>
+                                <Button variant="outline-dark" onClick={() => changeDate(-1)}>
+                                    ←
+                                </Button>
+                                <Button variant="outline-dark" disabled>
+                                    {formatDate(selectedDate)}
+                                </Button>
+                                <Button variant="outline-dark" onClick={() => changeDate(1)}>
+                                    →
+                                </Button>
+                            </ButtonGroup>
+                        </Col>
+                        <Col xs={12} md={4}>
+                            {/* Columna vacía para balance */}
+                        </Col>
+                    </Row>
 
-            {loading ? (
-                <div className="text-center py-5">Cargando...</div>
-            ) : (
-                <div style={{
-                    overflowX: 'auto',
-                    overflowY: 'auto',
-                    // Calcula la altura: 100vh - navbar (60px) - padding del container (32px) - título (60px) - navegación de fechas (60px) - margen extra (20px)
-                    maxHeight: 'calc(100vh - 232px)',
-                    border: '1px solid #dee2e6',
-                    borderRadius: '4px'
-                }}>
-                    <table className="table table-bordered mb-0" style={{ minWidth: '800px' }}>
-                        <thead style={{
-                            position: 'sticky',
-                            top: 0,
-                            zIndex: 10,
-                            backgroundColor: '#f8f9fa'
-                        }}>
-                        <tr>
-                            <th style={{
-                                width: '100px',
-                                backgroundColor: '#f8f9fa',
-                                position: 'sticky',
-                                left: 0,
-                                zIndex: 11
-                            }}></th>
-                            {courts.map(court => (
-                                <th key={court.id} className="text-center" style={{ backgroundColor: '#f8f9fa' }}>
-                                    {court.name}
-                                </th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {timeSlots.map(slot => (
-                            <tr key={slot.hour}>
-                                <td
-                                    className="text-center align-middle"
-                                    style={{
-                                        backgroundColor: '#f8f9fa',
-                                        fontWeight: '500',
+                    {loading ? (
+                        <div className="text-center py-5">Cargando...</div>
+                    ) : (
+                        <div
+                            className="booking-table-container"
+                            style={{
+                                overflowX: 'auto',
+                                overflowY: 'auto',
+                                maxHeight: 'calc(100vh - 300px)',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '8px'
+                            }}
+                        >
+                            <style>
+                                {`
+                            .booking-table-container::-webkit-scrollbar {
+                                width: 8px;
+                            }
+                            .booking-table-container::-webkit-scrollbar-track {
+                                background: transparent;
+                            }
+                            .booking-table-container::-webkit-scrollbar-thumb {
+                                background-color: #000;
+                                border-radius: 10px;
+                                border: 2px solid transparent;
+                                background-clip: padding-box;
+                            }
+                            .booking-table-container::-webkit-scrollbar-thumb:hover {
+                                background-color: #333;
+                            }
+                        `}
+                            </style>
+                            <table className="table table-bordered mb-0" style={{ minWidth: '800px' }}>
+                                <thead style={{
+                                    position: 'sticky',
+                                    top: 0,
+                                    zIndex: 10,
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)', // <CHANGE> Agregada transparencia
+                                    backdropFilter: 'blur(10px)' // <CHANGE> Agregado efecto blur
+                                }}>
+                                <tr>
+                                    <th style={{
+                                        width: '100px',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)', // <CHANGE> Agregada transparencia
+                                        backdropFilter: 'blur(10px)', // <CHANGE> Agregado efecto blur
+                                        color: '#000',
                                         position: 'sticky',
                                         left: 0,
-                                        zIndex: 5
-                                    }}
-                                >
-                                    {slot.label}
-                                </td>
-                                {courts.map(court => {
-                                    const occupied = isSlotOccupied(court.id, slot.hour);
-                                    return (
-                                        <td key={court.id} className="p-2">
-                                            <Button
-                                                variant={occupied ? 'secondary' : 'outline-dark'}
-                                                disabled={occupied}
-                                                onClick={() => handleSlotClick(court.id, slot.hour)}
-                                                className="w-100"
-                                                style={{
-                                                    minHeight: '50px',
-                                                    // ❌ Solo aplicamos colores cuando está ocupado
-                                                    ...(occupied && {
-                                                        backgroundColor: '#e9ecef',
-                                                        color: '#6c757d',
-                                                        borderColor: '#e9ecef',
-                                                        cursor: 'not-allowed'
-                                                    }),
-                                                    // ✅ En caso contrario, dejamos que Bootstrap maneje los estilos del hover
-                                                    ...(!occupied && {
-                                                        cursor: 'pointer'
-                                                    })
-                                                }}
-                                            >
-                                                {occupied ? 'Ocupado' : 'Disponible'}
-                                            </Button>
+                                        zIndex: 11
+                                    }}></th>
+                                    {courts.map(court => (
+                                        <th
+                                            key={court.id}
+                                            className="text-center"
+                                            style={{
+                                                backgroundColor: 'rgba(255, 255, 255, 0.95)', // <CHANGE> Agregada transparencia
+                                                backdropFilter: 'blur(10px)', // <CHANGE> Agregado efecto blur
+                                                color: '#000'
+                                            }}
+                                        >
+                                            {court.name}
+                                        </th>
+                                    ))}
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {timeSlots.map(slot => (
+                                    <tr key={slot.hour}>
+                                        <td
+                                            className="text-center align-middle"
+                                            style={{
+                                                backgroundColor: 'rgba(255, 255, 255, 0.95)', // <CHANGE> Agregada transparencia
+                                                backdropFilter: 'blur(10px)', // <CHANGE> Agregado efecto blur
+                                                color: '#000',
+                                                fontWeight: '500',
+                                                position: 'sticky',
+                                                left: 0,
+                                                zIndex: 5
+                                            }}
+                                        >
+                                            {slot.label}
                                         </td>
-                                    );
-                                })}
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </Container>
+                                        {courts.map(court => {
+                                            const occupied = isSlotOccupied(court.id, slot.hour);
+                                            return (
+                                                <td key={court.id} className="p-2">
+                                                    <Button
+                                                        variant={occupied ? 'secondary' : 'outline-dark'}
+                                                        disabled={occupied}
+                                                        onClick={() => handleSlotClick(court.id, slot.hour)}
+                                                        className="w-100"
+                                                        style={{
+                                                            minHeight: '50px',
+                                                            ...(occupied && {
+                                                                backgroundColor: '#e9ecef',
+                                                                color: '#6c757d',
+                                                                borderColor: '#e9ecef',
+                                                                cursor: 'not-allowed'
+                                                            }),
+                                                            ...(!occupied && {
+                                                                cursor: 'pointer'
+                                                            })
+                                                        }}
+                                                    >
+                                                        {occupied ? 'Ocupado' : 'Disponible'}
+                                                    </Button>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </Container>
+            </Card>
+        </div>
     );
 };
 

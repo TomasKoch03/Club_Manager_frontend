@@ -1,19 +1,18 @@
 import React from 'react';
 import { LuFlagTriangleRight } from "react-icons/lu";
 
-const NavBarLogo = ({ href = "/club-manager/home", title = "Club Manager" }) => {
-  return (
-    <div className="flex items-center">
-      <LuFlagTriangleRight className="mr-2" />
-      <a 
-        href={href}
-        className="text-xl font-bold text-white lg:text-2xl hover:text-gray-300"
-        style={{ textDecoration: 'none' }}
-      >
+const NavBarLogo = ({ title = "Club Manager" }) => {
+    return (
+        <div className="d-flex align-items-center">
+            <LuFlagTriangleRight size={24} style={{ marginRight: '8px', color: '#000' }} />
+            <span
+                className="fw-bold fs-4"
+                style={{ color: '#000' }}
+            >
         {title}
-      </a>
-    </div>
-  );
+      </span>
+        </div>
+    );
 };
 
 export default NavBarLogo;

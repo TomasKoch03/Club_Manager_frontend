@@ -14,7 +14,7 @@ const AuthCard = ({
                     style={{
                         width: width,
                         height: height,
-                        backgroundColor: 'rgba(255,255,255,0.75)',
+                        backgroundColor: 'rgba(255,255,255,1)',
                         border: 'none',
                         borderRadius: '1rem',
                         boxShadow: '0 12px 30px rgba(0,0,0,0.35)',

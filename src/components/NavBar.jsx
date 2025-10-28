@@ -1,59 +1,64 @@
 import React from "react";
+import { Navbar as BSNavbar, Nav, Container } from 'react-bootstrap';
 import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
 import NavBarLogo from './NavBarItems/NavBarLogo';
 import NavBarItem from './NavBarItems/NavBarItem';
 import NavBarDropDown from './NavBarItems/NavBarDropDown';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navbar = () => {
-  const handleNotificationClick = () => {
-    console.log('Notificaciones clicked');
-  };
-  
-  const handleProfileClick = () => {
-    console.log('Perfil clicked');
-  };
-  
-  return (
-    <header className="bg-gray-800 text-white shadow-md w-full">
-      <nav className="w-full mx-auto px-6 py-3 flex justify-between items-center">
+    const handleNotificationClick = () => {
+        console.log('Notificaciones clicked');
+    };
 
-        <NavBarLogo href="/club-manager/home" title="Club Manager" />
+    const handleProfileClick = () => {
+        console.log('Perfil clicked');
+    };
 
-        <div className="hidden md:flex items-center space-x-8">
-          <NavBarDropDown title="Reservar">
-            <div className="p-2">
-              <a href="/club-manager/reservar/basquet" className="block px-4 py-2 hover:bg-gray-100 text-gray-800">
-                Basquet
-              </a>
-              <a href="/club-manager/reservar/futbol" className="block px-4 py-2 hover:bg-gray-100 text-gray-800">
-                Futbol
-              </a>
-              <a href="/club-manager/reservar/paddle" className="block px-4 py-2 hover:bg-gray-100 text-gray-800">
-                Paddle
-              </a>
-            </div>
-          </NavBarDropDown>
-          <NavBarItem href="/club-manager/mis-reservas">
-            Mis Reservas
-          </NavBarItem>
-        </div>
+    return (
+        <BSNavbar bg="white" expand="lg" className="shadow-sm border-bottom rounded">
+            <Container fluid>
+                <BSNavbar.Brand href="/club-manager/home">
+                    <NavBarLogo title="Club Manager" />
+                </BSNavbar.Brand>
 
-        <div className="flex items-center gap-8">
-          <NavBarItem 
-            onClick={handleNotificationClick}
-            icon={FaRegBell}
-            ariaLabel="Notificaciones"
-          />
-          <NavBarItem 
-            onClick={handleProfileClick}
-            icon={FaRegUserCircle}
-            ariaLabel="Perfil de usuario"
-          />
-        </div>
-        
-      </nav>
-    </header>
-  );
+                <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
+
+                <BSNavbar.Collapse id="basic-navbar-nav">
+                    <Nav className="mx-auto">
+                        <NavBarDropDown title="Reservar">
+                            <NavBarDropDown.Item href="/club-manager/reservar/basquet">
+                                Basquet
+                            </NavBarDropDown.Item>
+                            <NavBarDropDown.Item href="/club-manager/reservar/futbol">
+                                Futbol
+                            </NavBarDropDown.Item>
+                            <NavBarDropDown.Item href="/club-manager/reservar/paddle">
+                                Paddle
+                            </NavBarDropDown.Item>
+                        </NavBarDropDown>
+
+                        <NavBarItem href="/club-manager/mis-reservas">
+                            Mis Reservas
+                        </NavBarItem>
+                    </Nav>
+
+                    <Nav className="ms-auto">
+                        <NavBarItem
+                            onClick={handleNotificationClick}
+                            icon={FaRegBell}
+                            ariaLabel="Notificaciones"
+                        />
+                        <NavBarItem
+                            onClick={handleProfileClick}
+                            icon={FaRegUserCircle}
+                            ariaLabel="Perfil de usuario"
+                        />
+                    </Nav>
+                </BSNavbar.Collapse>
+            </Container>
+        </BSNavbar>
+    );
 };
 
 export default Navbar;
