@@ -97,3 +97,10 @@ export const postReservation = async (data) => {
         body: JSON.stringify(data),
     });
 };
+
+export const getMyReservations = async () => {
+    return apiRequest('/reservation/me', {
+        method: 'GET',
+    });
+};
+
