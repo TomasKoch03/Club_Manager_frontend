@@ -93,7 +93,7 @@ const BookingGrid = () => {
     // Verificar si un slot está ocupado
     const isSlotOccupied = (courtId, hour) => {
         return bookings.some(booking => {
-            if (booking.court_id !== courtId) return false;
+            if (booking.court.id !== courtId) return false;
 
             const bookingStart = new Date(booking.start_time);
             const bookingEnd = new Date(booking.end_time);
