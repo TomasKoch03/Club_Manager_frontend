@@ -5,7 +5,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import { useSearchParams } from "react-router-dom";
-import {getCourts, getReservationsBySportAndDay} from "../services/api.js";
+import {getCourts, getReservationsBySportAndDay, postReservation} from "../services/api.js";
 
 
 // Configuración de horarios - Modifica estos valores según necesites
@@ -111,18 +111,46 @@ const BookingGrid = () => {
     };
 
     // Manejar click en un slot
-    const handleSlotClick = (courtId, hour) => {
-        const slotStart = new Date(selectedDate);
-        slotStart.setHours(hour, 0, 0, 0);
+    const handleSlotClick = async (courtId, hour) => {
+        // Crear fecha en UTC
+        const slotStart = new Date(Date.UTC(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            hour, 0, 0, 0
+        ));
+
+        const slotEnd = new Date(slotStart);
+        slotEnd.setMinutes(slotEnd.getMinutes() + BOOKING_CONFIG.slotDuration);
 
         console.log('Reservar:', {
-            sport: sport,
             court_id: courtId,
             start_time: slotStart.toISOString(),
-            date: selectedDate.toLocaleDateString('es-ES')
+            end_time: slotEnd.toISOString(),
         });
 
-        alert(`Reservando Cancha ${courtId} a las ${hour}:00`);
+        try {
+            await postReservation({
+                court_id: courtId,
+                start_time: slotStart.toISOString(),
+                end_time: slotEnd.toISOString()
+            });
+
+            alert(`Reservando Cancha ${courtId} de ${hour}:00 a ${hour + BOOKING_CONFIG.slotDuration / 60}:00`);
+
+            // Recargar reservas después de crear una nueva
+            setLoading(true);
+            const updatedReservations = await getReservationsBySportAndDate(
+                sport,
+                selectedDate.toISOString().split('T')[0]
+            );
+            setBookings(updatedReservations);
+        } catch (error) {
+            console.error('Error al crear reserva:', error);
+            alert('No se pudo realizar la reserva.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Navegación de fechas

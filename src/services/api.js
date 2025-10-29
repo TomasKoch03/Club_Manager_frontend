@@ -90,3 +90,10 @@ export const getReservationsBySportAndDay = async (sport, day) => {
     const endpoint = `/reservation/?sport=${encodeURIComponent(sport)}&day=${encodeURIComponent(day)}`;
     return apiRequest(endpoint, { method: 'GET' });
 };
+
+export const postReservation = async (data) => {
+    return apiRequest('/reservation/reservations', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
