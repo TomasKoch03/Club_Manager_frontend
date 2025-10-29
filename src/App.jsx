@@ -1,11 +1,12 @@
-import './App.css'
-import { Routes, Route } from 'react-router-dom';
-import Overlay from './pages/overlay.jsx';
-import Register from './pages/register.jsx';
-import Home from './pages/home.jsx';
-import BookingGrid from './pages/booking_grid.jsx';
+import { Route, Routes } from 'react-router-dom';
+import './App.css';
 import AuthLayout from './layouts/AuthLayout.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
+import BookingGrid from './pages/booking_grid.jsx';
+import Calendar from './pages/calendar.jsx';
+import Home from './pages/home.jsx';
+import Overlay from './pages/overlay.jsx';
+import Register from './pages/register.jsx';
 
 function App() {
 
@@ -17,7 +18,7 @@ function App() {
       </Route>
       <Route path='/club-manager' element={<MainLayout />}>
         <Route path='home' element={<Home />} />
-        <Route path='reservar' element={<BookingGrid />} />
+        <Route path='reservar/:sport/calendario' element={<Calendar />} />
         <Route path='reservar/:sport' element={<BookingGrid />} />
       </Route>
     </Routes>

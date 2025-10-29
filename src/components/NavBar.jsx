@@ -1,10 +1,9 @@
-import React from "react";
-import { Navbar as BSNavbar, Nav, Container } from 'react-bootstrap';
-import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
-import NavBarLogo from './NavBarItems/NavBarLogo';
-import NavBarItem from './NavBarItems/NavBarItem';
-import NavBarDropDown from './NavBarItems/NavBarDropDown';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Navbar as BSNavbar, Container, Nav } from 'react-bootstrap';
+import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
+import NavBarDropDown from './NavBarItems/NavBarDropDown';
+import NavBarItem from './NavBarItems/NavBarItem';
+import NavBarLogo from './NavBarItems/NavBarLogo';
 
 const Navbar = () => {
     const handleNotificationClick = () => {
@@ -27,13 +26,13 @@ const Navbar = () => {
                 <BSNavbar.Collapse id="basic-navbar-nav">
                     <Nav className="mx-auto">
                         <NavBarDropDown title="Reservar">
-                            <NavBarDropDown.Item href="/club-manager/reservar/basquet">
+                            <NavBarDropDown.Item href="/club-manager/reservar/basquet/calendario">
                                 Basquet
                             </NavBarDropDown.Item>
-                            <NavBarDropDown.Item href="/club-manager/reservar/futbol">
+                            <NavBarDropDown.Item href="/club-manager/reservar/futbol/calendario">
                                 Futbol
                             </NavBarDropDown.Item>
-                            <NavBarDropDown.Item href="/club-manager/reservar/paddle">
+                            <NavBarDropDown.Item href="/club-manager/reservar/paddle/calendario">
                                 Paddle
                             </NavBarDropDown.Item>
                         </NavBarDropDown>
