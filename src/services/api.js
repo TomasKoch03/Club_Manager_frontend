@@ -92,7 +92,7 @@ export const getReservationsBySportAndDay = async (sport, day) => {
 };
 
 export const postReservation = async (data) => {
-    return apiRequest('/reservation/reservations', {
+    return apiRequest('/reservation/create', {
         method: 'POST',
         body: JSON.stringify(data),
     });

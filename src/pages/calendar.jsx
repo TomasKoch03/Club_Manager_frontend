@@ -8,42 +8,38 @@ const Calendar = () => {
     const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(new Date());
 
-    // Obtener primer y último día del mes
+    // ... existing code ...
+
     const getMonthInfo = (date) => {
         const year = date.getFullYear();
         const month = date.getMonth();
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay(); // 0 = Domingo
+        const startingDayOfWeek = firstDay.getDay();
 
         return { year, month, daysInMonth, startingDayOfWeek };
     };
 
     const { year, month, daysInMonth, startingDayOfWeek } = getMonthInfo(selectedMonth);
 
-    // Nombres de meses y días
     const monthNames = [
         'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
         'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
     ];
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-    // Generar array de días del mes
     const generateCalendarDays = () => {
         const days = [];
 
-        // Días vacíos al inicio
         for (let i = 0; i < startingDayOfWeek; i++) {
             days.push(null);
         }
 
-        // Días del mes
         for (let day = 1; day <= daysInMonth; day++) {
             days.push(day);
         }
 
-        // Días vacíos al final para completar la última semana
         const totalCells = days.length;
         const remainingCells = totalCells % 7;
         if (remainingCells !== 0) {
@@ -58,25 +54,21 @@ const Calendar = () => {
 
     const calendarDays = generateCalendarDays();
 
-    // Navegar entre meses
     const changeMonth = (offset) => {
         const newDate = new Date(selectedMonth);
         newDate.setMonth(newDate.getMonth() + offset);
         setSelectedMonth(newDate);
     };
 
-    // Seleccionar día y redirigir a booking_grid
     const handleDayClick = (day) => {
         if (!day) return;
 
         const selectedDate = new Date(year, month, day);
-        const dateString = selectedDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        const dateString = selectedDate.toISOString().split('T')[0];
 
-        // Redirigir a la grilla de reservas con la fecha
         navigate(`/club-manager/reservar/${sport}?date=${dateString}`);
     };
 
-    // Verificar si un día es hoy
     const isToday = (day) => {
         if (!day) return false;
         const today = new Date();
@@ -87,7 +79,6 @@ const Calendar = () => {
         );
     };
 
-    // Verificar si un día ya pasó
     const isPastDay = (day) => {
         if (!day) return false;
         const today = new Date();
@@ -96,7 +87,6 @@ const Calendar = () => {
         return checkDate < today;
     };
 
-    // Capitalizar primera letra
     const capitalizeFirstLetter = (str) => {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
@@ -109,7 +99,7 @@ const Calendar = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "20px",
+                padding: "20px 20px 60px 20px", // <CHANGE> Agregado más padding inferior
             }}
         >
             <Card
@@ -118,38 +108,40 @@ const Calendar = () => {
                     backdropFilter: "blur(10px)",
                     borderRadius: "16px",
                     boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                    maxWidth: "800px",
+                    maxWidth: "600px", // <CHANGE> Reducido de 800px a 600px
                     width: "100%",
                     border: "none",
                 }}
             >
-                <Card.Body className="p-4">
+                <Card.Body className="p-3"> {/* <CHANGE> Reducido padding de p-4 a p-3 */}
                     {/* Header */}
-                    <div className="text-center mb-4">
-                        <h2 className="mb-2" style={{ fontWeight: '600', color: '#000' }}>
+                    <div className="text-center mb-3"> {/* <CHANGE> Reducido margen de mb-4 a mb-3 */}
+                        <h3 className="mb-2" style={{ fontWeight: '600', color: '#000' }}> {/* <CHANGE> h2 a h3 */}
                             Reservar {capitalizeFirstLetter(sport)}
-                        </h2>
-                        <p className="text-muted">Seleccioná el día para ver las canchas disponibles</p>
+                        </h3>
+                        <p className="text-muted" style={{ fontSize: '0.9rem' }}> {/* <CHANGE> Reducido tamaño de fuente */}
+                            Seleccioná el día para ver las canchas disponibles
+                        </p>
                     </div>
 
                     {/* Navegación de meses */}
-                    <div className="d-flex justify-content-between align-items-center mb-4">
+                    <div className="d-flex justify-content-between align-items-center mb-3"> {/* <CHANGE> Reducido margen */}
                         <Button
                             variant="outline-dark"
                             onClick={() => changeMonth(-1)}
-                            style={{ minWidth: '100px' }}
+                            style={{ minWidth: '90px', fontSize: '0.9rem' }} // <CHANGE> Reducido tamaño
                         >
                             ← Anterior
                         </Button>
 
-                        <h4 className="mb-0" style={{ fontWeight: '600', color: '#000' }}>
+                        <h5 className="mb-0" style={{ fontWeight: '600', color: '#000' }}> {/* <CHANGE> h4 a h5 */}
                             {monthNames[month]} {year}
-                        </h4>
+                        </h5>
 
                         <Button
                             variant="outline-dark"
                             onClick={() => changeMonth(1)}
-                            style={{ minWidth: '100px' }}
+                            style={{ minWidth: '90px', fontSize: '0.9rem' }} // <CHANGE> Reducido tamaño
                         >
                             Siguiente →
                         </Button>
@@ -162,8 +154,8 @@ const Calendar = () => {
                                 <div style={{
                                     fontWeight: '600',
                                     color: '#6c757d',
-                                    fontSize: '0.9rem',
-                                    marginBottom: '8px'
+                                    fontSize: '0.8rem', // <CHANGE> Reducido de 0.9rem a 0.8rem
+                                    marginBottom: '6px' // <CHANGE> Reducido de 8px a 6px
                                 }}>
                                     {day}
                                 </div>
@@ -182,8 +174,8 @@ const Calendar = () => {
                                                 variant={isToday(day) ? 'dark' : 'outline-dark'}
                                                 className="w-100"
                                                 style={{
-                                                    height: '60px',
-                                                    fontSize: '1.1rem',
+                                                    height: '45px', // <CHANGE> Reducido de 60px a 45px
+                                                    fontSize: '1rem', // <CHANGE> Reducido de 1.1rem a 1rem
                                                     fontWeight: isToday(day) ? '600' : '400',
                                                     opacity: isPastDay(day) ? 0.4 : 1,
                                                     cursor: isPastDay(day) ? 'not-allowed' : 'pointer'
@@ -193,13 +185,13 @@ const Calendar = () => {
                                             >
                                                 {day}
                                                 {isToday(day) && (
-                                                    <div style={{ fontSize: '0.7rem', marginTop: '2px' }}>
+                                                    <div style={{ fontSize: '0.65rem', marginTop: '2px' }}> {/* <CHANGE> Reducido tamaño */}
                                                         Hoy
                                                     </div>
                                                 )}
                                             </Button>
                                         ) : (
-                                            <div style={{ height: '60px' }} />
+                                            <div style={{ height: '45px' }} /> // <CHANGE> Reducido de 60px a 45px
                                         )}
                                     </Col>
                                 ))}
@@ -208,8 +200,8 @@ const Calendar = () => {
                     </div>
 
                     {/* Leyenda */}
-                    <div className="mt-4 text-center">
-                        <small className="text-muted">
+                    <div className="mt-3 text-center"> {/* <CHANGE> Reducido margen de mt-4 a mt-3 */}
+                        <small className="text-muted" style={{ fontSize: '0.85rem' }}> {/* <CHANGE> Reducido tamaño */}
                             Los días en gris ya pasaron. Hacé click en un día disponible para ver las canchas.
                         </small>
                     </div>
