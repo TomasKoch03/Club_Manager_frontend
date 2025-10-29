@@ -81,4 +81,12 @@ export const logout = () => {
 
 // Funciones específicas
 export const getUserData = () => apiRequest('/api/user');
-export const getReservations = () => apiRequest('/api/reservations');
+export const getCourts = async (sport) => {
+    const endpoint = `/court/?sport=${encodeURIComponent(sport)}`;
+    return apiRequest(endpoint);
+};
+
+export const getReservationsBySportAndDay = async (sport, day) => {
+    const endpoint = `/reservation/?sport=${encodeURIComponent(sport)}&day=${encodeURIComponent(day)}`;
+    return apiRequest(endpoint, { method: 'GET' });
+};

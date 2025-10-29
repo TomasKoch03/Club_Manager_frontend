@@ -4,6 +4,9 @@ import { Container, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
+import { useSearchParams } from "react-router-dom";
+import {getCourts, getReservationsBySportAndDay} from "../services/api.js";
+
 
 // Configuración de horarios - Modifica estos valores según necesites
 const BOOKING_CONFIG = {
@@ -12,66 +15,34 @@ const BOOKING_CONFIG = {
     slotDuration: 60 // minutos
 };
 
-// MOCK: Canchas
-const MOCK_COURTS = [
-    { id: 1, name: 'Cancha 1', sport: 'futbol', created_at: '2025-01-01T00:00:00Z' },
-    { id: 2, name: 'Cancha 2', sport: 'futbol', created_at: '2025-01-01T00:00:00Z' },
-    { id: 3, name: 'Cancha 3', sport: 'futbol', created_at: '2025-01-01T00:00:00Z' },
-    { id: 4, name: 'Cancha 1', sport: 'paddle', created_at: '2025-01-01T00:00:00Z' },
-    { id: 5, name: 'Cancha 2', sport: 'paddle', created_at: '2025-01-01T00:00:00Z' },
-    { id: 6, name: 'Cancha 1', sport: 'basquet', created_at: '2025-01-01T00:00:00Z' },
-];
-
-// MOCK: Reservas ocupadas
-const MOCK_BOOKINGS = [
-    {
-        id: 1,
-        court_id: 1,
-        start_time: '2025-10-27T10:00:00Z',
-        end_time: '2025-10-27T11:00:00Z',
-        status: 'confirmed',
-        created_at: '2025-10-27T08:00:00Z'
-    },
-    {
-        id: 2,
-        court_id: 1,
-        start_time: '2025-10-27T13:00:00Z',
-        end_time: '2025-10-27T14:00:00Z',
-        status: 'confirmed',
-        created_at: '2025-10-27T08:00:00Z'
-    },
-    {
-        id: 3,
-        court_id: 2,
-        start_time: '2025-10-27T10:00:00Z',
-        end_time: '2025-10-27T11:00:00Z',
-        status: 'confirmed',
-        created_at: '2025-10-27T08:00:00Z'
-    },
-    {
-        id: 4,
-        court_id: 3,
-        start_time: '2025-10-27T11:00:00Z',
-        end_time: '2025-10-27T12:00:00Z',
-        status: 'confirmed',
-        created_at: '2025-10-27T08:00:00Z'
-    },
-    {
-        id: 5,
-        court_id: 3,
-        start_time: '2025-10-27T12:00:00Z',
-        end_time: '2025-10-27T13:00:00Z',
-        status: 'confirmed',
-        created_at: '2025-10-27T08:00:00Z'
-    }
-];
-
 const BookingGrid = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const date = searchParams.get("date")
     const { sport } = useParams()
-    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedDate, setSelectedDate] = useState(new Date(`${date}T00:00:00`));
     const [courts, setCourts] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
+
+
+    const getCourtsBySport = async (sport) => {
+        try {
+            return await getCourts(sport);
+
+        } catch (error) {
+            console.error("Error al obtener canchas:", error);
+            alert("Error al obtener canchas. Por favor verifica tus credenciales.");
+        }
+    }
+
+    const getReservationsBySportAndDate = async (sport, date) => {
+        try {
+            return await getReservationsBySportAndDay(sport, date);
+        } catch (error) {
+            console.error("Error al obtener reservas:", error);
+            alert("Error al obtener reservas. Por favor verifica tus credenciales.");
+        }
+    }
 
     // Generar slots de tiempo
     const generateTimeSlots = () => {
@@ -87,16 +58,37 @@ const BookingGrid = () => {
 
     const timeSlots = generateTimeSlots();
 
-    // Cargar canchas mock
+    // Cargar canchas
     useEffect(() => {
-        const filteredCourts = MOCK_COURTS.filter(court => court.sport === sport);
-        setCourts(filteredCourts);
+        const fetchCourts = async () => {
+            try {
+                setLoading(true);
+                const filteredCourts = await getCourtsBySport(sport);
+                setCourts(filteredCourts);
+            } catch (error) {
+                console.error("Error al obtener canchas:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchCourts();
     }, [sport]);
 
-    // Cargar reservas mock
     useEffect(() => {
-        setBookings(MOCK_BOOKINGS);
-    }, [selectedDate]);
+        const fetchReservations = async () => {
+            try {
+                setLoading(true);
+                const filteredReservations = await getReservationsBySportAndDate(sport, selectedDate.toISOString().split('T')[0]);
+                setBookings(filteredReservations);
+            } catch (error) {
+                console.error("Error al obtener reservas:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchReservations();
+    }, [sport, selectedDate]);
 
     // Verificar si un slot está ocupado
     const isSlotOccupied = (courtId, hour) => {
@@ -138,6 +130,9 @@ const BookingGrid = () => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + days);
         setSelectedDate(newDate);
+
+        const formattedDate = newDate.toISOString().split('T')[0]; // Formato: YYYY-MM-DD
+        setSearchParams({ date: formattedDate });
     };
 
     const formatDate = (date) => {
