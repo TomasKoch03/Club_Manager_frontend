@@ -24,7 +24,8 @@ const Navbar = () => {
                 <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
 
                 <BSNavbar.Collapse id="basic-navbar-nav">
-                    <Nav className="mx-auto">
+                    {/* <CHANGE> Cambiado de mx-auto (centrado) a ms-3 (margen izquierdo) */}
+                    <Nav className="ms-3">
                         <NavBarDropDown title="Reservar">
                             <NavBarDropDown.Item href="/club-manager/reservar/basquet/calendario">
                                 Basquet
