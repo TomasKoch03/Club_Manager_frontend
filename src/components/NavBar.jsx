@@ -2,7 +2,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar as BSNavbar, Container, Nav } from 'react-bootstrap';
 import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // <CHANGE> Importar useNavigate
-import NavBarDropDown from './NavBarItems/NavBarDropDown';
 import NavBarItem from './NavBarItems/NavBarItem';
 import NavBarLogo from './NavBarItems/NavBarLogo';
 import { getUserData } from '../services/api'; // <CHANGE> Importar getUserData
@@ -49,24 +48,6 @@ const Navbar = () => {
                 <BSNavbar.Toggle aria-controls="basic-navbar-nav" />
 
                 <BSNavbar.Collapse id="basic-navbar-nav">
-                    <Nav className="ms-3">
-                        <NavBarDropDown title="Reservar">
-                            <NavBarDropDown.Item href="/club-manager/reservar/basquet/calendario">
-                                Basquet
-                            </NavBarDropDown.Item>
-                            <NavBarDropDown.Item href="/club-manager/reservar/futbol/calendario">
-                                Futbol
-                            </NavBarDropDown.Item>
-                            <NavBarDropDown.Item href="/club-manager/reservar/paddle/calendario">
-                                Paddle
-                            </NavBarDropDown.Item>
-                        </NavBarDropDown>
-
-                        <NavBarItem href="/club-manager/mis-reservas">
-                            Mis Reservas
-                        </NavBarItem>
-                    </Nav>
-
                     <Nav className="ms-auto">
                         <NavBarItem
                             onClick={handleNotificationClick}
