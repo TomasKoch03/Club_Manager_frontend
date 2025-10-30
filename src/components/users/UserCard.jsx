@@ -8,7 +8,7 @@ const UserCard = ({ user }) => {
     const navigate = useNavigate();
 
     const handleSelectUser = () => {
-        navigate(`/admin/reservar/${sport}/${user.id}`);
+        navigate(`/admin/reservar/${sport}/${user.id}/calendar`);
     };
 
     return (

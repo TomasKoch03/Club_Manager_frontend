@@ -128,3 +128,11 @@ export const patchPayment = async (paymentId, data) => {
         body: JSON.stringify(data),
     });
 };
+
+export const postReservationForUser = async (userId, data) => {
+    const endpoint = `/reservation/create_for_user/${userId}`;
+    return apiRequest(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};

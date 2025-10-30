@@ -71,7 +71,7 @@ const AdminHome = () => {
                                         <HomeActionButton
                                             icon={IoFootball}
                                             text="Reservar para Fútbol"
-                                            href="/admin/reservar/futbol"
+                                            href="/admin/reservar/futbol/selectUser"
                                         />
                                     </Col>
                                     {/* Paddle - arriba derecha */}
@@ -79,7 +79,7 @@ const AdminHome = () => {
                                         <HomeActionButton
                                             icon={IoTennisball}
                                             text="Reservar para Paddle"
-                                            href="/admin/reservar/paddle"
+                                            href="/admin/reservar/paddle/selectUser"
                                         />
                                     </Col>
                                     {/* Básquet - abajo centrado */}
@@ -87,7 +87,7 @@ const AdminHome = () => {
                                         <HomeActionButton
                                             icon={IoBasketball}
                                             text="Reservar para Básquet"
-                                            href="/admin/reservar/basquet"
+                                            href="/admin/reservar/basquet/selectUser"
                                         />
                                     </Col>
                                     <Col xs={12} md={6}>
