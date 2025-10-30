@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/api.js';
+import { login, getUserData } from '../services/api.js';
 import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
@@ -16,14 +16,21 @@ const Overlay = () => {
         try {
             const data = await login(email, password);
             console.log("Login exitoso:", data);
-            
-            // Redirigir a /club-manager/home
-            navigate('/club-manager/home');
+
+            const userData = await getUserData();
+
+            if (userData.is_admin) {
+                navigate('/admin/home');
+            } else {
+                navigate('/club-manager/home');
+            }
+
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
             alert("Error al iniciar sesión. Por favor verifica tus credenciales.");
         }
     };
+
 
     return (
         <AuthCard>

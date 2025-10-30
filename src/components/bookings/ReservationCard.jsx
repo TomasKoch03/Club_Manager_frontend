@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, Row, Col, Button, Badge } from 'react-bootstrap';
 import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
 
-const ReservationCard = ({ reservation, onPayClick }) => {
+const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
     // Formatear fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -25,8 +25,11 @@ const ReservationCard = ({ reservation, onPayClick }) => {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
-    const isPaid = reservation.payment !== null;
-    const paymentStatus = isPaid ? reservation.payment.status.toUpperCase() : 'SIN PAGAR';
+    const isPaid = reservation.payment?.status === "aprobado";
+    const paymentStatus = reservation.payment
+        ? reservation.payment.status.toUpperCase()
+        : "SIN PAGAR";
+
 
     return (
         <Card
@@ -102,7 +105,7 @@ const ReservationCard = ({ reservation, onPayClick }) => {
                                     fontWeight: '500',
                                 }}
                             >
-                                Pagar
+                                { payButtonText }
                             </Button>
                         )}
                     </Col>

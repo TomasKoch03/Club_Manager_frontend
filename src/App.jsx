@@ -6,6 +6,9 @@ import BookingGrid from './pages/booking_grid.jsx';
 import MyBookings from "./pages/my_bookings.jsx";
 import Calendar from './pages/calendar.jsx';
 import Home from './pages/home.jsx';
+import AdminHome from "./pages/admin_home.jsx";
+import AllBookings from "./pages/all_bookings.jsx";
+import SelectUser from "./pages/select_user.jsx";
 import Overlay from './pages/overlay.jsx';
 import Register from './pages/register.jsx';
 
@@ -22,6 +25,12 @@ function App() {
         <Route path='mis-reservas' element={<MyBookings />} />
         <Route path='reservar/:sport/calendario' element={<Calendar />} />
         <Route path='reservar/:sport' element={<BookingGrid />} />
+      </Route>
+      <Route path='/admin' element={<MainLayout />}>
+        <Route path='home' element={<AdminHome />} />
+        <Route path='reservas' element={<AllBookings />} />
+        <Route path='reservar' element={<SelectUser />} />
+        <Route path='reservar/:userId' element={<BookingGrid />} />
       </Route>
     </Routes>
   )

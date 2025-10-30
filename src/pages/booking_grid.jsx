@@ -4,15 +4,14 @@ import { Container, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
+import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import { useSearchParams } from "react-router-dom";
 import {getCourts, getReservationsBySportAndDay, postReservation} from "../services/api.js";
 
-
-// Configuración de horarios - Modifica estos valores según necesites
 const BOOKING_CONFIG = {
-    startHour: 9,  // 9 AM
-    endHour: 22,   // 10 PM (22:00)
-    slotDuration: 60 // minutos
+    startHour: 9,
+    endHour: 22,
+    slotDuration: 60
 };
 
 const BookingGrid = () => {
@@ -23,12 +22,13 @@ const BookingGrid = () => {
     const [courts, setCourts] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState(null);
 
 
     const getCourtsBySport = async (sport) => {
         try {
             return await getCourts(sport);
-
         } catch (error) {
             console.error("Error al obtener canchas:", error);
             alert("Error al obtener canchas. Por favor verifica tus credenciales.");
@@ -44,7 +44,6 @@ const BookingGrid = () => {
         }
     }
 
-    // Generar slots de tiempo
     const generateTimeSlots = () => {
         const slots = [];
         for (let hour = BOOKING_CONFIG.startHour; hour < BOOKING_CONFIG.endHour; hour++) {
@@ -58,7 +57,6 @@ const BookingGrid = () => {
 
     const timeSlots = generateTimeSlots();
 
-    // Cargar canchas
     useEffect(() => {
         const fetchCourts = async () => {
             try {
@@ -90,7 +88,6 @@ const BookingGrid = () => {
         fetchReservations();
     }, [sport, selectedDate]);
 
-    // Verificar si un slot está ocupado
     const isSlotOccupied = (courtId, hour) => {
         return bookings.some(booking => {
             if (booking.court.id !== courtId) return false;
@@ -110,9 +107,8 @@ const BookingGrid = () => {
         });
     };
 
-    // Manejar click en un slot
-    const handleSlotClick = async (courtId, hour) => {
-        // Crear fecha en UTC
+    // <CHANGE> Modificado para abrir el modal en lugar de crear la reserva directamente
+    const handleSlotClick = (courtId, hour) => {
         const slotStart = new Date(Date.UTC(
             selectedDate.getFullYear(),
             selectedDate.getMonth(),
@@ -121,30 +117,46 @@ const BookingGrid = () => {
         ));
 
         const slotEnd = new Date(slotStart);
-        slotEnd.setMinutes(slotEnd.getMinutes() + BOOKING_CONFIG.slotDuration);
+        slotEnd.setUTCHours(slotEnd.getUTCHours() + 1);
 
-        console.log('Reservar:', {
-            court_id: courtId,
-            start_time: slotStart.toISOString(),
-            end_time: slotEnd.toISOString(),
+        // Encontrar la cancha seleccionada para obtener el monto
+        const selectedCourt = courts.find(court => court.id === courtId);
+
+        setSelectedBooking({
+            courtId,
+            courtName: selectedCourt?.name || `Cancha ${courtId}`,
+            date: selectedDate.toISOString(),
+            startTime: slotStart.toISOString(),
+            endTime: slotEnd.toISOString(),
+            amount: selectedCourt?.amount || 0
         });
+
+        setShowModal(true);
+    };
+
+    // <CHANGE> Handler para pagar en el club (crea la reserva)
+    const handlePayInClub = async () => {
+        if (!selectedBooking) return;
 
         try {
             await postReservation({
-                court_id: courtId,
-                start_time: slotStart.toISOString(),
-                end_time: slotEnd.toISOString()
+                court_id: selectedBooking.courtId,
+                start_time: selectedBooking.startTime,
+                end_time: selectedBooking.endTime
             });
 
-            alert(`Reservando Cancha ${courtId} de ${hour}:00 a ${hour + BOOKING_CONFIG.slotDuration / 60}:00`);
+            alert('Reserva creada exitosamente. Podrás pagar en el club.');
 
-            // Recargar reservas después de crear una nueva
+            // Recargar reservas
             setLoading(true);
             const updatedReservations = await getReservationsBySportAndDate(
                 sport,
                 selectedDate.toISOString().split('T')[0]
             );
             setBookings(updatedReservations);
+
+            setShowModal(false);
+            setSelectedBooking(null);
         } catch (error) {
             console.error('Error al crear reserva:', error);
             alert('No se pudo realizar la reserva.');
@@ -153,13 +165,19 @@ const BookingGrid = () => {
         }
     };
 
-    // Navegación de fechas
+    // <CHANGE> Handler para pagar con Mercado Pago (placeholder para funcionalidad futura)
+    const handlePayWithMercadoPago = () => {
+        console.log('Pagar con Mercado Pago:', selectedBooking);
+        // TODO: Implementar integración con Mercado Pago
+        alert('Funcionalidad de Mercado Pago próximamente disponible');
+    };
+
     const changeDate = (days) => {
         const newDate = new Date(selectedDate);
         newDate.setDate(newDate.getDate() + days);
         setSelectedDate(newDate);
 
-        const formattedDate = newDate.toISOString().split('T')[0]; // Formato: YYYY-MM-DD
+        const formattedDate = newDate.toISOString().split('T')[0];
         setSearchParams({ date: formattedDate });
     };
 
@@ -178,7 +196,7 @@ const BookingGrid = () => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "20px 20px 60px 20px", // <CHANGE> Reducido margen superior (20px) y aumentado margen inferior (60px)
+                padding: "20px 20px 60px 20px",
             }}
         >
             <Card
@@ -214,6 +232,15 @@ const BookingGrid = () => {
                     )}
                 </Container>
             </Card>
+
+            {/* <CHANGE> Modal de confirmación de reserva */}
+            <BookingConfirmationModal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                bookingData={selectedBooking}
+                onPayInClub={handlePayInClub}
+                onPayWithMercadoPago={handlePayWithMercadoPago}
+            />
         </div>
     );
 };

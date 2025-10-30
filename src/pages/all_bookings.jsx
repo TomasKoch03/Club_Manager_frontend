@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
-import { getMyReservations } from '../services/api';
+import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal'; // <CHANGE> Importar el modal de pago
+import { getAllReservations, patchPayment } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const MyBookings = () => {
+const AllBookings = () => {
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // <CHANGE> Estados para el modal de pago
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [selectedReservation, setSelectedReservation] = useState(null);
 
     useEffect(() => {
         const fetchReservations = async () => {
             try {
                 setLoading(true);
-                const data = await getMyReservations();
+                const data = await getAllReservations();
                 const sortedData = data.sort((a, b) =>
                     new Date(b.start_time) - new Date(a.start_time)
                 );
@@ -30,20 +35,46 @@ const MyBookings = () => {
         fetchReservations();
     }, []);
 
+    // <CHANGE> Modificado para abrir el modal con la información del pago
     const handlePayClick = (reservationId) => {
-        console.log('Pagar reserva:', reservationId);
-        alert(`Procesando pago para reserva #${reservationId}`);
+        const reservation = reservations.find(r => r.id === reservationId);
+        if (reservation) {
+            setSelectedReservation(reservation);
+            setShowPaymentModal(true);
+        }
+    };
+
+    // <CHANGE> Handler para aprobar el pago (placeholder para funcionalidad futura)
+    const handleApprovePayment = async (reservationId) => {
+        const reservation = reservations.find(r => r.id === reservationId);
+        try {
+            await patchPayment(reservation.payment.id, { status: 'aprobado' })
+
+            setLoading(true);
+            const data = await getAllReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+            setError(null);
+
+            setShowPaymentModal(false);
+            setSelectedReservation(null);
+        } catch (err) {
+            console.error('Error al cargar reservas:', err);
+            setError('No se pudieron cargar las reservas. Por favor, intenta nuevamente.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        // <CHANGE> Contenedor con altura fija y overflow para permitir scroll
         <div style={{
-            height: 'calc(100vh - 80px)', // Altura del viewport menos el navbar aproximadamente
+            height: 'calc(100vh - 80px)',
             overflowY: 'auto',
             overflowX: 'hidden',
             padding: "40px 20px 60px 20px"
         }}>
-            {/* <CHANGE> Estilos personalizados para el scrollbar */}
             <style>
                 {`
                     .reservations-container::-webkit-scrollbar {
@@ -64,7 +95,8 @@ const MyBookings = () => {
                 `}
             </style>
             <Container style={{ maxWidth: "900px" }} className="reservations-container">
-                {/* Título */}
+                {/* ... existing code ... */}
+
                 <div
                     style={{
                         backgroundColor: "rgba(255, 255, 255, 0.95)",
@@ -77,14 +109,13 @@ const MyBookings = () => {
                     }}
                 >
                     <h2 className="mb-0" style={{ fontWeight: '600', color: '#000' }}>
-                        Mis Reservas
+                        Reservas
                     </h2>
                     <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.95rem' }}>
-                        Aquí puedes ver todas tus reservas y gestionar los pagos
+                        Aquí puedes ver las reservas de tus clientes y gestionar los pagos
                     </p>
                 </div>
 
-                {/* Loading */}
                 {loading && (
                     <div className="text-center py-5">
                         <Spinner animation="border" variant="dark" />
@@ -92,14 +123,12 @@ const MyBookings = () => {
                     </div>
                 )}
 
-                {/* Error */}
                 {error && (
                     <Alert variant="danger" style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
                         {error}
                     </Alert>
                 )}
 
-                {/* Lista de reservas */}
                 {!loading && !error && (
                     <>
                         {reservations.length === 0 ? (
@@ -125,7 +154,7 @@ const MyBookings = () => {
                                         key={reservation.id}
                                         reservation={reservation}
                                         onPayClick={handlePayClick}
-                                        payButtonText={'Pagar'}
+                                        payButtonText={'Ver pago'}
                                     />
                                 ))}
                             </div>
@@ -133,8 +162,16 @@ const MyBookings = () => {
                     </>
                 )}
             </Container>
+
+            {/* <CHANGE> Modal de detalles de pago */}
+            <PaymentDetailsModal
+                show={showPaymentModal}
+                onHide={() => setShowPaymentModal(false)}
+                reservation={selectedReservation}
+                onApprovePayment={handleApprovePayment}
+            />
         </div>
     );
 };
 
-export default MyBookings;
+export default AllBookings;

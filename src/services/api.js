@@ -28,7 +28,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
 // Función especial para login (sin token)
 export const login = async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await fetch(`${API_BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -42,18 +42,18 @@ export const login = async (email, password) => {
 
     const data = await response.json();
     const token = data.access_token || data.accessToken || data.accessToken?.accessToken || null;
-    
+
     // Guardar el token
     if (token) {
         localStorage.setItem('accessToken', token);
     }
-    
+
     return { token, ...data };
 };
 
 // Función especial para registro (sin token)
 export const register = async (email, fullName, password) => {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+    const response = await fetch(`${API_BASE_URL}/user/register`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -80,10 +80,14 @@ export const logout = () => {
 };
 
 // Funciones específicas
-export const getUserData = () => apiRequest('/api/user');
+export const getUserData = () => apiRequest('/user/me');
 export const getCourts = async (sport) => {
     const endpoint = `/court/?sport=${encodeURIComponent(sport)}`;
     return apiRequest(endpoint);
+};
+
+export const getAllUsers = async () => {
+    return apiRequest('/user');
 };
 
 export const getReservationsBySportAndDay = async (sport, day) => {
@@ -104,3 +108,23 @@ export const getMyReservations = async () => {
     });
 };
 
+export const getAllReservations = async () => {
+    return apiRequest('/reservation', {
+        method: 'GET',
+    });
+};
+
+export const postPayment = async (data) => {
+    return apiRequest('/payment/create', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
+
+export const patchPayment = async (paymentId, data) => {
+    const endpoint = `/payment/${paymentId}`;
+    return apiRequest(endpoint, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};
