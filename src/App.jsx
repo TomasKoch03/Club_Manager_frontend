@@ -29,8 +29,8 @@ function App() {
       <Route path='/admin' element={<MainLayout />}>
         <Route path='home' element={<AdminHome />} />
         <Route path='reservas' element={<AllBookings />} />
-        <Route path='reservar' element={<SelectUser />} />
-        <Route path='reservar/:userId' element={<BookingGrid />} />
+        <Route path='reservar/:sport' element={<SelectUser />} />
+        <Route path='reservar/:sport/:userId' element={<Calendar />} />
       </Route>
     </Routes>
   )

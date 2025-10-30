@@ -1,13 +1,14 @@
 import React from 'react';
 import { Card, Row, Col, Button } from 'react-bootstrap';
 import { IoPersonOutline, IoMailOutline } from 'react-icons/io5';
-import { useNavigate } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 
 const UserCard = ({ user }) => {
+    const { sport } = useParams();
     const navigate = useNavigate();
 
     const handleSelectUser = () => {
-        navigate(`/admin/reservar/${user.id}`);
+        navigate(`/admin/reservar/${sport}/${user.id}`);
     };
 
     return (

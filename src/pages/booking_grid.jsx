@@ -6,7 +6,7 @@ import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx'
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import { useSearchParams } from "react-router-dom";
-import {getCourts, getReservationsBySportAndDay, postReservation} from "../services/api.js";
+import {getCourts, getReservationsBySportAndDay, postReservation, postPayment} from "../services/api.js";
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -139,10 +139,17 @@ const BookingGrid = () => {
         if (!selectedBooking) return;
 
         try {
-            await postReservation({
+            const data = await postReservation({
                 court_id: selectedBooking.courtId,
                 start_time: selectedBooking.startTime,
                 end_time: selectedBooking.endTime
+            });
+
+            await postPayment({
+                method: 'efectivo',
+                status: 'pendiente',
+                amount: data.court.amount,
+                reservation_id: data.id
             });
 
             alert('Reserva creada exitosamente. Podrás pagar en el club.');

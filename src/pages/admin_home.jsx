@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import { IoCalendarOutline } from 'react-icons/io5';
+import {IoBasketball, IoCalendarOutline, IoFootball, IoTennisball} from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
 import HomeActionButton from '../components/home/HomeActionButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -66,18 +66,35 @@ const AdminHome = () => {
                                     Gestionar Reservas
                                 </h3>
                                 <Row className="g-3 h-100">
-                                    <Col xs={12} md={6} className={ "my-5" }>
+                                    {/* Fútbol - arriba izquierda */}
+                                    <Col xs={12} md={6}>
+                                        <HomeActionButton
+                                            icon={IoFootball}
+                                            text="Reservar para Fútbol"
+                                            href="/admin/reservar/futbol"
+                                        />
+                                    </Col>
+                                    {/* Paddle - arriba derecha */}
+                                    <Col xs={12} md={6}>
+                                        <HomeActionButton
+                                            icon={IoTennisball}
+                                            text="Reservar para Paddle"
+                                            href="/admin/reservar/paddle"
+                                        />
+                                    </Col>
+                                    {/* Básquet - abajo centrado */}
+                                    <Col xs={12} md={6}>
+                                        <HomeActionButton
+                                            icon={IoBasketball}
+                                            text="Reservar para Básquet"
+                                            href="/admin/reservar/basquet"
+                                        />
+                                    </Col>
+                                    <Col xs={12} md={6}>
                                         <HomeActionButton
                                             icon={IoCalendarOutline}
                                             text="Todas las reservas"
                                             href="/admin/reservas"
-                                        />
-                                    </Col>
-                                    <Col xs={12} md={6} className={ "my-5" }>
-                                        <HomeActionButton
-                                            icon={IoCalendarOutline}
-                                            text="Nueva Reserva"
-                                            href="/admin/reservar"
                                         />
                                     </Col>
                                 </Row>
