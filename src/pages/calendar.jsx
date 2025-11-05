@@ -4,7 +4,7 @@ import { Button, Card, Col, Row } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 
 const Calendar = () => {
-    const { sport } = useParams();
+    const { sport, userId } = useParams();
     const navigate = useNavigate();
     const [selectedMonth, setSelectedMonth] = useState(new Date());
 
@@ -66,7 +66,12 @@ const Calendar = () => {
         const selectedDate = new Date(year, month, day);
         const dateString = selectedDate.toISOString().split('T')[0];
 
-        navigate(`/club-manager/reservar/${sport}?date=${dateString}`);
+        // Si hay userId en los params, es admin haciendo reserva para un usuario
+        const navigationPath = userId
+            ? `/admin/reservar/${sport}/${userId}?date=${dateString}`
+            : `/club-manager/reservar/${sport}?date=${dateString}`;
+
+        navigate(navigationPath);
     };
 
     const isToday = (day) => {

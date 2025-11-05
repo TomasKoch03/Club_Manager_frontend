@@ -6,7 +6,7 @@ import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx'
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import { useSearchParams } from "react-router-dom";
-import {getCourts, getReservationsBySportAndDay, postReservation, postPayment} from "../services/api.js";
+import {getCourts, getReservationsBySportAndDay, postReservation, postReservationForUser, postPayment} from "../services/api.js";
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -17,7 +17,7 @@ const BOOKING_CONFIG = {
 const BookingGrid = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const date = searchParams.get("date")
-    const { sport } = useParams()
+    const { sport, userId } = useParams()
     const [selectedDate, setSelectedDate] = useState(new Date(`${date}T00:00:00`));
     const [courts, setCourts] = useState([]);
     const [bookings, setBookings] = useState([]);
@@ -139,11 +139,18 @@ const BookingGrid = () => {
         if (!selectedBooking) return;
 
         try {
-            const data = await postReservation({
-                court_id: selectedBooking.courtId,
-                start_time: selectedBooking.startTime,
-                end_time: selectedBooking.endTime
-            });
+            // Si hay userId en los params, es admin haciendo reserva para un usuario
+            const data = userId 
+                ? await postReservationForUser(userId, {
+                    court_id: selectedBooking.courtId,
+                    start_time: selectedBooking.startTime,
+                    end_time: selectedBooking.endTime
+                })
+                : await postReservation({
+                    court_id: selectedBooking.courtId,
+                    start_time: selectedBooking.startTime,
+                    end_time: selectedBooking.endTime
+                });
 
             await postPayment({
                 method: 'efectivo',
