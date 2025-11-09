@@ -3,11 +3,13 @@ import { Container, Spinner, Alert } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
 import { getMyReservations } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useToast } from '../hooks/useToast';
 
 const MyBookings = () => {
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const toast = useToast();
 
     useEffect(() => {
         const fetchReservations = async () => {
@@ -32,7 +34,7 @@ const MyBookings = () => {
 
     const handlePayClick = (reservationId) => {
         console.log('Pagar reserva:', reservationId);
-        alert(`Procesando pago para reserva #${reservationId}`);
+        toast.info(`Procesando pago para reserva #${reservationId}`);
     };
 
     return (

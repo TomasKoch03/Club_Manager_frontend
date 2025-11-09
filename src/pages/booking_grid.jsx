@@ -7,6 +7,7 @@ import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import { useSearchParams } from "react-router-dom";
 import {getCourts, getReservationsBySportAndDay, postReservation, postReservationForUser, postPayment} from "../services/api.js";
+import { useToast } from '../hooks/useToast';
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -24,25 +25,7 @@ const BookingGrid = () => {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
-
-
-    const getCourtsBySport = async (sport) => {
-        try {
-            return await getCourts(sport);
-        } catch (error) {
-            console.error("Error al obtener canchas:", error);
-            alert("Error al obtener canchas. Por favor verifica tus credenciales.");
-        }
-    }
-
-    const getReservationsBySportAndDate = async (sport, date) => {
-        try {
-            return await getReservationsBySportAndDay(sport, date);
-        } catch (error) {
-            console.error("Error al obtener reservas:", error);
-            alert("Error al obtener reservas. Por favor verifica tus credenciales.");
-        }
-    }
+    const toast = useToast();
 
     const generateTimeSlots = () => {
         const slots = [];
@@ -61,32 +44,34 @@ const BookingGrid = () => {
         const fetchCourts = async () => {
             try {
                 setLoading(true);
-                const filteredCourts = await getCourtsBySport(sport);
+                const filteredCourts = await getCourts(sport);
                 setCourts(filteredCourts);
             } catch (error) {
                 console.error("Error al obtener canchas:", error);
+                toast.error("Error al obtener canchas. Por favor verifica tus credenciales.");
             } finally {
                 setLoading(false);
             }
         };
 
         fetchCourts();
-    }, [sport]);
+    }, [sport, toast]);
 
     useEffect(() => {
         const fetchReservations = async () => {
             try {
                 setLoading(true);
-                const filteredReservations = await getReservationsBySportAndDate(sport, selectedDate.toISOString().split('T')[0]);
+                const filteredReservations = await getReservationsBySportAndDay(sport, selectedDate.toISOString().split('T')[0]);
                 setBookings(filteredReservations);
             } catch (error) {
                 console.error("Error al obtener reservas:", error);
+                toast.error("Error al obtener reservas. Por favor verifica tus credenciales.");
             } finally {
                 setLoading(false);
             }
         }
         fetchReservations();
-    }, [sport, selectedDate]);
+    }, [sport, selectedDate, toast]);
 
     const isSlotOccupied = (courtId, hour) => {
         return bookings.some(booking => {
@@ -159,11 +144,11 @@ const BookingGrid = () => {
                 reservation_id: data.id
             });
 
-            alert('Reserva creada exitosamente. Podrás pagar en el club.');
+            toast.success('Reserva creada exitosamente. Podrás pagar en el club.');
 
             // Recargar reservas
             setLoading(true);
-            const updatedReservations = await getReservationsBySportAndDate(
+            const updatedReservations = await getReservationsBySportAndDay(
                 sport,
                 selectedDate.toISOString().split('T')[0]
             );
@@ -173,7 +158,7 @@ const BookingGrid = () => {
             setSelectedBooking(null);
         } catch (error) {
             console.error('Error al crear reserva:', error);
-            alert('No se pudo realizar la reserva.');
+            toast.error('No se pudo realizar la reserva.');
         } finally {
             setLoading(false);
         }
@@ -183,7 +168,7 @@ const BookingGrid = () => {
     const handlePayWithMercadoPago = () => {
         console.log('Pagar con Mercado Pago:', selectedBooking);
         // TODO: Implementar integración con Mercado Pago
-        alert('Funcionalidad de Mercado Pago próximamente disponible');
+        toast.info('Funcionalidad de Mercado Pago próximamente disponible');
     };
 
     const changeDate = (days) => {

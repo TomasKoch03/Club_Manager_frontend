@@ -5,25 +5,29 @@ import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
 import AuthLink from '../components/AuthLink.jsx';
+import { useToast } from '../hooks/useToast';
 
 const Register = () => {
     const [nombre, setNombre] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const toast = useToast();
 
     const handleRegistrarse = async (e) => {
         e.preventDefault();
         try {
             await register(email, nombre, password);
             console.log("Usuario creado con éxito");
-            alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
+            toast.success("¡Registro exitoso! Ahora puedes iniciar sesión.");
             
-            // Redirigir al login
-            navigate('/');
+            // Redirigir al login después de un breve delay
+            setTimeout(() => {
+                navigate('/');
+            }, 1500);
         } catch (error) {
             console.error("Error al crear usuario:", error);
-            alert("Error al crear usuario. Por favor intenta nuevamente.");
+            toast.error("Error al crear usuario. Por favor intenta nuevamente.");
         }
     };
 

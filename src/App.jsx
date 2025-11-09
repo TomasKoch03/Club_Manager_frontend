@@ -12,31 +12,34 @@ import SelectUser from "./pages/select_user.jsx";
 import Overlay from './pages/overlay.jsx';
 import Register from './pages/register.jsx';
 import Profile from './pages/profile.jsx';
+import { ToastProvider } from './components/ToastContainer.jsx';
 
 function App() {
 
   return (
-    <Routes>
-      <Route path='/' element={<AuthLayout />}>
-        <Route path='' element={<Overlay />} />
-        <Route path='registrar' element={<Register />} />
-      </Route>
-      <Route path='/club-manager' element={<MainLayout />}>
-        <Route path='home' element={<Home />} />
-        <Route path='perfil' element={<Profile />} />
-        <Route path='mis-reservas' element={<MyBookings />} />
-        <Route path='reservar/:sport/calendario' element={<Calendar />} />
-        <Route path='reservar/:sport' element={<BookingGrid />} />
-      </Route>
-      <Route path='/admin' element={<MainLayout />}>
-        <Route path='home' element={<AdminHome />} />
-        <Route path='perfil' element={<Profile />} />
-        <Route path='reservas' element={<AllBookings />} />
-        <Route path='reservar/:sport/selectUser' element={<SelectUser />} />
-        <Route path='reservar/:sport/:userId/calendar' element={<Calendar />} />
-        <Route path='reservar/:sport/:userId' element={<BookingGrid />} />
-      </Route>
-    </Routes>
+    <ToastProvider>
+      <Routes>
+        <Route path='/' element={<AuthLayout />}>
+          <Route path='' element={<Overlay />} />
+          <Route path='registrar' element={<Register />} />
+        </Route>
+        <Route path='/club-manager' element={<MainLayout />}>
+          <Route path='home' element={<Home />} />
+          <Route path='perfil' element={<Profile />} />
+          <Route path='mis-reservas' element={<MyBookings />} />
+          <Route path='reservar/:sport/calendario' element={<Calendar />} />
+          <Route path='reservar/:sport' element={<BookingGrid />} />
+        </Route>
+        <Route path='/admin' element={<MainLayout />}>
+          <Route path='home' element={<AdminHome />} />
+          <Route path='perfil' element={<Profile />} />
+          <Route path='reservas' element={<AllBookings />} />
+          <Route path='reservar/:sport/selectUser' element={<SelectUser />} />
+          <Route path='reservar/:sport/:userId/calendar' element={<Calendar />} />
+          <Route path='reservar/:sport/:userId' element={<BookingGrid />} />
+        </Route>
+      </Routes>
+    </ToastProvider>
   )
 }
 

@@ -1,25 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from 'react-bootstrap';
+import React, { useState, useEffect, useCallback } from "react";
+import { Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
 import { getUserData, modifyUser } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useToast } from '../hooks/useToast';
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState({
         full_name: '',
         email: ''
     });
     const [saving, setSaving] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
+    const toast = useToast();
 
-    useEffect(() => {
-        fetchUserData();
-    }, []);
-
-    const fetchUserData = async () => {
+    const fetchUserData = useCallback(async () => {
         try {
             setLoading(true);
             const data = await getUserData();
@@ -28,18 +24,20 @@ const Profile = () => {
                 full_name: data.full_name,
                 email: data.email
             });
-            setError(null);
         } catch (err) {
-            setError('Error al cargar los datos del usuario');
+            toast.error('Error al cargar los datos del usuario');
             console.error('Error fetching user data:', err);
         } finally {
             setLoading(false);
         }
-    };
+    }, [toast]);
+
+    useEffect(() => {
+        fetchUserData();
+    }, [fetchUserData]);
 
     const handleEditClick = () => {
         setIsEditing(true);
-        setSuccessMessage('');
     };
 
     const handleCancelClick = () => {
@@ -48,21 +46,18 @@ const Profile = () => {
             full_name: userData.full_name,
             email: userData.email
         });
-        setSuccessMessage('');
     };
 
     const handleSaveClick = async () => {
         try {
             setSaving(true);
-            setError(null);
             await modifyUser(editedData);
             const updatedData = await getUserData();
             setUserData(updatedData);
             setIsEditing(false);
-            setSuccessMessage('Datos actualizados correctamente');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            toast.success('Datos actualizados correctamente');
         } catch (err) {
-            setError('Error al guardar los cambios');
+            toast.error('Error al guardar los cambios');
             console.error('Error saving user data:', err);
         } finally {
             setSaving(false);
@@ -118,18 +113,6 @@ const Profile = () => {
                                 <h2 className="text-center mb-4" style={{ fontWeight: '600', color: '#000' }}>
                                     Mi Perfil
                                 </h2>
-
-                                {error && (
-                                    <Alert variant="danger" onClose={() => setError(null)} dismissible>
-                                        {error}
-                                    </Alert>
-                                )}
-
-                                {successMessage && (
-                                    <Alert variant="success" onClose={() => setSuccessMessage('')} dismissible>
-                                        {successMessage}
-                                    </Alert>
-                                )}
 
                                 {userData && (
                                     <Form>

@@ -5,11 +5,13 @@ import AuthCard from '../components/AuthCard.jsx';
 import AuthForm from '../components/AuthForm.jsx';
 import FormField from '../components/FormField.jsx';
 import AuthLink from '../components/AuthLink.jsx';
+import { useToast } from '../hooks/useToast';
 
 const Overlay = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const toast = useToast();
 
     const handleIngresar = async (e) => {
         e.preventDefault();
@@ -27,7 +29,7 @@ const Overlay = () => {
 
         } catch (error) {
             console.error("Error al iniciar sesión:", error);
-            alert("Error al iniciar sesión. Por favor verifica tus credenciales.");
+            toast.error("Error al iniciar sesión. Por favor verifica tus credenciales.");
         }
     };
 
