@@ -136,3 +136,10 @@ export const postReservationForUser = async (userId, data) => {
         body: JSON.stringify(data),
     });
 };
+
+export const modifyUser = async (data) => {
+    return apiRequest('/user/me', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}

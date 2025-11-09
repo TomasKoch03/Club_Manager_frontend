@@ -1,10 +1,10 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar as BSNavbar, Container, Nav } from 'react-bootstrap';
+import { Navbar as BSNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
 import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // <CHANGE> Importar useNavigate
 import NavBarItem from './NavBarItems/NavBarItem';
 import NavBarLogo from './NavBarItems/NavBarLogo';
-import { getUserData } from '../services/api'; // <CHANGE> Importar getUserData
+import { getUserData, logout } from '../services/api'; // <CHANGE> Importar getUserData y logout
 
 const Navbar = () => {
     const navigate = useNavigate(); // <CHANGE> Hook para navegación
@@ -13,8 +13,22 @@ const Navbar = () => {
         console.log('Notificaciones clicked');
     };
 
-    const handleProfileClick = () => {
-        console.log('Perfil clicked');
+    const handleProfileClick = async () => {
+        try {
+            const userData = await getUserData();
+            if (userData.is_admin) {
+                navigate('/admin/perfil');
+            } else {
+                navigate('/club-manager/perfil');
+            }
+        } catch (error) {
+            console.error('Error al obtener datos del usuario:', error);
+            navigate('/club-manager/perfil');
+        }
+    };
+
+    const handleLogout = () => {
+        logout();
     };
 
     // <CHANGE> Handler para el click en el logo que redirige según el rol del usuario
@@ -54,11 +68,23 @@ const Navbar = () => {
                             icon={FaRegBell}
                             ariaLabel="Notificaciones"
                         />
-                        <NavBarItem
-                            onClick={handleProfileClick}
-                            icon={FaRegUserCircle}
-                            ariaLabel="Perfil de usuario"
-                        />
+                        <NavDropdown 
+                            title={<FaRegUserCircle size={24} />} 
+                            id="user-dropdown"
+                            align="end"
+                            className="no-caret"
+                            style={{
+                                '--bs-nav-link-padding-x': '0.5rem',
+                            }}
+                        >
+                            <NavDropdown.Item onClick={handleProfileClick}>
+                                Perfil
+                            </NavDropdown.Item>
+                            <NavDropdown.Divider />
+                            <NavDropdown.Item onClick={handleLogout}>
+                                Cerrar sesión
+                            </NavDropdown.Item>
+                        </NavDropdown>
                     </Nav>
                 </BSNavbar.Collapse>
             </Container>
