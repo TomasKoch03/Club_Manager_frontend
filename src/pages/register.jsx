@@ -27,7 +27,9 @@ const Register = () => {
             }, 1500);
         } catch (error) {
             console.error("Error al crear usuario:", error);
-            toast.error("Error al crear usuario. Por favor intenta nuevamente.");
+            // Mostrar el mensaje de error específico del backend
+            const errorMessage = error.message || "Error al crear usuario. Por favor intenta nuevamente.";
+            toast.error(errorMessage);
         }
     };
 

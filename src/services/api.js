@@ -66,8 +66,9 @@ export const register = async (email, fullName, password) => {
     });
 
     if (response.status !== 201) {
-        const errorText = await response.text().catch(() => null);
-        throw new Error(errorText || 'Register failed');
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.detail || 'Error al registrar usuario';
+        throw new Error(errorMessage);
     }
 
     return await response.json();
