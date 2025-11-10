@@ -140,14 +140,40 @@ export const postReservationForUser = async (userId, data) => {
 
 export const modifyUser = async (data) => {
     return apiRequest('/user/me', {
-        method: 'PUT',
+        method: 'PATCH',
         body: JSON.stringify(data),
     });
-}
+};
+
 
 export const createMercadoPagoPreference = async (reservationId) => {
     return apiRequest('/mercadopago/create-preference', {
         method: 'POST',
         body: JSON.stringify({ reservation_id: reservationId }),
+    });
+};
+
+export const getUserById = async (userId) => {
+    return apiRequest(`/user/${userId}`, {
+        method: 'GET',
+    });
+};
+
+export const updateUserById = async (userId, data) => {
+    return apiRequest(`/user/${userId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};
+
+export const blockUser = async (userId) => {
+    return apiRequest(`/user/${userId}/block`, {
+        method: 'PATCH',
+    });
+};
+
+export const unblockUser = async (userId) => {
+    return apiRequest(`/user/${userId}/unblock`, {
+        method: 'PATCH',
     });
 };

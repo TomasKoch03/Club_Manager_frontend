@@ -1,18 +1,20 @@
 import { Route, Routes } from 'react-router-dom';
 import './App.css';
+import { ToastProvider } from './components/ToastContainer.jsx';
 import AuthLayout from './layouts/AuthLayout.jsx';
 import MainLayout from './layouts/MainLayout.jsx';
-import BookingGrid from './pages/booking_grid.jsx';
-import MyBookings from "./pages/my_bookings.jsx";
-import Calendar from './pages/calendar.jsx';
-import Home from './pages/home.jsx';
 import AdminHome from "./pages/admin_home.jsx";
 import AllBookings from "./pages/all_bookings.jsx";
-import SelectUser from "./pages/select_user.jsx";
+import BookingGrid from './pages/booking_grid.jsx';
+import Calendar from './pages/calendar.jsx';
+import EditUser from "./pages/edit_user.jsx";
+import Home from './pages/home.jsx';
+import ManageUsers from "./pages/manage_users.jsx";
+import MyBookings from "./pages/my_bookings.jsx";
 import Overlay from './pages/overlay.jsx';
-import Register from './pages/register.jsx';
 import Profile from './pages/profile.jsx';
-import { ToastProvider } from './components/ToastContainer.jsx';
+import Register from './pages/register.jsx';
+import SelectUser from "./pages/select_user.jsx";
 
 function App() {
 
@@ -34,6 +36,8 @@ function App() {
           <Route path='home' element={<AdminHome />} />
           <Route path='perfil' element={<Profile />} />
           <Route path='reservas' element={<AllBookings />} />
+          <Route path='usuarios' element={<ManageUsers />} />
+          <Route path='usuarios/:userId/edit' element={<EditUser />} />
           <Route path='reservar/:sport/selectUser' element={<SelectUser />} />
           <Route path='reservar/:sport/:userId/calendar' element={<Calendar />} />
           <Route path='reservar/:sport/:userId' element={<BookingGrid />} />
