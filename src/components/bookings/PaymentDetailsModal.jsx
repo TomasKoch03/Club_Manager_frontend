@@ -28,7 +28,8 @@ const PaymentDetailsModal = ({
         'rechazado': 'Rechazado',
         'pending': 'Pendiente',
         'approved': 'Aprobado',
-        'rejected': 'Rechazado'
+        'rejected': 'Rechazado',
+        'pagado': 'Pagado',
     };
 
     return (

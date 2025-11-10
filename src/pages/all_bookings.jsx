@@ -48,7 +48,7 @@ const AllBookings = () => {
     const handleApprovePayment = async (reservationId) => {
         const reservation = reservations.find(r => r.id === reservationId);
         try {
-            await patchPayment(reservation.payment.id, { status: 'aprobado' })
+            await patchPayment(reservation.payment.id, { status: 'pagado' })
 
             setLoading(true);
             const data = await getAllReservations();

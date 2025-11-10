@@ -25,7 +25,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
         return str.charAt(0).toUpperCase() + str.slice(1);
     };
 
-    const isPaid = reservation.payment?.status === "aprobado";
+    const isPaid = reservation.payment?.status === "pagado";
     const paymentStatus = reservation.payment
         ? reservation.payment.status.toUpperCase()
         : "SIN PAGAR";
