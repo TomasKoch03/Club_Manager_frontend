@@ -144,3 +144,10 @@ export const modifyUser = async (data) => {
         body: JSON.stringify(data),
     });
 }
+
+export const createMercadoPagoPreference = async (reservationId) => {
+    return apiRequest('/mercadopago/create-preference', {
+        method: 'POST',
+        body: JSON.stringify({ reservation_id: reservationId }),
+    });
+};

@@ -6,7 +6,7 @@ import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx'
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import { useSearchParams } from "react-router-dom";
-import {getCourts, getReservationsBySportAndDay, postReservation, postReservationForUser, postPayment} from "../services/api.js";
+import {getCourts, getReservationsBySportAndDay, postReservation, postReservationForUser, postPayment, createMercadoPagoPreference} from "../services/api.js";
 import { useToast } from '../hooks/useToast';
 
 const BOOKING_CONFIG = {
@@ -25,6 +25,8 @@ const BookingGrid = () => {
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [preferenceId, setPreferenceId] = useState(null);
+    const [isLoadingPreference, setIsLoadingPreference] = useState(false);
     const toast = useToast();
 
     const generateTimeSlots = () => {
@@ -116,6 +118,8 @@ const BookingGrid = () => {
             amount: selectedCourt?.amount || 0
         });
 
+        // Resetear el preferenceId al abrir un nuevo modal
+        setPreferenceId(null);
         setShowModal(true);
     };
 
@@ -164,11 +168,40 @@ const BookingGrid = () => {
         }
     };
 
-    // <CHANGE> Handler para pagar con Mercado Pago (placeholder para funcionalidad futura)
-    const handlePayWithMercadoPago = () => {
-        console.log('Pagar con Mercado Pago:', selectedBooking);
-        // TODO: Implementar integración con Mercado Pago
-        toast.info('Funcionalidad de Mercado Pago próximamente disponible');
+    const handlePayWithMercadoPago = async () => {
+        if (!selectedBooking) return;
+
+        try {
+            setIsLoadingPreference(true);
+            
+            // Primero crear la reserva
+            const data = userId 
+                ? await postReservationForUser(userId, {
+                    court_id: selectedBooking.courtId,
+                    start_time: selectedBooking.startTime,
+                    end_time: selectedBooking.endTime
+                })
+                : await postReservation({
+                    court_id: selectedBooking.courtId,
+                    start_time: selectedBooking.startTime,
+                    end_time: selectedBooking.endTime
+                });
+
+            // Crear la preferencia de Mercado Pago
+            const preference = await createMercadoPagoPreference(data.id);
+            
+            // Establecer el preferenceId para mostrar el botón de MP
+            setPreferenceId(preference.id);
+            
+        } catch (error) {
+            console.error('Error al crear preferencia de Mercado Pago:', error);
+            toast.error('No se pudo crear la preferencia de pago.');
+            setShowModal(false);
+            setSelectedBooking(null);
+            setPreferenceId(null);
+        } finally {
+            setIsLoadingPreference(false);
+        }
     };
 
     const changeDate = (days) => {
@@ -235,10 +268,16 @@ const BookingGrid = () => {
             {/* <CHANGE> Modal de confirmación de reserva */}
             <BookingConfirmationModal
                 show={showModal}
-                onHide={() => setShowModal(false)}
+                onHide={() => {
+                    setShowModal(false);
+                    setPreferenceId(null);
+                    setIsLoadingPreference(false);
+                }}
                 bookingData={selectedBooking}
                 onPayInClub={handlePayInClub}
                 onPayWithMercadoPago={handlePayWithMercadoPago}
+                preferenceId={preferenceId}
+                isLoadingPreference={isLoadingPreference}
             />
         </div>
     );

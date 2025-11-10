@@ -1,14 +1,22 @@
-import React from 'react';
 import { Modal, Button, Row, Col } from 'react-bootstrap';
 import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
+import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Inicializar Mercado Pago con la public key
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
+if (MP_PUBLIC_KEY) {
+    initMercadoPago(MP_PUBLIC_KEY);
+}
 
 const BookingConfirmationModal = ({
                                       show,
                                       onHide,
                                       bookingData,
                                       onPayInClub,
-                                      onPayWithMercadoPago
+                                      onPayWithMercadoPago,
+                                      preferenceId,
+                                      isLoadingPreference
                                   }) => {
     if (!bookingData) return null;
 
@@ -151,13 +159,28 @@ const BookingConfirmationModal = ({
                     </Button>
 
                     {/* Botón derecho - Pagar con Mercado Pago */}
-                    <Button
-                        variant="outline-dark"
-                        onClick={onPayWithMercadoPago}
-                        style={{ minWidth: '180px', fontWeight: '500' }}
-                    >
-                        Pagar con Mercado Pago
-                    </Button>
+                    {preferenceId ? (
+                        <div style={{ minWidth: '180px' }}>
+                            <Wallet 
+                                initialization={{ preferenceId: preferenceId }}
+                                customization={{ texts: { valueProp: 'smart_option' } }}
+                            />
+                        </div>
+                    ) : (
+                        <Button
+                            variant="primary"
+                            onClick={onPayWithMercadoPago}
+                            disabled={isLoadingPreference}
+                            style={{ 
+                                minWidth: '180px', 
+                                fontWeight: '500',
+                                backgroundColor: '#009ee3',
+                                borderColor: '#009ee3'
+                            }}
+                        >
+                            {isLoadingPreference ? 'Cargando...' : 'Pagar con Mercado Pago'}
+                        </Button>
+                    )}
                 </Modal.Footer>
             </div>
         </Modal>
