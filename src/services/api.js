@@ -96,6 +96,21 @@ export const getReservationsBySportAndDay = async (sport, day) => {
     return apiRequest(endpoint, { method: 'GET' });
 };
 
+export const getAllReservationsFiltered = async (sport, day, status) => {
+    const params = new URLSearchParams();
+    if (sport && sport !== "todos") params.append("sport", sport);
+    if (day) params.append("day", day);
+    if (status && status !== "todos") params.append("status", status);
+
+    const endpoint = `/reservation/?${params.toString()}`;
+    return apiRequest(endpoint, { method: 'GET' });
+};
+
+export const getPaidReservationsByRange = async (startDate, endDate) => {
+    const endpoint = `/reservation/admin/paid-reservations?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    return apiRequest(endpoint, { method: 'GET' });
+};
+
 export const postReservation = async (data) => {
     return apiRequest('/reservation/create', {
         method: 'POST',

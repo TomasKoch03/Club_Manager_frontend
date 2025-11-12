@@ -7,12 +7,14 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
+        const months = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ];
         return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
     };
 
-    // Formatear hora (HH:MM)
+    // Formatear hora
     const formatTime = (dateString) => {
         const date = new Date(dateString);
         const hours = date.getHours().toString().padStart(2, '0');
@@ -21,15 +23,15 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
     };
 
     // Capitalizar primera letra
-    const capitalize = (str) => {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    };
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
     const isPaid = reservation.payment?.status === "pagado";
     const paymentStatus = reservation.payment
         ? reservation.payment.status.toUpperCase()
         : "SIN PAGAR";
 
+    // Obtener monto
+    const paymentAmount = Number(reservation.payment?.amount ?? reservation.court?.price ?? 0);
 
     return (
         <Card
@@ -80,9 +82,10 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
                         </div>
                     </Col>
 
+                    {/* Lado derecho: estado + monto + botón */}
                     <Col xs={12} md={4} className="d-flex flex-column justify-content-between align-items-end mt-3 mt-md-0">
                         {/* Estado de pago */}
-                        <div className="mb-3">
+                        <div className="text-end mb-2">
                             <span
                                 style={{
                                     color: isPaid ? '#28a745' : '#dc3545',
@@ -92,22 +95,25 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
                             >
                                 {paymentStatus}
                             </span>
+
+                            {/* Monto */}
+                            <div style={{ marginTop: '6px', color: '#000', fontWeight: '500', fontSize: '0.95rem' }}>
+                                ${paymentAmount.toFixed(2)}
+                            </div>
                         </div>
 
-                        {/* Botón de pagar si no está pagado */}
-                        {!isPaid && (
-                            <Button
-                                variant="outline-dark"
-                                size="sm"
-                                onClick={() => onPayClick(reservation.id)}
-                                style={{
-                                    minWidth: '100px',
-                                    fontWeight: '500',
-                                }}
-                            >
-                                { payButtonText }
-                            </Button>
-                        )}
+                        {/* Botón de pagar / ver pago */}
+                        <Button
+                            variant="outline-dark"
+                            size="sm"
+                            onClick={() => onPayClick(reservation.id)}
+                            style={{
+                                minWidth: '100px',
+                                fontWeight: '500',
+                            }}
+                        >
+                            {payButtonText}
+                        </Button>
                     </Col>
                 </Row>
             </Card.Body>
