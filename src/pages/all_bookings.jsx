@@ -1,19 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
-import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal'; // <CHANGE> Importar el modal de pago
-import { getAllReservations, patchPayment } from '../services/api';
+import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
+import EditReservationModal from '../components/bookings/EditReservationModal';
+import { getAllReservations, patchPayment, getReservationById, updateReservation, getCourts, getAllUsers, getUserData } from '../services/api';
+import { useToast } from '../hooks/useToast';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AllBookings = () => {
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const toast = useToast();
 
-    // <CHANGE> Estados para el modal de pago
+    // Estados para el modal de pago
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [selectedReservation, setSelectedReservation] = useState(null);
 
+    // Estados para el modal de edición
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editingReservation, setEditingReservation] = useState(null);
+    const [courts, setCourts] = useState([]);
+    const [users, setUsers] = useState([]);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Cargar datos del usuario actual
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const userData = await getUserData();
+                setCurrentUser(userData);
+            } catch (err) {
+                console.error('Error al obtener datos del usuario:', err);
+                toast.error('Error al verificar permisos de usuario');
+            }
+        };
+        fetchCurrentUser();
+    }, [toast]);
+
+    // Cargar reservas
     useEffect(() => {
         const fetchReservations = async () => {
             try {
@@ -27,15 +53,36 @@ const AllBookings = () => {
             } catch (err) {
                 console.error('Error al cargar reservas:', err);
                 setError('No se pudieron cargar las reservas. Por favor, intenta nuevamente.');
+                toast.error('Error al cargar las reservas');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchReservations();
-    }, []);
+    }, [toast]);
 
-    // <CHANGE> Modificado para abrir el modal con la información del pago
+    // Cargar canchas y usuarios cuando se necesita editar (solo para admins)
+    useEffect(() => {
+        const fetchCourtsAndUsers = async () => {
+            if (currentUser?.is_admin && showEditModal) {
+                try {
+                    const [courtsData, usersData] = await Promise.all([
+                        getCourts(''),
+                        getAllUsers()
+                    ]);
+                    setCourts(courtsData);
+                    setUsers(usersData);
+                } catch (err) {
+                    console.error('Error al cargar canchas/usuarios:', err);
+                    toast.error('Error al cargar datos para edición');
+                }
+            }
+        };
+        fetchCourtsAndUsers();
+    }, [currentUser, showEditModal, toast]);
+
+    // Handler para abrir modal de pago
     const handlePayClick = (reservationId) => {
         const reservation = reservations.find(r => r.id === reservationId);
         if (reservation) {
@@ -44,11 +91,12 @@ const AllBookings = () => {
         }
     };
 
-    // <CHANGE> Handler para aprobar el pago (placeholder para funcionalidad futura)
+    // Handler para aprobar el pago
     const handleApprovePayment = async (reservationId) => {
         const reservation = reservations.find(r => r.id === reservationId);
         try {
-            await patchPayment(reservation.payment.id, { status: 'pagado' })
+            await patchPayment(reservation.payment.id, { status: 'pagado' });
+            toast.success('Pago aprobado exitosamente');
 
             setLoading(true);
             const data = await getAllReservations();
@@ -61,10 +109,79 @@ const AllBookings = () => {
             setShowPaymentModal(false);
             setSelectedReservation(null);
         } catch (err) {
-            console.error('Error al cargar reservas:', err);
-            setError('No se pudieron cargar las reservas. Por favor, intenta nuevamente.');
+            console.error('Error al aprobar pago:', err);
+            toast.error('Error al aprobar el pago');
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Handler para abrir modal de edición (solo admins)
+    const handleEditClick = async (reservationId) => {
+        if (!currentUser?.is_admin) {
+            toast.error('No tienes permisos para modificar reservas');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const reservationDetails = await getReservationById(reservationId);
+            setEditingReservation(reservationDetails);
+            setShowEditModal(true);
+        } catch (err) {
+            console.error('Error al cargar detalles de la reserva:', err);
+            toast.error('Error al cargar los detalles de la reserva');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Handler para guardar cambios de edición
+    const handleSaveEdit = async (reservationId, payload) => {
+        setIsSaving(true);
+        try {
+            await updateReservation(reservationId, payload);
+            
+            // ✅ ÉXITO: Reserva actualizada correctamente
+            toast.success('Reserva actualizada exitosamente');
+
+            // Recargar reservas SOLO si fue exitoso
+            const data = await getAllReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+
+            // Cerrar modal SOLO si fue exitoso
+            setShowEditModal(false);
+            setEditingReservation(null);
+        } catch (err) {
+            console.error('Error al actualizar reserva:', err);
+            
+            // ❌ ERROR: Manejo de errores específicos usando el código de estado
+            const status = err.status || 0;
+            
+            if (status === 401) {
+                toast.error('No tienes permisos para modificar reservas');
+            } else if (status === 403) {
+                toast.error('No se puede modificar esta reserva porque tiene un pago asociado o el usuario está inactivo');
+            } else if (status === 404) {
+                toast.error('La reserva, cancha o usuario no fue encontrado');
+            } else if (status === 409) {
+                // 🚨 CRÍTICO: Conflicto de horario - NO hacer nada más
+                toast.error('El horario seleccionado se solapa con otra reserva existente. Por favor, elige otro horario.');
+                // ❌ NO cerrar modal
+                // ❌ NO recargar reservas
+                // ❌ NO modificar ninguna reserva
+                // ✅ El usuario puede corregir el horario y volver a intentar
+            } else {
+                toast.error('Error al actualizar la reserva. Por favor, intenta nuevamente.');
+            }
+            
+            // IMPORTANTE: NO cerrar el modal ni recargar reservas cuando hay error
+            // El modal permanece abierto para que el usuario corrija los datos
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -155,6 +272,8 @@ const AllBookings = () => {
                                         reservation={reservation}
                                         onPayClick={handlePayClick}
                                         payButtonText={'Ver pago'}
+                                        onEditClick={handleEditClick}
+                                        isAdmin={currentUser?.is_admin}
                                     />
                                 ))}
                             </div>
@@ -163,13 +282,29 @@ const AllBookings = () => {
                 )}
             </Container>
 
-            {/* <CHANGE> Modal de detalles de pago */}
+            {/* Modal de detalles de pago */}
             <PaymentDetailsModal
                 show={showPaymentModal}
                 onHide={() => setShowPaymentModal(false)}
                 reservation={selectedReservation}
                 onApprovePayment={handleApprovePayment}
             />
+
+            {/* Modal de edición de reserva (solo admins) */}
+            {currentUser?.is_admin && (
+                <EditReservationModal
+                    show={showEditModal}
+                    onHide={() => {
+                        setShowEditModal(false);
+                        setEditingReservation(null);
+                    }}
+                    reservation={editingReservation}
+                    courts={courts}
+                    users={users}
+                    onSave={handleSaveEdit}
+                    isSaving={isSaving}
+                />
+            )}
         </div>
     );
 };
