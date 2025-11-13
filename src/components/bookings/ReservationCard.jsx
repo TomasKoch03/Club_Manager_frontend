@@ -1,8 +1,8 @@
 import React from 'react';
 import { Card, Row, Col, Button, Badge } from 'react-bootstrap';
-import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoTimeOutline, IoLocationOutline, IoLockClosed, IoPencil } from 'react-icons/io5';
 
-const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
+const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, isAdmin }) => {
     // Formatear fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -25,7 +25,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
     // Capitalizar primera letra
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
-    const isPaid = reservation.payment?.status === "pagado";
+    const isPaid = reservation.payment?.status === "pagado" || reservation.payment?.status === "paid";
     const paymentStatus = reservation.payment
         ? reservation.payment.status.toUpperCase()
         : "SIN PAGAR";
@@ -52,6 +52,13 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
                             <h5 className="mb-1" style={{ fontWeight: '600', color: '#000' }}>
                                 <IoLocationOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />
                                 {reservation.court.name}
+                                {isPaid && (
+                                    <IoLockClosed 
+                                        size={16} 
+                                        style={{ marginLeft: '8px', color: '#6c757d' }} 
+                                        title="Reserva con pago - No editable"
+                                    />
+                                )}
                             </h5>
                             <Badge bg="dark" style={{ fontSize: '0.85rem' }}>
                                 {capitalize(reservation.court.sport)}
@@ -102,18 +109,40 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText }) => {
                             </div>
                         </div>
 
-                        {/* Botón de pagar / ver pago */}
-                        <Button
-                            variant="outline-dark"
-                            size="sm"
-                            onClick={() => onPayClick(reservation.id)}
-                            style={{
-                                minWidth: '100px',
-                                fontWeight: '500',
-                            }}
-                        >
-                            {payButtonText}
-                        </Button>
+                        {/* Botones de acción */}
+                        <div className="d-flex gap-2 flex-wrap justify-content-end">
+                            {/* Botón de editar (solo para admins) */}
+                            {isAdmin && onEditClick && (
+                                <Button
+                                    variant={isPaid ? 'outline-secondary' : 'outline-primary'}
+                                    size="sm"
+                                    onClick={() => onEditClick(reservation.id)}
+                                    style={{
+                                        minWidth: '100px',
+                                        fontWeight: '500',
+                                    }}
+                                    title={isPaid ? 'Ver detalles (no editable)' : 'Editar reserva'}
+                                >
+                                    <IoPencil size={14} style={{ marginRight: '4px', marginBottom: '2px' }} />
+                                    {isPaid ? 'Ver' : 'Editar'}
+                                </Button>
+                            )}
+
+                            {/* Botón de pagar si no está pagado */}
+                            {!isPaid && onPayClick && (
+                                <Button
+                                    variant="outline-dark"
+                                    size="sm"
+                                    onClick={() => onPayClick(reservation.id)}
+                                    style={{
+                                        minWidth: '100px',
+                                        fontWeight: '500',
+                                    }}
+                                >
+                                    { payButtonText }
+                                </Button>
+                            )}
+                        </div>
                     </Col>
                 </Row>
             </Card.Body>
