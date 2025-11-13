@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 
 const Toast = ({ message, type = 'info', onClose, duration = 4000 }) => {
   useEffect(() => {
@@ -48,7 +48,7 @@ const Toast = ({ message, type = 'info', onClose, duration = 4000 }) => {
           {icons[type]}
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium leading-relaxed">{message}</p>
+          <p className="text-sm font-medium leading-relaxed" style={{ whiteSpace: 'pre-line' }}>{message}</p>
         </div>
         <button
           onClick={onClose}

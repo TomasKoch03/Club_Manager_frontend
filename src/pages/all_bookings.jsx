@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Spinner, Alert, Button } from 'react-bootstrap';
-import ReservationCard from '../components/bookings/ReservationCard';
-import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
-import EditReservationModal from '../components/bookings/EditReservationModal';
-import { getAllReservations, patchPayment, getReservationById, updateReservation, getCourts, getAllUsers, getUserData, getPaidReservationsByRange, getAllReservationsFiltered } from '../services/api';
-import { useToast } from '../hooks/useToast';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Container, Spinner } from 'react-bootstrap';
+import EditReservationModal from '../components/bookings/EditReservationModal';
+import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
+import ReservationCard from '../components/bookings/ReservationCard';
+import { useToast } from '../hooks/useToast';
+import { getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation } from '../services/api';
 
 
 const AllBookings = () => {
@@ -27,7 +27,7 @@ const AllBookings = () => {
     const [users, setUsers] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
 
-     // Estados de filtro
+    // Estados de filtro
     const [filterType, setFilterType] = useState('');
     const [filterValue, setFilterValue] = useState('');
 
@@ -169,7 +169,7 @@ const AllBookings = () => {
         setIsSaving(true);
         try {
             await updateReservation(reservationId, payload);
-            
+
             // ✅ ÉXITO: Reserva actualizada correctamente
             toast.success('Reserva actualizada exitosamente');
 
@@ -185,10 +185,10 @@ const AllBookings = () => {
             setEditingReservation(null);
         } catch (err) {
             console.error('Error al actualizar reserva:', err);
-            
+
             // ❌ ERROR: Manejo de errores específicos usando el código de estado
             const status = err.status || 0;
-            
+
             if (status === 401) {
                 toast.error('No tienes permisos para modificar reservas');
             } else if (status === 403) {
@@ -203,9 +203,9 @@ const AllBookings = () => {
                 // ❌ NO modificar ninguna reserva
                 // ✅ El usuario puede corregir el horario y volver a intentar
             } else {
-                toast.error('Error al actualizar la reserva. Por favor, intenta nuevamente.');
+                toast.error(`Error al actualizar la reserva: \n${err.detail}.\nPor favor, intenta nuevamente.`);
             }
-            
+
             // IMPORTANTE: NO cerrar el modal ni recargar reservas cuando hay error
             // El modal permanece abierto para que el usuario corrija los datos
         } finally {
@@ -215,7 +215,7 @@ const AllBookings = () => {
 
     // Filtro 
     const handleApplyFilters = async () => {
-        setDateRangeError(null); 
+        setDateRangeError(null);
         const filters = {};
 
         if (filterType === 'deporte' && filterValue !== 'todos') {
@@ -282,7 +282,7 @@ const AllBookings = () => {
 
         // Convertir a ISO completo
         const isoStart = new Date(startDate).toISOString(); // 00:00:00 del startDate
-        const isoEnd = new Date(new Date(endDate).getTime() + 24*60*60*1000 - 1).toISOString(); // 23:59:59 del endDate
+        const isoEnd = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1).toISOString(); // 23:59:59 del endDate
         try {
             const data = await getPaidReservationsByRange(isoStart, isoEnd);
             setRangeReservations(data.reservations);
@@ -306,7 +306,7 @@ const AllBookings = () => {
         >
             <Container style={{ maxWidth: '900px' }} className="reservations-container">
 
-            {/* ENCABEZADO */}
+                {/* ENCABEZADO */}
                 <div
                     style={{
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -491,7 +491,7 @@ const AllBookings = () => {
                                         {dateRangeError}
                                     </p>
                                 )}
-                                
+
                             </div>
                         )}
 
