@@ -1,6 +1,5 @@
-import React from 'react';
-import { Card, Row, Col, Button, Badge } from 'react-bootstrap';
-import { IoCalendarOutline, IoTimeOutline, IoLocationOutline, IoLockClosed, IoPencil } from 'react-icons/io5';
+import { Badge, Button, Card, Col, Row } from 'react-bootstrap';
+import { IoCalendarOutline, IoLocationOutline, IoLockClosed, IoPencil, IoTimeOutline } from 'react-icons/io5';
 
 const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, isAdmin }) => {
     // Formatear fecha
@@ -53,9 +52,9 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                                 <IoLocationOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />
                                 {reservation.court.name}
                                 {isPaid && (
-                                    <IoLockClosed 
-                                        size={16} 
-                                        style={{ marginLeft: '8px', color: '#6c757d' }} 
+                                    <IoLockClosed
+                                        size={16}
+                                        style={{ marginLeft: '8px', color: '#6c757d' }}
                                         title="Reserva con pago - No editable"
                                     />
                                 )}
@@ -116,8 +115,8 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
 
                         {/* Botones de acción */}
                         <div className="d-flex gap-2 flex-wrap justify-content-end">
-                            {/* Botón de editar (solo para admins) */}
-                            {isAdmin && onEditClick && (
+                            {/* Botón de editar (para admins o usuarios propios) */}
+                            {onEditClick && (
                                 <Button
                                     variant={isPaid ? 'outline-secondary' : 'outline-primary'}
                                     size="sm"
@@ -125,10 +124,13 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                                     style={{
                                         minWidth: '100px',
                                         fontWeight: '500',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
                                     }}
                                     title={isPaid ? 'Ver detalles (no editable)' : 'Editar reserva'}
                                 >
-                                    <IoPencil size={14} style={{ marginRight: '4px', marginBottom: '2px' }} />
+                                    <IoPencil size={14} style={{ marginRight: '4px' }} />
                                     {isPaid ? 'Ver' : 'Editar'}
                                 </Button>
                             )}
@@ -144,7 +146,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                                         fontWeight: '500',
                                     }}
                                 >
-                                    { payButtonText }
+                                    {payButtonText}
                                 </Button>
                             )}
                         </div>

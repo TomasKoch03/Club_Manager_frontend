@@ -20,11 +20,11 @@ export const apiRequest = async (endpoint, options = {}) => {
             localStorage.removeItem('accessToken');
             window.location.href = '/';
         }
-        
+
         // Crear un error con el código de estado para mejor manejo
         const error = new Error(`HTTP error! status: ${response.status}`);
         error.status = response.status; // Agregar código de estado al error
-        
+
         // Intentar obtener el mensaje del backend si existe
         try {
             const errorData = await response.json();
@@ -32,7 +32,7 @@ export const apiRequest = async (endpoint, options = {}) => {
         } catch {
             // Si no hay JSON, usar mensaje genérico
         }
-        
+
         throw error;
     }
 
@@ -218,6 +218,13 @@ export const getReservationById = async (reservationId) => {
 
 export const updateReservation = async (reservationId, data) => {
     return apiRequest(`/reservation/${reservationId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+};
+
+export const updateOwnReservation = async (reservationId, data) => {
+    return apiRequest(`/reservation/me/${reservationId}`, {
         method: 'PUT',
         body: JSON.stringify(data),
     });

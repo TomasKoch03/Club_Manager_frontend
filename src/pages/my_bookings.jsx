@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
-import { getMyReservations } from '../services/api';
+import EditReservationModal from '../components/bookings/EditReservationModal';
+import { getMyReservations, getCourts, updateOwnReservation } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useToast } from '../hooks/useToast';
 
@@ -9,6 +10,10 @@ const MyBookings = () => {
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedReservation, setSelectedReservation] = useState(null);
+    const [courts, setCourts] = useState([]);
+    const [isSaving, setIsSaving] = useState(false);
     const toast = useToast();
 
     useEffect(() => {
@@ -32,9 +37,66 @@ const MyBookings = () => {
         fetchReservations();
     }, []);
 
+    useEffect(() => {
+        const fetchCourts = async () => {
+            try {
+                const allCourts = await Promise.all([
+                    getCourts('futbol'),
+                    getCourts('tenis'),
+                    getCourts('padel')
+                ]);
+                setCourts(allCourts.flat());
+            } catch (err) {
+                console.error('Error al cargar canchas:', err);
+            }
+        };
+
+        fetchCourts();
+    }, []);
+
     const handlePayClick = (reservationId) => {
         console.log('Pagar reserva:', reservationId);
         toast.info(`Procesando pago para reserva #${reservationId}`);
+    };
+
+    const handleEditClick = (reservationId) => {
+        // Buscar la reserva en el estado local en lugar de hacer otra llamada a la API
+        const reservation = reservations.find(r => r.id === reservationId);
+        if (reservation) {
+            setSelectedReservation(reservation);
+            setShowEditModal(true);
+        } else {
+            toast.error('No se pudo cargar la reserva para editar');
+        }
+    };
+
+    const handleSaveReservation = async (reservationId, updatedData) => {
+        try {
+            setIsSaving(true);
+            await updateOwnReservation(reservationId, updatedData);
+            
+            // Recargar las reservas
+            const data = await getMyReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+            
+            setShowEditModal(false);
+            setSelectedReservation(null);
+            toast.success('Reserva actualizada exitosamente');
+        } catch (err) {
+            console.error('Error al actualizar la reserva:', err);
+            const errorMessage = err.detail || 'No se pudo actualizar la reserva';
+            toast.error(errorMessage);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleCloseModal = () => {
+        setShowEditModal(false);
+        setSelectedReservation(null);
     };
 
     return (
@@ -128,6 +190,8 @@ const MyBookings = () => {
                                         reservation={reservation}
                                         onPayClick={handlePayClick}
                                         payButtonText={'Pagar'}
+                                        onEditClick={handleEditClick}
+                                        isAdmin={false}
                                     />
                                 ))}
                             </div>
@@ -135,6 +199,20 @@ const MyBookings = () => {
                     </>
                 )}
             </Container>
+
+            {/* Modal de edición */}
+            {showEditModal && selectedReservation && (
+                <EditReservationModal
+                    show={showEditModal}
+                    onHide={handleCloseModal}
+                    reservation={selectedReservation}
+                    courts={courts}
+                    users={[]} // Los usuarios no necesitan ver la lista de usuarios
+                    onSave={handleSaveReservation}
+                    isSaving={isSaving}
+                    isUserMode={true}
+                />
+            )}
         </div>
     );
 };
