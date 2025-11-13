@@ -3,13 +3,13 @@ import { Container, Spinner, Alert, Button } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
 import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
 import EditReservationModal from '../components/bookings/EditReservationModal';
-import { getAllReservations, patchPayment, getReservationById, updateReservation, getCourts, getAllUsers, getUserData } from '../services/api';
+import { getAllReservations, patchPayment, getReservationById, updateReservation, getCourts, getAllUsers, getUserData, getPaidReservationsByRange, getAllReservationsFiltered } from '../services/api';
 import { useToast } from '../hooks/useToast';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 
-
 const AllBookings = () => {
+
     const [reservations, setReservations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -26,6 +26,36 @@ const AllBookings = () => {
     const [courts, setCourts] = useState([]);
     const [users, setUsers] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
+
+     // Estados de filtro
+    const [filterType, setFilterType] = useState('');
+    const [filterValue, setFilterValue] = useState('');
+
+    // Estados del rango de fechas
+    const [showRangeFilter, setShowRangeFilter] = useState(false);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [rangeReservations, setRangeReservations] = useState([]);
+    const [totalIncome, setTotalIncome] = useState(null);
+
+    // Estilos comunes
+    const filterPanelStyle = {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderRadius: '12px',
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+        padding: '16px',
+        marginBottom: '24px',
+    };
+
+    const actionButtonStyle = {
+        backgroundColor: '#fff',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        padding: '6px 14px',
+        fontWeight: '500',
+        color: '#000',
+    };
 
     // Cargar datos del usuario actual
     useEffect(() => {
@@ -182,6 +212,63 @@ const AllBookings = () => {
         }
     };
 
+    // Filtro 
+    const handleApplyFilters = async () => {
+        const filters = {};
+
+        if (filterType === 'deporte' && filterValue !== 'todos') {
+            filters.sport = filterValue;
+        } else if (filterType === 'estado' && filterValue !== 'todos') {
+            filters.status = filterValue;
+        } else if (filterType === 'fecha' && filterValue) {
+            const isoDate = new Date(filterValue).toISOString();
+            filters.start_date = isoDate;
+            filters.end_date = isoDate;
+        }
+
+        try {
+            const data = await getAllReservationsFiltered(filters);
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+            setError(null);
+        } catch (err) {
+            console.error('Error al aplicar filtros:', err);
+            setError('No se pudieron obtener las reservas filtradas.');
+        }
+    };
+
+
+    // Obtener reservas pagadas en un rango
+    const handleGetRangeIncome = async () => {
+        setRangeReservations([]);
+        setTotalIncome(null);
+        setError(null);
+
+        if (!startDate || !endDate) return;
+
+        // Validar orden de fechas
+        if (new Date(startDate) > new Date(endDate)) {
+            setError("La fecha de inicio no puede ser posterior a la fecha de fin.");
+            return;
+        }
+
+        // Convertir a ISO completo
+        const isoStart = new Date(startDate).toISOString(); // 00:00:00 del startDate
+        const isoEnd = new Date(new Date(endDate).getTime() + 24*60*60*1000 - 1).toISOString(); // 23:59:59 del endDate
+        try {
+            const data = await getPaidReservationsByRange(isoStart, isoEnd);
+            setRangeReservations(data.reservations);
+            setTotalIncome(data.total_income);
+            setError(null);
+        } catch (err) {
+            console.error(err);
+            setError('Error al obtener ingresos');
+        }
+    };
+
+
     return (
         <div
             style={{
@@ -210,129 +297,178 @@ const AllBookings = () => {
                     </p>
                 </div>
 
-                {/* BOTÓN DE INGRESOS (IZQUIERDA, SIN BLUR Y ESTILO LIMPIO) */}
+                {/* BOTÓN DE INGRESOS / VOLVER */}
                 <div
                     style={{
                         display: 'flex',
                         justifyContent: 'flex-start',
                         marginBottom: '20px',
                         position: 'relative',
-                        zIndex: 10, // fuerza que quede por encima del blur
+                        zIndex: 10,
                     }}
                 >
-                    <Button
-                        onClick={() => setShowRangeFilter(!showRangeFilter)}
-                        style={{
-                            backgroundColor: '#ffffff',
-                            border: '1px solid #d1d1d1',
-                            borderRadius: '8px',
-                            fontWeight: '500',
-                            color: '#000',
-                            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
-                            padding: '8px 18px',
-                            transition: 'all 0.2s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = '#f8f9fa';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = '#ffffff';
-                        }}
-                    >
-                        Ingresos por rango
-                    </Button>
+                    {!showRangeFilter ? (
+                        <Button
+                            onClick={() => {
+                                setShowRangeFilter(true);
+                                // limpiar filtros al entrar a ingresos
+                                setFilterType('');
+                                setFilterValue('');
+                            }}
+                            style={{
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #d1d1d1',
+                                borderRadius: '8px',
+                                fontWeight: '500',
+                                color: '#000',
+                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
+                                padding: '8px 18px',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
+                            onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
+                        >
+                            Ingresos por rango
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={() => {
+                                // salir del modo rango
+                                setShowRangeFilter(false);
+                                setStartDate('');
+                                setEndDate('');
+                                setRangeReservations([]);
+                                setTotalIncome(null);
+                                setError(null);
+                            }}
+                            style={{
+                                backgroundColor: '#ffffff',
+                                border: '1px solid #d1d1d1',
+                                borderRadius: '8px',
+                                fontWeight: '500',
+                                color: '#000',
+                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
+                                padding: '8px 18px',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
+                            onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
+                        >
+                            ← Volver
+                        </Button>
+                    )}
                 </div>
 
-                {/* BARRA DE FILTROS */}
-                <div style={filterPanelStyle}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <label style={{ fontWeight: '500', color: '#000', marginRight: '10px' }}>
-                                Filtrar por:
-                            </label>
-                            <select
-                                value={filterType}
-                                onChange={(e) => {
-                                    setFilterType(e.target.value);
-                                    setFilterValue('');
-                                }}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
-                            >
-                                <option value="">Selecciona filtro</option>
-                                <option value="deporte">Deporte</option>
-                                <option value="estado">Estado de pago</option>
-                                <option value="fecha">Fecha</option>
-                            </select>
+                {/* BARRA DE FILTROS (solo si NO estamos en ingresos) */}
+                {!showRangeFilter && (
+                    <div style={filterPanelStyle}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ fontWeight: '500', color: '#000', marginRight: '10px' }}>
+                                    Filtrar por:
+                                </label>
+                                <select
+                                    value={filterType}
+                                    onChange={(e) => {
+                                        setFilterType(e.target.value);
+                                        setFilterValue('');
+                                    }}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: '#fff',
+                                    }}
+                                >
+                                    <option value="">Selecciona filtro</option>
+                                    <option value="deporte">Deporte</option>
+                                    <option value="estado">Estado de pago</option>
+                                    <option value="fecha">Fecha</option>
+                                </select>
+                            </div>
+                            <div style={{ width: '120px' }} />
                         </div>
 
-                        {/* espacio reservado si necesitas otro control a la derecha */}
-                        <div style={{ width: '120px' }} />
+                        {filterType === 'deporte' && (
+                            <div style={{ marginTop: '12px' }}>
+                                <label style={{ marginRight: '10px', color: '#000' }}>Deporte:</label>
+                                <select
+                                    value={filterValue}
+                                    onChange={(e) => setFilterValue(e.target.value)}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: '#fff',
+                                    }}
+                                >
+                                    <option value="todos">Todos</option>
+                                    <option value="futbol">Futbol</option>
+                                    <option value="basquet">Basquet</option>
+                                    <option value="paddle">Paddle</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {filterType === 'estado' && (
+                            <div style={{ marginTop: '12px' }}>
+                                <label style={{ marginRight: '10px', color: '#000' }}>Estado:</label>
+                                <select
+                                    value={filterValue}
+                                    onChange={(e) => setFilterValue(e.target.value)}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: '#fff',
+                                    }}
+                                >
+                                    <option value="todos">Todos</option>
+                                    <option value="pagado">Pagado</option>
+                                    <option value="pendiente">Pendiente</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {filterType === 'fecha' && (
+                            <div style={{ marginTop: '12px' }}>
+                                <label style={{ marginRight: '10px', color: '#000' }}>Fecha:</label>
+                                <input
+                                    type="date"
+                                    value={filterValue}
+                                    onChange={(e) => setFilterValue(e.target.value)}
+                                    style={{
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        border: '1px solid #ccc',
+                                        backgroundColor: '#fff',
+                                    }}
+                                />
+                            </div>
+                        )}
+
+                        {/* BOTÓN PARA APLICAR FILTROS */}
+                        <div style={{ marginTop: '16px' }}>
+                            <Button
+                                onClick={handleApplyFilters}
+                                style={{
+                                    backgroundColor: '#ffffff',
+                                    border: '1px solid #ccc',
+                                    borderRadius: '8px',
+                                    fontWeight: '500',
+                                    color: '#000',
+                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+                                    padding: '6px 14px',
+                                }}
+                                onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
+                                onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
+                            >
+                                Aplicar filtros
+                            </Button>
+                        </div>
+                        {/* 🔚 FIN DEL NUEVO BOTÓN */}
                     </div>
-
-                    {/* Campos del filtro dinámico */}
-                    {filterType === 'deporte' && (
-                        <div style={{ marginTop: '12px' }}>
-                            <label style={{ marginRight: '10px', color: '#000' }}>Deporte:</label>
-                            <select
-                                value={filterValue}
-                                onChange={(e) => setFilterValue(e.target.value)}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
-                            >
-                                <option value="todos">Todos</option>
-                                <option value="futbol">Futbol</option>
-                                <option value="basquet">Basquet</option>
-                                <option value="paddle">Paddle</option>
-                            </select>
-                        </div>
-                    )}
-
-                    {filterType === 'estado' && (
-                        <div style={{ marginTop: '12px' }}>
-                            <label style={{ marginRight: '10px', color: '#000' }}>Estado:</label>
-                            <select
-                                value={filterValue}
-                                onChange={(e) => setFilterValue(e.target.value)}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
-                            >
-                                <option value="todos">Todos</option>
-                                <option value="pagado">Pagado</option>
-                                <option value="pendiente">Pendiente</option>
-                            </select>
-                        </div>
-                    )}
-
-                    {filterType === 'fecha' && (
-                        <div style={{ marginTop: '12px' }}>
-                            <label style={{ marginRight: '10px', color: '#000' }}>Fecha:</label>
-                            <input
-                                type="date"
-                                value={filterValue}
-                                onChange={(e) => setFilterValue(e.target.value)}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
-                            />
-                        </div>
-                    )}
-                </div>
+                )}
 
                 {/* SECCIÓN DE INGRESOS POR RANGO */}
                 {showRangeFilter && (
@@ -405,7 +541,7 @@ const AllBookings = () => {
                 {/* LISTADO DE RESERVAS */}
                 {!showRangeFilter && !loading && !error && (
                     <>
-                        {filteredReservations.length === 0 ? (
+                        {reservations.length === 0 ? (
                             <div
                                 style={{
                                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
