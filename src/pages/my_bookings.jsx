@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import ReservationCard from '../components/bookings/ReservationCard';
 import EditReservationModal from '../components/bookings/EditReservationModal';
-import { getMyReservations, getCourts, updateOwnReservation } from '../services/api';
+import { getMyReservations, getAllCourts, updateOwnReservation} from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useToast } from '../hooks/useToast';
 
@@ -41,9 +41,7 @@ const MyBookings = () => {
         const fetchCourts = async () => {
             try {
                 const allCourts = await Promise.all([
-                    getCourts('futbol'),
-                    getCourts('tenis'),
-                    getCourts('padel')
+                    getAllCourts()
                 ]);
                 setCourts(allCourts.flat());
             } catch (err) {

@@ -100,6 +100,11 @@ export const getCourts = async (sport) => {
     return apiRequest(endpoint);
 };
 
+export const getAllCourts = async () => {
+    const endpoint = `/court`;
+    return apiRequest(endpoint);
+};
+
 export const getAllUsers = async () => {
     return apiRequest('/user');
 };

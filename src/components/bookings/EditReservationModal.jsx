@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Form, Row, Col, Alert } from 'react-bootstrap';
-import { IoCalendarOutline, IoTimeOutline, IoLocationOutline, IoPerson, IoLockClosed } from 'react-icons/io5';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
+import { Alert, Button, Col, Form, Modal, Row } from 'react-bootstrap';
+import { IoCalendarOutline, IoLocationOutline, IoLockClosed, IoPerson, IoTimeOutline } from 'react-icons/io5';
 
 const EditReservationModal = ({
     show,
@@ -26,7 +26,7 @@ const EditReservationModal = ({
             // Convertir las fechas ISO a formato datetime-local para el input
             const startDate = new Date(reservation.start_time);
             const endDate = new Date(reservation.end_time);
-            
+
             // Formatear a YYYY-MM-DDTHH:MM para datetime-local input
             const formatForInput = (date) => {
                 const year = date.getFullYear();
@@ -49,7 +49,7 @@ const EditReservationModal = ({
 
     if (!reservation) return null;
 
-    const hasPayment = reservation.payment == "pendiente";
+    const hasPayment = reservation.payment.status !== "pendiente";
 
     // Formatear fecha para mostrar
     const formatDate = (dateString) => {
@@ -88,7 +88,7 @@ const EditReservationModal = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         if (!validateForm()) {
             return;
         }
@@ -148,7 +148,7 @@ const EditReservationModal = ({
                         <Alert variant="warning" className="d-flex align-items-center mb-4">
                             <IoLockClosed size={24} style={{ marginRight: '12px' }} />
                             <div>
-                                <strong>⚠️ Esta reserva no se puede modificar</strong>
+                                <strong> Esta reserva no se puede modificar</strong>
                                 <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
                                     La reserva tiene un pago asociado y no puede ser editada.
                                 </div>
@@ -271,10 +271,10 @@ const EditReservationModal = ({
                         </Row>
 
                         {/* Información adicional */}
-                        <div 
-                            className="mt-3 p-3" 
-                            style={{ 
-                                backgroundColor: '#f8f9fa', 
+                        <div
+                            className="mt-3 p-3"
+                            style={{
+                                backgroundColor: '#f8f9fa',
                                 borderRadius: '8px',
                                 fontSize: '0.9rem'
                             }}
@@ -283,7 +283,7 @@ const EditReservationModal = ({
                                 <strong>Reserva ID:</strong> #{reservation.id}
                             </div>
                             <div className="mb-2">
-                                <strong>Estado:</strong> {reservation.status}
+                                <strong>Estado:</strong> {reservation.payment.status}
                             </div>
                             <div>
                                 <strong>Creada el:</strong> {formatDate(reservation.created_at)}
@@ -315,7 +315,7 @@ const EditReservationModal = ({
                         {hasPayment ? 'Cerrar' : 'Cancelar'}
                     </Button>
 
-                    {!hasPayment && (
+                    {reservation.payment.status === "pendiente" && (
                         <Button
                             variant="dark"
                             onClick={handleSubmit}
