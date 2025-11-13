@@ -37,6 +37,7 @@ const AllBookings = () => {
     const [endDate, setEndDate] = useState('');
     const [rangeReservations, setRangeReservations] = useState([]);
     const [totalIncome, setTotalIncome] = useState(null);
+    const [dateRangeError, setDateRangeError] = useState(null);
 
     // Estilos comunes
     const filterPanelStyle = {
@@ -214,16 +215,23 @@ const AllBookings = () => {
 
     // Filtro 
     const handleApplyFilters = async () => {
+        setDateRangeError(null); 
         const filters = {};
 
         if (filterType === 'deporte' && filterValue !== 'todos') {
             filters.sport = filterValue;
         } else if (filterType === 'estado' && filterValue !== 'todos') {
             filters.status = filterValue;
-        } else if (filterType === 'fecha' && filterValue) {
-            const isoDate = new Date(filterValue).toISOString();
-            filters.start_date = isoDate;
-            filters.end_date = isoDate;
+        } else if (filterType === 'fecha' && startDate && endDate) {
+            if (new Date(startDate) > new Date(endDate)) {
+                setDateRangeError("La fecha de inicio no puede ser posterior a la fecha de fin.");
+                setReservations([]); // limpio reservas para mostrar solo el error
+                return;
+            }
+            const isoStart = new Date(startDate).toISOString();
+            const isoEnd = new Date(new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
+            filters.start_date = isoStart;
+            filters.end_date = isoEnd;
         }
 
         try {
@@ -238,6 +246,24 @@ const AllBookings = () => {
             setError('No se pudieron obtener las reservas filtradas.');
         }
     };
+
+    const renderDateRangeError = () => (
+        <div
+            style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid #dc3545',
+                borderRadius: '8px',
+                color: '#dc3545',
+                padding: '10px 14px',
+                marginTop: '12px',
+                fontWeight: '500',
+                fontSize: '0.95rem',
+            }}
+        >
+            {dateRangeError}
+        </div>
+    );
+
 
 
     // Obtener reservas pagadas en un rango
@@ -432,18 +458,40 @@ const AllBookings = () => {
 
                         {filterType === 'fecha' && (
                             <div style={{ marginTop: '12px' }}>
-                                <label style={{ marginRight: '10px', color: '#000' }}>Fecha:</label>
-                                <input
-                                    type="date"
-                                    value={filterValue}
-                                    onChange={(e) => setFilterValue(e.target.value)}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: '#fff',
-                                    }}
-                                />
+                                <label style={{ marginRight: '10px', color: '#000' }}>Rango de fechas:</label>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        style={{
+                                            borderRadius: '8px',
+                                            padding: '6px 10px',
+                                            border: '1px solid #ccc',
+                                            backgroundColor: '#fff',
+                                        }}
+                                    />
+                                    <span style={{ color: '#000' }}>→</span>
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={(e) => setEndDate(e.target.value)}
+                                        style={{
+                                            borderRadius: '8px',
+                                            padding: '6px 10px',
+                                            border: '1px solid #ccc',
+                                            backgroundColor: '#fff',
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Mensaje de error de rango inválido */}
+                                {dateRangeError && (
+                                    <p style={{ color: 'red', marginTop: '8px', fontSize: '0.9rem' }}>
+                                        {dateRangeError}
+                                    </p>
+                                )}
+                                
                             </div>
                         )}
 
@@ -495,6 +543,7 @@ const AllBookings = () => {
                                     backgroundColor: '#fff',
                                 }}
                             />
+                            <span style={{ color: '#000' }}>→</span>
                             <input
                                 type="date"
                                 value={endDate}

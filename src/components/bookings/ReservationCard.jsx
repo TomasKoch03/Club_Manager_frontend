@@ -81,11 +81,16 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                             </span>
                         </div>
 
-                        {/* Fecha de solicitud */}
                         <div>
-                            <small style={{ color: '#6c757d', fontSize: '0.85rem' }}>
+                            <small style={{ color: '#6c757d', fontSize: '0.85rem', display: 'block' }}>
                                 Solicitado el {formatDate(reservation.created_at)}
                             </small>
+
+                            {isPaid && reservation.payment?.updated_at && (
+                                <small style={{ color: '#198754', fontSize: '0.85rem', display: 'block' }}>
+                                    Pagado el {formatDate(reservation.payment.updated_at)}
+                                </small>
+                            )}
                         </div>
                     </Col>
 

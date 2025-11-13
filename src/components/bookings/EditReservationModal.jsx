@@ -288,6 +288,11 @@ const EditReservationModal = ({
                             <div>
                                 <strong>Creada el:</strong> {formatDate(reservation.created_at)}
                             </div>
+                            {reservation.payment?.status === "pagado" && reservation.payment?.updated_at && (
+                                <div className="mt-1">
+                                    <strong>Fecha de pago:</strong> {formatDate(reservation.payment.updated_at)}
+                                </div>
+                            )}
                         </div>
                     </Form>
                 </Modal.Body>
