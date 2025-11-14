@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavDropdown } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const NavBarDropDown = ({ title, children }) => {
     return (
@@ -15,9 +16,10 @@ const NavBarDropDown = ({ title, children }) => {
 
 // Agregar el componente Item como propiedad del componente principal
 NavBarDropDown.Item = ({ href, children }) => {
+    const navigate = useNavigate();
     return (
         <NavDropdown.Item
-            href={href}
+            onClick={() => navigate(href)}
             style={{ color: '#000' }}
         >
             {children}

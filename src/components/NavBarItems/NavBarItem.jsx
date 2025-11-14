@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const NavBarItem = ({
                         href,
@@ -8,6 +9,7 @@ const NavBarItem = ({
                         ariaLabel,
                         icon: Icon
                     }) => {
+    const navigate = useNavigate();
     const handleClick = (e) => {
         if (onClick) {
             if (!href) {
@@ -15,7 +17,7 @@ const NavBarItem = ({
             }
             onClick();
         } else if (href) {
-            window.location.href = href;
+            navigate(href);
         }
     };
 

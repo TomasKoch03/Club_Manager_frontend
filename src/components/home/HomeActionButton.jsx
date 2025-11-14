@@ -1,7 +1,9 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const HomeActionButton = ({ icon, text, onClick, href }) => {
+    const navigate = useNavigate();
     const Icon = icon;
     const buttonContent = (
         <div className="d-flex flex-column align-items-center justify-content-center h-100 py-4">
@@ -23,7 +25,7 @@ const HomeActionButton = ({ icon, text, onClick, href }) => {
                     borderRadius: '12px',
                     transition: 'all 0.2s ease',
                 }}
-                href={href}
+                onClick={() => navigate(href)}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = '#000';
                     e.currentTarget.style.color = '#fff';
