@@ -41,6 +41,7 @@ export const apiRequest = async (endpoint, options = {}) => {
 
 // Función especial para login (sin token)
 export const login = async (email, password) => {
+    console.log(`${API_BASE_URL}/user/login`);
     const response = await fetch(`${API_BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
