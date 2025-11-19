@@ -36,6 +36,11 @@ export const apiRequest = async (endpoint, options = {}) => {
         throw error;
     }
 
+    // Si el status es 204 (No Content), no hay body para parsear
+    if (response.status === 204) {
+        return null;
+    }
+
     return response.json();
 };
 
@@ -97,8 +102,11 @@ export const logout = () => {
 // Funciones específicas
 export const getUserData = () => apiRequest('/user/me');
 export const getCourts = async (sport) => {
-    const endpoint = `/court/?sport=${encodeURIComponent(sport)}`;
-    return apiRequest(endpoint);
+    if (sport && sport.trim() !== '') {
+        const endpoint = `/court/?sport=${encodeURIComponent(sport)}`;
+        return apiRequest(endpoint);
+    }
+    return apiRequest('/court');
 };
 
 export const getAllCourts = async () => {
@@ -233,5 +241,25 @@ export const updateOwnReservation = async (reservationId, data) => {
     return apiRequest(`/reservation/me/${reservationId}`, {
         method: 'PUT',
         body: JSON.stringify(data),
+    });
+};
+
+export const updateCourt = async (courtId, data) => {
+    return apiRequest(`/court/${courtId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};
+
+export const createCourt = async (data) => {
+    return apiRequest('/court/create', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
+
+export const deleteCourt = async (courtId) => {
+    return apiRequest(`/court/${courtId}`, {
+        method: 'DELETE',
     });
 };

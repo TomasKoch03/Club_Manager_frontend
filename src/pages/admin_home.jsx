@@ -2,6 +2,7 @@ import React from "react";
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import {IoBasketball, IoCalendarOutline, IoFootball, IoTennisball} from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
+import { MdSportsTennis } from 'react-icons/md';
 import HomeActionButton from '../components/home/HomeActionButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -18,7 +19,7 @@ const AdminHome = () => {
         >
             <Container fluid style={{ maxWidth: "1400px" }}>
                 <Row className="g-4">
-                    {/* Tarjeta izquierda - Reservar deportes */}
+                    {/* Tarjeta 1 - Administración del Sistema */}
                     <Col xs={12} lg={6}>
                         <Card
                             style={{
@@ -31,24 +32,33 @@ const AdminHome = () => {
                                 minHeight: "500px",
                             }}
                         >
-                            <Card.Body className="p-4 d-flex flex-column">
+                            <Card.Body className="p-4">
                                 <h3 className="text-center mb-4" style={{ fontWeight: '600', color: '#000' }}>
-                                    Gestionar Usuarios
+                                    Administración del Sistema
                                 </h3>
-                                <div className="flex-grow-1 d-flex align-items-center justify-content-center">
-                                    <div style={{ width: '100%', maxWidth: '400px' }}>
+                                <Row className="g-3 h-100">
+                                    {/* Usuarios */}
+                                    <Col xs={12}>
                                         <HomeActionButton
                                             icon={FaRegUserCircle}
-                                            text="Usuarios"
+                                            text="Gestionar Usuarios"
                                             href="/admin/usuarios"
                                         />
-                                    </div>
-                                </div>
+                                    </Col>
+                                    {/* Canchas */}
+                                    <Col xs={12}>
+                                        <HomeActionButton
+                                            icon={MdSportsTennis}
+                                            text="Gestionar Canchas"
+                                            href="/admin/canchas"
+                                        />
+                                    </Col>
+                                </Row>
                             </Card.Body>
                         </Card>
                     </Col>
 
-                    {/* Tarjeta derecha - Mis reservas */}
+                    {/* Tarjeta 2 - Gestionar Reservas */}
                     <Col xs={12} lg={6}>
                         <Card
                             style={{

@@ -10,6 +10,7 @@ import Calendar from './pages/calendar.jsx';
 import EditUser from "./pages/edit_user.jsx";
 import Home from './pages/home.jsx';
 import ManageUsers from "./pages/manage_users.jsx";
+import ManageCourts from "./pages/manage_courts.jsx";
 import MyBookings from "./pages/my_bookings.jsx";
 import Overlay from './pages/overlay.jsx';
 import Profile from './pages/profile.jsx';
@@ -38,6 +39,7 @@ function App() {
           <Route path='reservas' element={<AllBookings />} />
           <Route path='usuarios' element={<ManageUsers />} />
           <Route path='usuarios/:userId/edit' element={<EditUser />} />
+          <Route path='canchas' element={<ManageCourts />} />
           <Route path='reservar/:sport/selectUser' element={<SelectUser />} />
           <Route path='reservar/:sport/:userId/calendar' element={<Calendar />} />
           <Route path='reservar/:sport/:userId' element={<BookingGrid />} />
