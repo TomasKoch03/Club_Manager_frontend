@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Row, Col, Card } from 'react-bootstrap';
-import {IoBasketball, IoCalendarOutline, IoFootball, IoTennisball} from 'react-icons/io5';
+import {IoBasketball, IoCalendarOutline, IoFootball, IoStatsChartOutline, IoTennisball} from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
 import { MdSportsTennis } from 'react-icons/md';
 import HomeActionButton from '../components/home/HomeActionButton';
@@ -38,7 +38,7 @@ const AdminHome = () => {
                                 </h3>
                                 <Row className="g-3 h-100">
                                     {/* Usuarios */}
-                                    <Col xs={12}>
+                                    <Col xs={12} md={6}>
                                         <HomeActionButton
                                             icon={FaRegUserCircle}
                                             text="Gestionar Usuarios"
@@ -46,11 +46,19 @@ const AdminHome = () => {
                                         />
                                     </Col>
                                     {/* Canchas */}
-                                    <Col xs={12}>
+                                    <Col xs={12} md={6}>
                                         <HomeActionButton
                                             icon={MdSportsTennis}
                                             text="Gestionar Canchas"
                                             href="/admin/canchas"
+                                        />
+                                    </Col>
+                                    {/* Estadísticas */}
+                                    <Col xs={12}>
+                                        <HomeActionButton
+                                            icon={IoStatsChartOutline}
+                                            text="Estadísticas de Canchas"
+                                            href="/admin/estadisticas"
                                         />
                                     </Col>
                                 </Row>
