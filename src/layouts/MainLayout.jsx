@@ -1,23 +1,16 @@
-import React from "react";
-import Navbar from "../components/NavBar";
 import { Outlet } from 'react-router-dom';
-import fondo from '../assets/fondo_landing_page.jpg';
+import Navbar from "../components/NavBar";
 
 const MainLayout = () => {
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col"
-             style={{
-                 backgroundImage: `url(${fondo})`,
-                 backgroundSize: 'cover',
-                 backgroundPosition: 'center',
-             }}>
-            <div className="absolute inset-0 filter backdrop-blur-md bg-black/30">
+        <div className="min-h-screen bg-gray-50 flex flex-col relative bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+            <div className="relative z-10 flex flex-col flex-1">
+                <Navbar />
+                {/* si el Navbar es fixed top-0, añade pt para compensar su altura */}
+                <main className="flex-1 overflow-auto">
+                    <Outlet />
+                </main>
             </div>
-            <Navbar />
-            {/* si el Navbar es fixed top-0, añade pt para compensar su altura */}
-            <main className="flex-1 overflow-auto">
-                <Outlet />
-            </main>
         </div>
     );
 };

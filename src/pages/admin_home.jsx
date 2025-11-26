@@ -1,126 +1,85 @@
-import React from "react";
-import { Container, Row, Col, Card } from 'react-bootstrap';
-import {IoBasketball, IoCalendarOutline, IoFootball, IoStatsChartOutline, IoTennisball} from 'react-icons/io5';
 import { FaRegUserCircle } from 'react-icons/fa';
+import { IoBasketball, IoCalendarOutline, IoFootball, IoStatsChartOutline, IoTennisball } from 'react-icons/io5';
 import { MdSportsTennis } from 'react-icons/md';
 import HomeActionButton from '../components/home/HomeActionButton';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const AdminHome = () => {
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "20px 20px 60px 20px",
-            }}
-        >
-            <Container fluid style={{ maxWidth: "1400px" }}>
-                <Row className="g-4">
-                    {/* Tarjeta 1 - Administración del Sistema */}
-                    <Col xs={12} lg={6}>
-                        <Card
-                            style={{
-                                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "16px",
-                                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                                border: "none",
-                                height: "100%",
-                                minHeight: "500px",
-                            }}
-                        >
-                            <Card.Body className="p-4">
-                                <h3 className="text-center mb-4" style={{ fontWeight: '600', color: '#000' }}>
-                                    Administración del Sistema
-                                </h3>
-                                <Row className="g-3 h-100">
-                                    {/* Usuarios */}
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={FaRegUserCircle}
-                                            text="Gestionar Usuarios"
-                                            href="/admin/usuarios"
-                                        />
-                                    </Col>
-                                    {/* Canchas */}
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={MdSportsTennis}
-                                            text="Gestionar Canchas"
-                                            href="/admin/canchas"
-                                        />
-                                    </Col>
-                                    {/* Estadísticas */}
-                                    <Col xs={12}>
-                                        <HomeActionButton
-                                            icon={IoStatsChartOutline}
-                                            text="Estadísticas de Canchas"
-                                            href="/admin/estadisticas"
-                                        />
-                                    </Col>
-                                </Row>
-                            </Card.Body>
-                        </Card>
-                    </Col>
+        <div className="min-h-screen flex items-center justify-center p-6 pb-20">
+            <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    {/* Tarjeta 2 - Gestionar Reservas */}
-                    <Col xs={12} lg={6}>
-                        <Card
-                            style={{
-                                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                backdropFilter: "blur(10px)",
-                                borderRadius: "16px",
-                                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                                border: "none",
-                                height: "100%",
-                                minHeight: "500px",
-                            }}
-                        >
-                            <Card.Body className="p-4">
-                                <h3 className="text-center mb-4" style={{ fontWeight: '600', color: '#000' }}>
-                                    Gestionar Reservas
-                                </h3>
-                                <Row className="g-3 h-100">
-                                    {/* Fútbol - arriba izquierda */}
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={IoFootball}
-                                            text="Reservar para Fútbol"
-                                            href="/admin/reservar/futbol/selectUser"
-                                        />
-                                    </Col>
-                                    {/* Paddle - arriba derecha */}
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={IoTennisball}
-                                            text="Reservar para Paddle"
-                                            href="/admin/reservar/paddle/selectUser"
-                                        />
-                                    </Col>
-                                    {/* Básquet - abajo centrado */}
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={IoBasketball}
-                                            text="Reservar para Básquet"
-                                            href="/admin/reservar/basquet/selectUser"
-                                        />
-                                    </Col>
-                                    <Col xs={12} md={6}>
-                                        <HomeActionButton
-                                            icon={IoCalendarOutline}
-                                            text="Todas las reservas"
-                                            href="/admin/reservas"
-                                        />
-                                    </Col>
-                                </Row>
-                            </Card.Body>
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
+                {/* Columna Izquierda - Reservar (2/3) */}
+                <div className="lg:col-span-2 flex flex-col gap-4">
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoFootball}
+                            text="Fútbol"
+                            href="/admin/reservar/futbol/selectUser"
+                            variant="football"
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoTennisball}
+                            text="Paddle"
+                            href="/admin/reservar/paddle/selectUser"
+                            variant="paddle"
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoBasketball}
+                            text="Básquet"
+                            href="/admin/reservar/basquet/selectUser"
+                            variant="basketball"
+                        />
+                    </div>
+                </div>
+
+                {/* Columna Derecha - Gestión (1/3) */}
+                <div className="lg:col-span-1 flex flex-col gap-4">
+                    {/* Todas las reservas */}
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoCalendarOutline}
+                            text="Todas las Reservas"
+                            href="/admin/reservas"
+                            variant="default"
+                        />
+                    </div>
+
+                    {/* Usuarios */}
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={FaRegUserCircle}
+                            text="Gestionar Usuarios"
+                            href="/admin/usuarios"
+                            variant="default"
+                        />
+                    </div>
+
+                    {/* Canchas */}
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={MdSportsTennis}
+                            text="Gestionar Canchas"
+                            href="/admin/canchas"
+                            variant="default"
+                        />
+                    </div>
+
+                    {/* Estadísticas */}
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoStatsChartOutline}
+                            text="Estadísticas"
+                            href="/admin/estadisticas"
+                            variant="dark"
+                        />
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };
