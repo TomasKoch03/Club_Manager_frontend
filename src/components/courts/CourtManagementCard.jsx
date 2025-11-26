@@ -156,7 +156,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                 <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
                     <Modal.Title style={{ fontWeight: '600' }}>Editar Cancha</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                     {error && (
                         <div className="alert alert-danger" role="alert">
                             {error}

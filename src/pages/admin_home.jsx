@@ -5,11 +5,12 @@ import HomeActionButton from '../components/home/HomeActionButton';
 
 const AdminHome = () => {
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 pb-20">
-            <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(1rem, 2.5vw, 2rem)' }}>
+            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(1rem, 1.5vw, 1.5rem)', maxWidth: 'min(95vw, 1400px)' }}>
 
                 {/* Columna Izquierda - Reservar (2/3) */}
-                <div className="lg:col-span-2 flex flex-col gap-4">
+                <div className="md:col-span-8 flex flex-col gap-4 h-full">
+                    {/* Fútbol - Takes 1/2 of available height */}
                     <div className="flex-1">
                         <HomeActionButton
                             icon={IoFootball}
@@ -18,27 +19,32 @@ const AdminHome = () => {
                             variant="football"
                         />
                     </div>
-                    <div className="flex-1">
-                        <HomeActionButton
-                            icon={IoTennisball}
-                            text="Paddle"
-                            href="/admin/reservar/paddle/selectUser"
-                            variant="paddle"
-                        />
-                    </div>
-                    <div className="flex-1">
-                        <HomeActionButton
-                            icon={IoBasketball}
-                            text="Básquet"
-                            href="/admin/reservar/basquet/selectUser"
-                            variant="basketball"
-                        />
+                    {/* Container for Paddle & Básquet - Takes other 1/2 */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Paddle */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={IoTennisball}
+                                text="Paddle"
+                                href="/admin/reservar/paddle/selectUser"
+                                variant="paddle"
+                            />
+                        </div>
+                        {/* Básquet */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={IoBasketball}
+                                text="Básquet"
+                                href="/admin/reservar/basquet/selectUser"
+                                variant="basketball"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 {/* Columna Derecha - Gestión (1/3) */}
-                <div className="lg:col-span-1 flex flex-col gap-4">
-                    {/* Todas las reservas */}
+                <div className="md:col-span-4 flex flex-col gap-4 h-full">
+                    {/* Todas las reservas - Takes half of right column */}
                     <div className="flex-1">
                         <HomeActionButton
                             icon={IoCalendarOutline}
@@ -48,28 +54,31 @@ const AdminHome = () => {
                         />
                     </div>
 
-                    {/* Usuarios */}
-                    <div className="flex-1">
-                        <HomeActionButton
-                            icon={FaRegUserCircle}
-                            text="Gestionar Usuarios"
-                            href="/admin/usuarios"
-                            variant="default"
-                        />
+                    {/* Container for Usuarios & Canchas - Takes other half */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Usuarios */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={FaRegUserCircle}
+                                text="Gestionar Usuarios"
+                                href="/admin/usuarios"
+                                variant="default"
+                            />
+                        </div>
+
+                        {/* Canchas */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={MdSportsTennis}
+                                text="Gestionar Canchas"
+                                href="/admin/canchas"
+                                variant="default"
+                            />
+                        </div>
                     </div>
 
-                    {/* Canchas */}
-                    <div className="flex-1">
-                        <HomeActionButton
-                            icon={MdSportsTennis}
-                            text="Gestionar Canchas"
-                            href="/admin/canchas"
-                            variant="default"
-                        />
-                    </div>
-
-                    {/* Estadísticas */}
-                    <div className="flex-1">
+                    {/* Estadísticas - Smaller at bottom */}
+                    <div className="flex-[0.6]">
                         <HomeActionButton
                             icon={IoStatsChartOutline}
                             text="Estadísticas"

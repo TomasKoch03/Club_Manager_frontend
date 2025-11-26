@@ -223,7 +223,7 @@ const ManageCourts = () => {
                 <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
                     <Modal.Title style={{ fontWeight: '600' }}>Nueva Cancha</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                     {createError && (
                         <div className="alert alert-danger" role="alert">
                             {createError}

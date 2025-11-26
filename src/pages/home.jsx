@@ -22,37 +22,46 @@ const Home = () => {
     }, []);
 
     return (
-        <div className="min-h-screen flex items-center justify-center p-6 pb-20">
-            <div className="w-full max-w-7xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(1rem, 2.5vw, 2rem)' }}>
+            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(1rem, 1.5vw, 1.5rem)', maxWidth: 'min(95vw, 1400px)' }}>
 
                 {/* Columna Izquierda - Area de Canchas (2/3) */}
-                <div className="lg:col-span-2 flex flex-col gap-4">
-                    {/* Fútbol */}
-                    <HomeActionButton
-                        icon={IoFootball}
-                        text="Fútbol"
-                        href="/club-manager/reservar/futbol/calendario"
-                        variant="football"
-                    />
-                    {/* Paddle */}
-                    <HomeActionButton
-                        icon={IoTennisball}
-                        text="Paddle"
-                        href="/club-manager/reservar/paddle/calendario"
-                        variant="paddle"
-                    />
-                    {/* Básquet */}
-                    <HomeActionButton
-                        icon={IoBasketball}
-                        text="Básquet"
-                        href="/club-manager/reservar/basquet/calendario"
-                        variant="basketball"
-                    />
+                <div className="md:col-span-8 flex flex-col gap-4 h-full">
+                    {/* Fútbol - Takes 1/2 of available height */}
+                    <div className="flex-1">
+                        <HomeActionButton
+                            icon={IoFootball}
+                            text="Fútbol"
+                            href="/club-manager/reservar/futbol/calendario"
+                            variant="football"
+                        />
+                    </div>
+                    {/* Container for Paddle & Básquet - Takes other 1/2 */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Paddle */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={IoTennisball}
+                                text="Paddle"
+                                href="/club-manager/reservar/paddle/calendario"
+                                variant="paddle"
+                            />
+                        </div>
+                        {/* Básquet */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={IoBasketball}
+                                text="Básquet"
+                                href="/club-manager/reservar/basquet/calendario"
+                                variant="basketball"
+                            />
+                        </div>
+                    </div>
                 </div>
 
                 {/* Columna Derecha - Area de Gestión (1/3) */}
-                <div className="lg:col-span-1 flex flex-col gap-4">
-                    {/* Mis Reservas */}
+                <div className="md:col-span-4 flex flex-col gap-4 h-full">
+                    {/* Mis Reservas - Same height as Estado del Socio */}
                     <div className="flex-1">
                         <HomeActionButton
                             icon={IoCalendarOutline}
@@ -61,10 +70,10 @@ const Home = () => {
                             variant="dark"
                         />
                     </div>
-                    {/* Estado del Socio */}
+                    {/* Estado del Socio - Same height as Mis Reservas */}
                     <div className="flex-1">
                         <div className={`
-                            relative flex flex-col items-center justify-center w-full h-full min-h-[140px] py-6 px-6
+                            relative flex flex-col items-center justify-center w-full h-full py-6 px-6
                             rounded-2xl shadow-md border transition-all duration-300
                             ${loading ? 'bg-gray-100 border-gray-200' :
                                 userStatus

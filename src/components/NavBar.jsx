@@ -2,9 +2,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { Navbar as BSNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
 import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // <CHANGE> Importar useNavigate
+import { getUserData, logout } from '../services/api'; // <CHANGE> Importar getUserData y logout
 import NavBarItem from './NavBarItems/NavBarItem';
 import NavBarLogo from './NavBarItems/NavBarLogo';
-import { getUserData, logout } from '../services/api'; // <CHANGE> Importar getUserData y logout
 
 const Navbar = () => {
     const navigate = useNavigate(); // <CHANGE> Hook para navegación
@@ -49,7 +49,7 @@ const Navbar = () => {
     };
 
     return (
-        <BSNavbar bg="white" expand="lg" className="shadow-sm border-bottom rounded">
+        <BSNavbar bg="white" expand="lg" className="shadow-sm border-bottom rounded flex-none">
             <Container fluid>
                 {/* <CHANGE> Cambiado href por onClick para manejar redirección dinámica */}
                 <BSNavbar.Brand
@@ -68,8 +68,8 @@ const Navbar = () => {
                             icon={FaRegBell}
                             ariaLabel="Notificaciones"
                         />
-                        <NavDropdown 
-                            title={<FaRegUserCircle size={24} />} 
+                        <NavDropdown
+                            title={<FaRegUserCircle size={24} />}
                             id="user-dropdown"
                             align="end"
                             className="no-caret"
