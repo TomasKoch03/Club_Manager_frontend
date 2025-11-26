@@ -21,6 +21,14 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
         return `${hours}:${minutes}`;
     };
 
+    // Calcular duración en horas
+    const calculateDuration = () => {
+        const start = new Date(reservation.start_time);
+        const end = new Date(reservation.end_time);
+        const durationMinutes = (end - start) / (1000 * 60);
+        return (durationMinutes / 60).toFixed(2);
+    };
+
     // Capitalizar primera letra
     const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -77,6 +85,9 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                             <IoTimeOutline size={18} style={{ marginRight: '8px', color: '#6c757d' }} />
                             <span style={{ color: '#495057', fontSize: '0.95rem', fontWeight: '500' }}>
                                 {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
+                            </span>
+                            <span style={{ color: '#6c757d', fontSize: '0.85rem', marginLeft: '8px' }}>
+                                ({calculateDuration()}h)
                             </span>
                         </div>
 

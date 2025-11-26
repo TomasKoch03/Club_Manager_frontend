@@ -12,7 +12,7 @@ import { useToast } from '../hooks/useToast';
 const BOOKING_CONFIG = {
     startHour: 9,
     endHour: 22,
-    slotDuration: 60
+    slotDuration: 30 // Cambiado a 30 minutos
 };
 
 const BookingGrid = () => {
@@ -31,11 +31,18 @@ const BookingGrid = () => {
 
     const generateTimeSlots = () => {
         const slots = [];
+        // Generar slots de 30 minutos
         for (let hour = BOOKING_CONFIG.startHour; hour < BOOKING_CONFIG.endHour; hour++) {
-            slots.push({
-                hour,
-                label: hour < 12 ? `${hour} AM` : hour === 12 ? '12 PM' : `${hour - 12} PM`
-            });
+            for (let minute = 0; minute < 60; minute += BOOKING_CONFIG.slotDuration) {
+                const time = hour + minute / 60;
+                const label = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                slots.push({
+                    time,
+                    hour,
+                    minute,
+                    label
+                });
+            }
         }
         return slots;
     };
@@ -75,16 +82,20 @@ const BookingGrid = () => {
         fetchReservations();
     }, [sport, selectedDate, toast]);
 
-    const isSlotOccupied = (courtId, hour) => {
+    const isSlotOccupied = (courtId, time) => {
         return bookings.some(booking => {
             if (booking.court.id !== courtId) return false;
 
             const bookingStart = new Date(booking.start_time);
             const bookingEnd = new Date(booking.end_time);
+            
+            const hour = Math.floor(time);
+            const minute = Math.round((time - hour) * 60);
+            
             const slotStart = new Date(selectedDate);
-            slotStart.setHours(hour, 0, 0, 0);
+            slotStart.setHours(hour, minute, 0, 0);
             const slotEnd = new Date(slotStart);
-            slotEnd.setHours(hour + 1, 0, 0, 0);
+            slotEnd.setMinutes(slotEnd.getMinutes() + BOOKING_CONFIG.slotDuration);
 
             return (
                 (slotStart >= bookingStart && slotStart < bookingEnd) ||
@@ -94,17 +105,29 @@ const BookingGrid = () => {
         });
     };
 
-    // <CHANGE> Modificado para abrir el modal en lugar de crear la reserva directamente
-    const handleSlotClick = (courtId, hour) => {
+    // <CHANGE> Modificado para aceptar tiempo de inicio y fin desde la selección
+    const handleSlotClick = (courtId, startTime, endTime) => {
+        // Convertir tiempo decimal a horas y minutos
+        const startHour = Math.floor(startTime);
+        const startMinute = Math.round((startTime - startHour) * 60);
+        const endHour = Math.floor(endTime);
+        const endMinute = Math.round((endTime - endHour) * 60);
+        
+        // Crear fecha de inicio
         const slotStart = new Date(Date.UTC(
             selectedDate.getFullYear(),
             selectedDate.getMonth(),
             selectedDate.getDate(),
-            hour, 0, 0, 0
+            startHour, startMinute, 0, 0
         ));
 
-        const slotEnd = new Date(slotStart);
-        slotEnd.setUTCHours(slotEnd.getUTCHours() + 1);
+        // Crear fecha de fin
+        const slotEnd = new Date(Date.UTC(
+            selectedDate.getFullYear(),
+            selectedDate.getMonth(),
+            selectedDate.getDate(),
+            endHour, endMinute, 0, 0
+        ));
 
         // Encontrar la cancha seleccionada para obtener el monto
         const selectedCourt = courts.find(court => court.id === courtId);
@@ -115,7 +138,6 @@ const BookingGrid = () => {
             date: selectedDate.toISOString(),
             startTime: slotStart.toISOString(),
             endTime: slotEnd.toISOString(),
-            amount: selectedCourt?.base_price || 0,
             court: selectedCourt  // Agregar el objeto court completo
         });
 
@@ -125,32 +147,42 @@ const BookingGrid = () => {
     };
 
     // <CHANGE> Handler para pagar en el club (crea la reserva)
-    const handlePayInClub = async (extras) => {
-        if (!selectedBooking) return;
+    const handlePayInClub = async (extras, bookingWithTimes) => {
+        if (!bookingWithTimes) return;
 
         try {
+            // Construir las fechas completas usando la fecha seleccionada y las horas del formulario
+            const selectedDateStr = selectedDate.toISOString().split('T')[0];
+            const startTimeISO = `${selectedDateStr}T${bookingWithTimes.startTime}:00`;
+            const endTimeISO = `${selectedDateStr}T${bookingWithTimes.endTime}:00`;
+
             // Si hay userId en los params, es admin haciendo reserva para un usuario
             const data = userId 
                 ? await postReservationForUser(userId, {
-                    court_id: selectedBooking.courtId,
-                    start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime,
+                    court_id: bookingWithTimes.courtId,
+                    start_time: startTimeISO,
+                    end_time: endTimeISO,
                     light: extras.light,
                     ball: extras.ball,
                     number_of_rackets: extras.number_of_rackets
                 })
                 : await postReservation({
-                    court_id: selectedBooking.courtId,
-                    start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime,
+                    court_id: bookingWithTimes.courtId,
+                    start_time: startTimeISO,
+                    end_time: endTimeISO,
                     light: extras.light,
                     ball: extras.ball,
                     number_of_rackets: extras.number_of_rackets
                 });
 
-            // Calcular el monto total incluyendo extras
-            const court = selectedBooking.court;
-            let totalAmount = court.base_price;
+            // Calcular duración en horas
+            const [startHours, startMinutes] = bookingWithTimes.startTime.split(':').map(Number);
+            const [endHours, endMinutes] = bookingWithTimes.endTime.split(':').map(Number);
+            const durationHours = (endHours * 60 + endMinutes - startHours * 60 - startMinutes) / 60;
+
+            // Calcular el monto total: precio_base * duración + extras
+            const court = bookingWithTimes.court;
+            let totalAmount = court.base_price * durationHours;
             if (extras.light && court.light_price) totalAmount += court.light_price;
             if (extras.ball && court.ball_price) totalAmount += court.ball_price;
             if (extras.number_of_rackets > 0 && court.racket_price) {
@@ -184,34 +216,44 @@ const BookingGrid = () => {
         }
     };
 
-    const handlePayWithMercadoPago = async (extras) => {
-        if (!selectedBooking) return;
+    const handlePayWithMercadoPago = async (extras, bookingWithTimes) => {
+        if (!bookingWithTimes) return;
 
         try {
             setIsLoadingPreference(true);
             
+            // Construir las fechas completas usando la fecha seleccionada y las horas del formulario
+            const selectedDateStr = selectedDate.toISOString().split('T')[0];
+            const startTimeISO = `${selectedDateStr}T${bookingWithTimes.startTime}:00`;
+            const endTimeISO = `${selectedDateStr}T${bookingWithTimes.endTime}:00`;
+            
             // Primero crear la reserva
             const data = userId 
                 ? await postReservationForUser(userId, {
-                    court_id: selectedBooking.courtId,
-                    start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime,
+                    court_id: bookingWithTimes.courtId,
+                    start_time: startTimeISO,
+                    end_time: endTimeISO,
                     light: extras.light,
                     ball: extras.ball,
                     number_of_rackets: extras.number_of_rackets
                 })
                 : await postReservation({
-                    court_id: selectedBooking.courtId,
-                    start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime,
+                    court_id: bookingWithTimes.courtId,
+                    start_time: startTimeISO,
+                    end_time: endTimeISO,
                     light: extras.light,
                     ball: extras.ball,
                     number_of_rackets: extras.number_of_rackets
                 });
 
-            // Calcular el monto total incluyendo extras
-            const court = selectedBooking.court;
-            let totalAmount = court.base_price;
+            // Calcular duración en horas
+            const [startHours, startMinutes] = bookingWithTimes.startTime.split(':').map(Number);
+            const [endHours, endMinutes] = bookingWithTimes.endTime.split(':').map(Number);
+            const durationHours = (endHours * 60 + endMinutes - startHours * 60 - startMinutes) / 60;
+
+            // Calcular el monto total: precio_base * duración + extras
+            const court = bookingWithTimes.court;
+            let totalAmount = court.base_price * durationHours;
             if (extras.light && court.light_price) totalAmount += court.light_price;
             if (extras.ball && court.ball_price) totalAmount += court.ball_price;
             if (extras.number_of_rackets > 0 && court.racket_price) {
@@ -299,6 +341,7 @@ const BookingGrid = () => {
                             timeSlots={timeSlots}
                             isSlotOccupied={isSlotOccupied}
                             onSlotClick={handleSlotClick}
+                            bookings={bookings}
                         />
                     )}
                 </Container>

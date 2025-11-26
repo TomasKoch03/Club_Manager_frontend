@@ -2,7 +2,7 @@ import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -24,20 +24,57 @@ const BookingConfirmationModal = ({
         ball: false,
         number_of_rackets: 0
     });
+    
+    const [timeSelection, setTimeSelection] = useState({
+        startTime: '',
+        endTime: ''
+    });
+
+    // Inicializar tiempos cuando se abre el modal
+    useEffect(() => {
+        if (bookingData && show) {
+            const formatForInput = (dateString) => {
+                const date = new Date(dateString);
+                const hours = date.getUTCHours().toString().padStart(2, '0');
+                const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+                return `${hours}:${minutes}`;
+            };
+
+            setTimeSelection({
+                startTime: formatForInput(bookingData.startTime),
+                endTime: formatForInput(bookingData.endTime)
+            });
+        }
+    }, [bookingData, show]);
 
     if (!bookingData) return null;
 
-    const { courtName, date, startTime, endTime, amount, court } = bookingData;
+    const { courtName, date, court } = bookingData;
 
-    // Calcular precio total incluyendo extras
+    // Calcular duración en horas basándose en los tiempos seleccionados
+    const calculateDuration = () => {
+        if (!timeSelection.startTime || !timeSelection.endTime) return 0;
+        
+        const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
+        const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
+        
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+        
+        const durationMinutes = endTotalMinutes - startTotalMinutes;
+        return durationMinutes > 0 ? durationMinutes / 60 : 0;
+    };
+
+    // Calcular precio total incluyendo extras y duración
     const calculateTotalPrice = () => {
-        let total = amount;
+        const duration = calculateDuration();
+        let total = court?.base_price * duration || 0;
         if (extras.light && court?.light_price) total += court.light_price;
         if (extras.ball && court?.ball_price) total += court.ball_price;
         if (extras.number_of_rackets > 0 && court?.racket_price) {
             total += court.racket_price * extras.number_of_rackets;
         }
-        return total;
+        return total.toFixed(2);
     };
 
     const handleExtraChange = (field, value) => {
@@ -47,6 +84,25 @@ const BookingConfirmationModal = ({
         }));
     };
 
+    const handleTimeChange = (field, value) => {
+        setTimeSelection(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const isValidTimeSelection = () => {
+        if (!timeSelection.startTime || !timeSelection.endTime) return false;
+        
+        const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
+        const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
+        
+        const startTotalMinutes = startHours * 60 + startMinutes;
+        const endTotalMinutes = endHours * 60 + endMinutes;
+        
+        return endTotalMinutes > startTotalMinutes;
+    };
+
     // Formatear fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -54,14 +110,6 @@ const BookingConfirmationModal = ({
         const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
         return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
-    };
-
-    // Formatear hora (HH:MM)
-    const formatTime = (dateString) => {
-        const date = new Date(dateString);
-        const hours = date.getUTCHours().toString().padStart(2, '0');
-        const minutes = date.getUTCMinutes().toString().padStart(2, '0');
-        return `${hours}:${minutes}`;
     };
 
     return (
@@ -145,9 +193,65 @@ const BookingConfirmationModal = ({
                                         Horario
                                     </span>
                                 </div>
-                                <p style={{ fontSize: '1.1rem', color: '#000', marginLeft: '28px', marginBottom: '0', fontWeight: '500' }}>
-                                    {formatTime(startTime)} - {formatTime(endTime)}
-                                </p>
+                                <Row className="g-2" style={{ marginLeft: '28px' }}>
+                                    <Col xs={12} sm={6}>
+                                        <Form.Group>
+                                            <Form.Label style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                                                Hora de inicio
+                                            </Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={timeSelection.startTime}
+                                                onChange={(e) => handleTimeChange('startTime', e.target.value)}
+                                                style={{
+                                                    borderRadius: '8px',
+                                                    padding: '8px 12px',
+                                                    fontSize: '1rem'
+                                                }}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xs={12} sm={6}>
+                                        <Form.Group>
+                                            <Form.Label style={{ fontSize: '0.85rem', color: '#6c757d' }}>
+                                                Hora de fin
+                                            </Form.Label>
+                                            <Form.Control
+                                                type="time"
+                                                value={timeSelection.endTime}
+                                                onChange={(e) => handleTimeChange('endTime', e.target.value)}
+                                                style={{
+                                                    borderRadius: '8px',
+                                                    padding: '8px 12px',
+                                                    fontSize: '1rem'
+                                                }}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
+                                {isValidTimeSelection() && (
+                                    <p style={{ 
+                                        fontSize: '0.9rem', 
+                                        color: '#000', 
+                                        marginLeft: '28px', 
+                                        marginTop: '8px',
+                                        marginBottom: '0',
+                                        fontWeight: '500'
+                                    }}>
+                                        Duración: {calculateDuration().toFixed(2)} hora(s)
+                                    </p>
+                                )}
+                                {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
+                                    <p style={{ 
+                                        fontSize: '0.85rem', 
+                                        color: '#dc3545', 
+                                        marginLeft: '28px', 
+                                        marginTop: '8px',
+                                        marginBottom: '0'
+                                    }}>
+                                        La hora de fin debe ser posterior a la de inicio
+                                    </p>
+                                )}
                             </div>
 
                             {/* Extras */}
@@ -207,12 +311,22 @@ const BookingConfirmationModal = ({
                             <div className="text-end">
                                 <div className="mb-3">
                                     <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
-                                        Precio base
+                                        Precio base (por hora)
                                     </p>
                                     <p style={{ fontSize: '1.2rem', fontWeight: '600', color: '#495057', marginBottom: '0' }}>
-                                        ${amount}
+                                        ${court?.base_price || 0}
                                     </p>
                                 </div>
+                                {isValidTimeSelection() && (
+                                    <div className="mb-3">
+                                        <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
+                                            Subtotal cancha ({calculateDuration().toFixed(2)}h)
+                                        </p>
+                                        <p style={{ fontSize: '1.2rem', fontWeight: '600', color: '#495057', marginBottom: '0' }}>
+                                            ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
+                                        </p>
+                                    </div>
+                                )}
                                 {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
                                     <div className="mb-3">
                                         <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
@@ -259,7 +373,16 @@ const BookingConfirmationModal = ({
                     {/* Botón izquierdo - Pagar en el club */}
                     <Button
                         variant="outline-dark"
-                        onClick={() => onPayInClub(extras)}
+                        onClick={() => {
+                            if (!isValidTimeSelection()) return;
+                            const bookingWithTimes = {
+                                ...bookingData,
+                                startTime: timeSelection.startTime,
+                                endTime: timeSelection.endTime
+                            };
+                            onPayInClub(extras, bookingWithTimes);
+                        }}
+                        disabled={!isValidTimeSelection()}
                         style={{ minWidth: '180px', fontWeight: '500' }}
                     >
                         Pagar en el club
@@ -276,8 +399,16 @@ const BookingConfirmationModal = ({
                     ) : (
                         <Button
                             variant="primary"
-                            onClick={() => onPayWithMercadoPago(extras)}
-                            disabled={isLoadingPreference}
+                            onClick={() => {
+                                if (!isValidTimeSelection()) return;
+                                const bookingWithTimes = {
+                                    ...bookingData,
+                                    startTime: timeSelection.startTime,
+                                    endTime: timeSelection.endTime
+                                };
+                                onPayWithMercadoPago(extras, bookingWithTimes);
+                            }}
+                            disabled={isLoadingPreference || !isValidTimeSelection()}
                             style={{ 
                                 minWidth: '180px', 
                                 fontWeight: '500',
