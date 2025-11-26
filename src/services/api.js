@@ -115,7 +115,7 @@ export const getAllCourts = async () => {
 };
 
 export const getAllUsers = async () => {
-    return apiRequest('/user');
+    return apiRequest('/user/');
 };
 
 export const getReservationsBySportAndDay = async (sport, day) => {
