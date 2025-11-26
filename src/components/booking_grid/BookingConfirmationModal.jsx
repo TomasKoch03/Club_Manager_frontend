@@ -1,6 +1,6 @@
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
-import { IoCalendarOutline, IoCheckmark, IoClose, IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoClose, IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -204,31 +204,37 @@ const BookingConfirmationModal = ({
                                 <div className="flex flex-col gap-3">
                                     {court?.light_price > 0 && (
                                         <label className="relative flex flex-row items-center w-full gap-4 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                                            <div className="relative flex items-center justify-center w-6 h-6 shrink-0">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={extras.light}
-                                                    onChange={(e) => handleExtraChange('light', e.target.checked)}
-                                                    className="peer appearance-none w-6 h-6 border-2 border-gray-300 rounded-md bg-white checked:!bg-blue-500 checked:!border-blue-500 transition-all cursor-pointer"
-                                                />
-                                                <IoCheckmark className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" size={18} />
-                                            </div>
-                                            <span className="font-medium text-gray-700">Luz artificial (+${court.light_price})</span>
+                                            <input
+                                                type="checkbox"
+                                                checked={extras.light}
+                                                onChange={(e) => handleExtraChange('light', e.target.checked)}
+                                                className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                style={{
+                                                    backgroundImage: extras.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                    backgroundSize: '100% 100%',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            />
+                                            <span className="font-medium text-gray-700 leading-5 ml-2">Luz artificial (+${court.light_price})</span>
                                         </label>
                                     )}
 
                                     {court?.ball_price > 0 && (
                                         <label className="relative flex flex-row items-center w-full gap-4 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
-                                            <div className="relative flex items-center justify-center w-6 h-6 shrink-0">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={extras.ball}
-                                                    onChange={(e) => handleExtraChange('ball', e.target.checked)}
-                                                    className="peer appearance-none w-6 h-6 border-2 border-gray-300 rounded-md bg-white checked:!bg-blue-500 checked:!border-blue-500 transition-all cursor-pointer"
-                                                />
-                                                <IoCheckmark className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" size={18} />
-                                            </div>
-                                            <span className="font-medium text-gray-700">Pelota (+${court.ball_price})</span>
+                                            <input
+                                                type="checkbox"
+                                                checked={extras.ball}
+                                                onChange={(e) => handleExtraChange('ball', e.target.checked)}
+                                                className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                style={{
+                                                    backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                    backgroundSize: '100% 100%',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            />
+                                            <span className="font-medium text-gray-700 leading-5 ml-2">Pelota (+${court.ball_price})</span>
                                         </label>
                                     )}
 
