@@ -1,6 +1,5 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Container, Spinner } from 'react-bootstrap';
+import { IoCalendarOutline, IoFilterOutline, IoTrendingUpOutline } from 'react-icons/io5';
 import EditReservationModal from '../components/bookings/EditReservationModal';
 import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
 import ReservationCard from '../components/bookings/ReservationCard';
@@ -38,25 +37,6 @@ const AllBookings = () => {
     const [rangeReservations, setRangeReservations] = useState([]);
     const [totalIncome, setTotalIncome] = useState(null);
     const [dateRangeError, setDateRangeError] = useState(null);
-
-    // Estilos comunes
-    const filterPanelStyle = {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderRadius: '12px',
-        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-        padding: '16px',
-        marginBottom: '24px',
-    };
-
-    const actionButtonStyle = {
-        backgroundColor: '#fff',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        padding: '6px 14px',
-        fontWeight: '500',
-        color: '#000',
-    };
 
     // Cargar datos del usuario actual
     useEffect(() => {
@@ -216,6 +196,7 @@ const AllBookings = () => {
     // Filtro 
     const handleApplyFilters = async () => {
         setDateRangeError(null);
+        setLoading(true);
         const filters = {};
 
         if (filterType === 'deporte' && filterValue !== 'todos') {
@@ -226,6 +207,7 @@ const AllBookings = () => {
             if (new Date(startDate) > new Date(endDate)) {
                 setDateRangeError("La fecha de inicio no puede ser posterior a la fecha de fin.");
                 setReservations([]); // limpio reservas para mostrar solo el error
+                setLoading(false);
                 return;
             }
             const isoStart = new Date(startDate).toISOString();
@@ -244,6 +226,8 @@ const AllBookings = () => {
         } catch (err) {
             console.error('Error al aplicar filtros:', err);
             setError('No se pudieron obtener las reservas filtradas.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -296,102 +280,83 @@ const AllBookings = () => {
 
 
     return (
-        <div
-            style={{
-                height: 'calc(100vh - 80px)',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                padding: '40px 20px 60px 20px',
-            }}
-        >
-            <Container style={{ maxWidth: '900px' }} className="reservations-container">
-
+        <div style={{
+            height: 'calc(100vh - 80px)',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: "16px 32px 60px 32px"
+        }}>
+            {/* Estilos personalizados para el scrollbar */}
+            <style>
+                {`
+                    .all-bookings-container::-webkit-scrollbar {
+                        width: 10px;
+                    }
+                    .all-bookings-container::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    .all-bookings-container::-webkit-scrollbar-thumb {
+                        background-color: rgba(0, 0, 0, 0.3);
+                        border-radius: 10px;
+                        border: 2px solid transparent;
+                        background-clip: padding-box;
+                    }
+                    .all-bookings-container::-webkit-scrollbar-thumb:hover {
+                        background-color: rgba(0, 0, 0, 0.5);
+                    }
+                `}
+            </style>
+            <div className="max-w-6xl mx-auto pb-20 all-bookings-container">
                 {/* ENCABEZADO */}
-                <div
-                    style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(10px)',
-                        borderRadius: '16px',
-                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                        padding: '24px',
-                        marginBottom: '24px',
-                    }}
-                >
-                    <h2 style={{ fontWeight: '600', color: '#000' }}>Reservas</h2>
-                    <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.95rem' }}>
-                        Aquí puedes ver las reservas de tus clientes y gestionar los pagos
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Reservas</h1>
+                    <p className="text-gray-600">
+                        Gestiona las reservas de tus clientes y administra los pagos
                     </p>
                 </div>
 
-                {/* BOTÓN DE INGRESOS / VOLVER */}
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'flex-start',
-                        marginBottom: '20px',
-                        position: 'relative',
-                        zIndex: 10,
-                    }}
-                >
-                    {!showRangeFilter ? (
-                        <Button
-                            onClick={() => {
-                                setShowRangeFilter(true);
-                                // limpiar filtros al entrar a ingresos
+                {/* BOTÓN DE TOGGLE ENTRE FILTROS E INGRESOS */}
+                <div className="mb-6">
+                    <button
+                        onClick={() => {
+                            setShowRangeFilter(!showRangeFilter);
+                            if (!showRangeFilter) {
+                                // Limpiar filtros al entrar a ingresos
                                 setFilterType('');
                                 setFilterValue('');
-                            }}
-                            style={{
-                                backgroundColor: '#ffffff',
-                                border: '1px solid #d1d1d1',
-                                borderRadius: '8px',
-                                fontWeight: '500',
-                                color: '#000',
-                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
-                                padding: '8px 18px',
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
-                            onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
-                        >
-                            Ingresos por rango
-                        </Button>
-                    ) : (
-                        <Button
-                            onClick={() => {
-                                // salir del modo rango
-                                setShowRangeFilter(false);
+                            } else {
+                                // Salir del modo rango
                                 setStartDate('');
                                 setEndDate('');
                                 setRangeReservations([]);
                                 setTotalIncome(null);
                                 setError(null);
-                            }}
-                            style={{
-                                backgroundColor: '#ffffff',
-                                border: '1px solid #d1d1d1',
-                                borderRadius: '8px',
-                                fontWeight: '500',
-                                color: '#000',
-                                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.08)',
-                                padding: '8px 18px',
-                                transition: 'all 0.2s ease',
-                            }}
-                            onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
-                            onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
-                        >
-                            ← Volver
-                        </Button>
-                    )}
+                            }
+                        }}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-900 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                    >
+                        {!showRangeFilter ? (
+                            <>
+                                <IoTrendingUpOutline size={20} />
+                                Reportes de ingresos
+                            </>
+                        ) : (
+                            <>
+                                <IoFilterOutline size={20} />
+                                ← Todas las reservas
+                            </>
+                        )}
+                    </button>
                 </div>
 
-                {/* BARRA DE FILTROS (solo si NO estamos en ingresos) */}
+                {/* SECCIÓN DE FILTROS */}
                 {!showRangeFilter && (
-                    <div style={filterPanelStyle}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <label style={{ fontWeight: '500', color: '#000', marginRight: '10px' }}>
-                                    Filtrar por:
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+                        <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+                            {/* Selector de tipo de filtro */}
+                            <div className="flex-shrink-0">
+                                <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                    Filtrar por
                                 </label>
                                 <select
                                     value={filterType}
@@ -399,191 +364,156 @@ const AllBookings = () => {
                                         setFilterType(e.target.value);
                                         setFilterValue('');
                                     }}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: '#fff',
-                                    }}
+                                    className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
                                 >
-                                    <option value="">Selecciona filtro</option>
+                                    <option value="">Seleccionar...</option>
                                     <option value="deporte">Deporte</option>
                                     <option value="estado">Estado de pago</option>
-                                    <option value="fecha">Fecha</option>
+                                    <option value="fecha">Rango de fechas</option>
                                 </select>
                             </div>
-                            <div style={{ width: '120px' }} />
-                        </div>
 
-                        {filterType === 'deporte' && (
-                            <div style={{ marginTop: '12px' }}>
-                                <label style={{ marginRight: '10px', color: '#000' }}>Deporte:</label>
-                                <select
-                                    value={filterValue}
-                                    onChange={(e) => setFilterValue(e.target.value)}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: '#fff',
-                                    }}
-                                >
-                                    <option value="todos">Todos</option>
-                                    <option value="futbol">Futbol</option>
-                                    <option value="basquet">Basquet</option>
-                                    <option value="paddle">Paddle</option>
-                                </select>
-                            </div>
-                        )}
-
-                        {filterType === 'estado' && (
-                            <div style={{ marginTop: '12px' }}>
-                                <label style={{ marginRight: '10px', color: '#000' }}>Estado:</label>
-                                <select
-                                    value={filterValue}
-                                    onChange={(e) => setFilterValue(e.target.value)}
-                                    style={{
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        border: '1px solid #ccc',
-                                        backgroundColor: '#fff',
-                                    }}
-                                >
-                                    <option value="todos">Todos</option>
-                                    <option value="pagado">Pagado</option>
-                                    <option value="pendiente">Pendiente</option>
-                                </select>
-                            </div>
-                        )}
-
-                        {filterType === 'fecha' && (
-                            <div style={{ marginTop: '12px' }}>
-                                <label style={{ marginRight: '10px', color: '#000' }}>Rango de fechas:</label>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <input
-                                        type="date"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '6px 10px',
-                                            border: '1px solid #ccc',
-                                            backgroundColor: '#fff',
-                                        }}
-                                    />
-                                    <span style={{ color: '#000' }}>→</span>
-                                    <input
-                                        type="date"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '6px 10px',
-                                            border: '1px solid #ccc',
-                                            backgroundColor: '#fff',
-                                        }}
-                                    />
+                            {/* Filtro por Deporte */}
+                            {filterType === 'deporte' && (
+                                <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                        Deporte
+                                    </label>
+                                    <select
+                                        value={filterValue}
+                                        onChange={(e) => setFilterValue(e.target.value)}
+                                        className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                    >
+                                        <option value="todos">Todos</option>
+                                        <option value="futbol">Fútbol</option>
+                                        <option value="basquet">Básquet</option>
+                                        <option value="paddle">Pádel</option>
+                                    </select>
                                 </div>
+                            )}
 
-                                {/* Mensaje de error de rango inválido */}
-                                {dateRangeError && (
-                                    <p style={{ color: 'red', marginTop: '8px', fontSize: '0.9rem' }}>
-                                        {dateRangeError}
-                                    </p>
-                                )}
+                            {/* Filtro por Estado */}
+                            {filterType === 'estado' && (
+                                <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                        Estado de pago
+                                    </label>
+                                    <select
+                                        value={filterValue}
+                                        onChange={(e) => setFilterValue(e.target.value)}
+                                        className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                    >
+                                        <option value="todos">Todos</option>
+                                        <option value="pagado">Pagado</option>
+                                        <option value="pendiente">Pendiente</option>
+                                    </select>
+                                </div>
+                            )}
 
+                            {/* Filtro por Fecha */}
+                            {filterType === 'fecha' && (
+                                <div className="flex-grow animate-in fade-in duration-200">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                        Rango de fechas
+                                    </label>
+                                    <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                                        <input
+                                            type="date"
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                            className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                        />
+                                        <span className="hidden sm:block text-gray-300">→</span>
+                                        <input
+                                            type="date"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Botón Aplicar Filtros */}
+                            <div className="flex-shrink-0 lg:ml-auto">
+                                <button
+                                    onClick={handleApplyFilters}
+                                    disabled={loading}
+                                    className="h-10 px-6 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Filtrando...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <IoFilterOutline size={16} />
+                                            Aplicar
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Error de rango de fechas */}
+                        {filterType === 'fecha' && dateRangeError && (
+                            <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs font-medium">
+                                {dateRangeError}
                             </div>
                         )}
-
-                        {/* BOTÓN PARA APLICAR FILTROS */}
-                        <div style={{ marginTop: '16px' }}>
-                            <Button
-                                onClick={handleApplyFilters}
-                                style={{
-                                    backgroundColor: '#ffffff',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    color: '#000',
-                                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
-                                    padding: '6px 14px',
-                                }}
-                                onMouseEnter={(e) => (e.target.style.backgroundColor = '#f8f9fa')}
-                                onMouseLeave={(e) => (e.target.style.backgroundColor = '#ffffff')}
-                            >
-                                Aplicar filtros
-                            </Button>
-                        </div>
-                        {/* 🔚 FIN DEL NUEVO BOTÓN */}
                     </div>
                 )}
 
                 {/* SECCIÓN DE INGRESOS POR RANGO */}
                 {showRangeFilter && (
-                    <div
-                        style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            backdropFilter: 'blur(10px)',
-                            borderRadius: '16px',
-                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-                            padding: '16px',
-                            marginBottom: '24px',
-                        }}
-                    >
-                        <h5 style={{ color: '#000', fontWeight: '600' }}>Ingresos por rango de fechas</h5>
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '10px' }}>
+                    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <IoTrendingUpOutline size={24} className="text-gray-700" />
+                            <h3 className="text-lg font-semibold text-gray-900">Ingresos por rango de fechas</h3>
+                        </div>
+
+                        <div className="flex flex-col md:flex-row gap-3 items-start md:items-center mb-4">
                             <input
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
+                                className="w-full md:w-auto p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900"
                             />
-                            <span style={{ color: '#000' }}>→</span>
+                            <span className="hidden md:block text-gray-400">→</span>
                             <input
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                style={{
-                                    borderRadius: '8px',
-                                    padding: '6px 10px',
-                                    border: '1px solid #ccc',
-                                    backgroundColor: '#fff',
-                                }}
+                                className="w-full md:w-auto p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900"
                             />
-                            <Button
+                            <button
                                 onClick={handleGetRangeIncome}
-                                style={{
-                                    backgroundColor: '#fff',
-                                    border: '1px solid #ccc',
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    color: '#000',
-                                }}
+                                className="px-6 py-3 bg-gray-900 text-white font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg"
                             >
                                 Consultar
-                            </Button>
+                            </button>
                         </div>
 
                         {totalIncome !== null && (
-                            <p style={{ color: '#000', marginTop: '16px', fontWeight: '500' }}>
-                                INGRESOS TOTALES: ${totalIncome.toFixed(2)}
-                            </p>
+                            <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+                                <p className="text-sm text-gray-600 mb-1">INGRESOS TOTALES</p>
+                                <p className="text-4xl font-bold text-green-700">${totalIncome.toFixed(2)}</p>
+                            </div>
                         )}
 
-                        {rangeReservations.length > 0 &&
-                            rangeReservations.map((r) => (
-                                <ReservationCard
-                                    key={r.id}
-                                    reservation={r}
-                                    onPayClick={handlePayClick}
-                                    payButtonText={'Ver pago'}
-                                />
-                            ))}
+                        {rangeReservations.length > 0 && (
+                            <div className="mt-6">
+                                {rangeReservations.map((r) => (
+                                    <ReservationCard
+                                        key={r.id}
+                                        reservation={r}
+                                        onPayClick={handlePayClick}
+                                        payButtonText={'Ver pago'}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -591,21 +521,14 @@ const AllBookings = () => {
                 {!showRangeFilter && !loading && !error && (
                     <>
                         {reservations.length === 0 ? (
-                            <div
-                                style={{
-                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                    backdropFilter: 'blur(10px)',
-                                    borderRadius: '16px',
-                                    padding: '48px 24px',
-                                    textAlign: 'center',
-                                }}
-                            >
-                                <p style={{ color: '#6c757d', fontSize: '1.1rem' }}>
-                                    No hay reservas para este filtro
+                            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                                <IoCalendarOutline size={64} className="mx-auto text-gray-300 mb-4" />
+                                <p className="text-gray-600 text-lg">
+                                    No hay reservas para mostrar
                                 </p>
                             </div>
                         ) : (
-                            <div>
+                            <div className="space-y-4">
                                 {reservations.map((reservation) => (
                                     <ReservationCard
                                         key={reservation.id}
@@ -621,22 +544,21 @@ const AllBookings = () => {
                     </>
                 )}
 
-                {/* LOADING / ERROR */}
+                {/* LOADING */}
                 {loading && (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" variant="dark" />
-                        <p className="mt-3" style={{ color: '#000' }}>
-                            Cargando...
-                        </p>
+                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                        <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-gray-600">Cargando reservas...</p>
                     </div>
                 )}
 
+                {/* ERROR */}
                 {error && (
-                    <Alert variant="danger" style={{ backgroundColor: 'rgba(255, 255, 255, 0.95)' }}>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
                         {error}
-                    </Alert>
+                    </div>
                 )}
-            </Container>
+            </div>
 
             {/* Modal de detalles de pago */}
             <PaymentDetailsModal

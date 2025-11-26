@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Spinner, Alert } from 'react-bootstrap';
-import ReservationCard from '../components/bookings/ReservationCard';
-import EditReservationModal from '../components/bookings/EditReservationModal';
-import { getMyReservations, getAllCourts, updateOwnReservation} from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
+import { Spinner } from 'react-bootstrap';
+import EditReservationModal from '../components/bookings/EditReservationModal';
+import ReservationCard from '../components/bookings/ReservationCard';
 import { useToast } from '../hooks/useToast';
+import { getAllCourts, getMyReservations, updateOwnReservation } from '../services/api';
 
 const MyBookings = () => {
     const [reservations, setReservations] = useState([]);
@@ -72,14 +72,14 @@ const MyBookings = () => {
         try {
             setIsSaving(true);
             await updateOwnReservation(reservationId, updatedData);
-            
+
             // Recargar las reservas
             const data = await getMyReservations();
             const sortedData = data.sort((a, b) =>
                 new Date(b.start_time) - new Date(a.start_time)
             );
             setReservations(sortedData);
-            
+
             setShowEditModal(false);
             setSelectedReservation(null);
             toast.success('Reserva actualizada exitosamente');
@@ -125,63 +125,43 @@ const MyBookings = () => {
                     }
                 `}
             </style>
-            <Container style={{ maxWidth: "900px" }} className="reservations-container">
+            <div className="max-w-6xl mx-auto pb-20 reservations-container">
                 {/* Título */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "none",
-                        padding: "24px",
-                        marginBottom: "24px",
-                    }}
-                >
-                    <h2 className="mb-0" style={{ fontWeight: '600', color: '#000' }}>
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-2">
                         Mis Reservas
                     </h2>
-                    <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.95rem' }}>
+                    <p className="text-gray-600">
                         Aquí puedes ver todas tus reservas y gestionar los pagos
                     </p>
                 </div>
 
                 {/* Loading */}
                 {loading && (
-                    <div className="text-center py-5">
+                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                         <Spinner animation="border" variant="dark" />
-                        <p className="mt-3" style={{ color: '#000' }}>Cargando reservas...</p>
+                        <p className="mt-3 text-gray-600">Cargando reservas...</p>
                     </div>
                 )}
 
                 {/* Error */}
                 {error && (
-                    <Alert variant="danger" style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
                         {error}
-                    </Alert>
+                    </div>
                 )}
 
                 {/* Lista de reservas */}
                 {!loading && !error && (
                     <>
                         {reservations.length === 0 ? (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                    backdropFilter: "blur(10px)",
-                                    borderRadius: "16px",
-                                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                                    border: "none",
-                                    padding: "48px 24px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                <p style={{ color: '#6c757d', fontSize: '1.1rem', marginBottom: '0' }}>
+                            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                                <p className="text-gray-600 text-lg">
                                     No tienes reservas aún
                                 </p>
                             </div>
                         ) : (
-                            <div>
+                            <div className="space-y-4">
                                 {reservations.map((reservation) => (
                                     <ReservationCard
                                         key={reservation.id}
@@ -196,7 +176,7 @@ const MyBookings = () => {
                         )}
                     </>
                 )}
-            </Container>
+            </div>
 
             {/* Modal de edición */}
             {showEditModal && selectedReservation && (
