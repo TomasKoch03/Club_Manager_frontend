@@ -10,7 +10,10 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
     const [editForm, setEditForm] = useState({
         name: court.name,
         sport: court.sport.toLowerCase(),
-        amount: court.amount,
+        base_price: court.base_price,
+        light_price: court.light_price || 0,
+        ball_price: court.ball_price || 0,
+        racket_price: court.racket_price || 0,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -43,7 +46,10 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         setEditForm({
             name: court.name,
             sport: court.sport.toLowerCase(),
-            amount: court.amount,
+            base_price: court.base_price,
+            light_price: court.light_price || 0,
+            ball_price: court.ball_price || 0,
+            racket_price: court.racket_price || 0,
         });
         setShowEditModal(true);
         setError(null);
@@ -95,7 +101,9 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         const { name, value } = e.target;
         setEditForm(prev => ({
             ...prev,
-            [name]: name === 'amount' ? parseFloat(value) : value
+            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price') 
+                ? parseFloat(value) 
+                : value
         }));
     };
 
@@ -126,7 +134,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                             <div className="mb-2">
                                 <IoPricetagOutline size={18} style={{ marginRight: '8px', color: '#6c757d' }} />
                                 <span style={{ color: '#495057', fontSize: '0.95rem' }}>
-                                    ${court.amount.toLocaleString('es-AR')}
+                                    ${court.base_price.toLocaleString('es-AR')}
                                 </span>
                             </div>
                         </Col>
@@ -219,13 +227,55 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: '500' }}>Precio</Form.Label>
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Base</Form.Label>
                             <Form.Control
                                 type="number"
-                                name="amount"
-                                value={editForm.amount}
+                                name="base_price"
+                                value={editForm.base_price}
                                 onChange={handleInputChange}
                                 required
+                                min="0"
+                                step="0.01"
+                                disabled={loading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Luz Artificial</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="light_price"
+                                value={editForm.light_price}
+                                onChange={handleInputChange}
+                                min="0"
+                                step="0.01"
+                                disabled={loading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Pelota</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="ball_price"
+                                value={editForm.ball_price}
+                                onChange={handleInputChange}
+                                min="0"
+                                step="0.01"
+                                disabled={loading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio por Raqueta</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="racket_price"
+                                value={editForm.racket_price}
+                                onChange={handleInputChange}
                                 min="0"
                                 step="0.01"
                                 disabled={loading}

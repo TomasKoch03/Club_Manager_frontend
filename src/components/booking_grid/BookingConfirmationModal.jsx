@@ -1,7 +1,8 @@
-import { Modal, Button, Row, Col } from 'react-bootstrap';
+import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useState } from 'react';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -18,9 +19,33 @@ const BookingConfirmationModal = ({
                                       preferenceId,
                                       isLoadingPreference
                                   }) => {
+    const [extras, setExtras] = useState({
+        light: false,
+        ball: false,
+        number_of_rackets: 0
+    });
+
     if (!bookingData) return null;
 
-    const { courtName, date, startTime, endTime, amount } = bookingData;
+    const { courtName, date, startTime, endTime, amount, court } = bookingData;
+
+    // Calcular precio total incluyendo extras
+    const calculateTotalPrice = () => {
+        let total = amount;
+        if (extras.light && court?.light_price) total += court.light_price;
+        if (extras.ball && court?.ball_price) total += court.ball_price;
+        if (extras.number_of_rackets > 0 && court?.racket_price) {
+            total += court.racket_price * extras.number_of_rackets;
+        }
+        return total;
+    };
+
+    const handleExtraChange = (field, value) => {
+        setExtras(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
 
     // Formatear fecha
     const formatDate = (dateString) => {
@@ -124,16 +149,98 @@ const BookingConfirmationModal = ({
                                     {formatTime(startTime)} - {formatTime(endTime)}
                                 </p>
                             </div>
+
+                            {/* Extras */}
+                            <div className="mt-4">
+                                <h6 className="mb-3" style={{ fontWeight: '600', color: '#000' }}>
+                                    Extras
+                                </h6>
+                                
+                                {/* Luz artificial */}
+                                {court?.light_price > 0 && (
+                                    <Form.Check 
+                                        type="checkbox"
+                                        id="light-checkbox"
+                                        label={`Luz artificial (+$${court.light_price})`}
+                                        checked={extras.light}
+                                        onChange={(e) => handleExtraChange('light', e.target.checked)}
+                                        className="mb-2"
+                                    />
+                                )}
+
+                                {/* Pelota */}
+                                {court?.ball_price > 0 && (
+                                    <Form.Check 
+                                        type="checkbox"
+                                        id="ball-checkbox"
+                                        label={`Pelota (+$${court.ball_price})`}
+                                        checked={extras.ball}
+                                        onChange={(e) => handleExtraChange('ball', e.target.checked)}
+                                        className="mb-2"
+                                    />
+                                )}
+
+                                {/* Raquetas */}
+                                {court?.racket_price > 0 && (
+                                    <Form.Group className="mb-2">
+                                        <Form.Label style={{ fontSize: '0.9rem' }}>
+                                            Cantidad de raquetas (${court.racket_price} c/u)
+                                        </Form.Label>
+                                        <Form.Select
+                                            value={extras.number_of_rackets}
+                                            onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
+                                            style={{ maxWidth: '120px' }}
+                                        >
+                                            <option value="0">0</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                )}
+                            </div>
                         </Col>
 
                         {/* Monto a pagar - Derecha */}
                         <Col xs={12} md={5} className="d-flex flex-column justify-content-end">
                             <div className="text-end">
+                                <div className="mb-3">
+                                    <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
+                                        Precio base
+                                    </p>
+                                    <p style={{ fontSize: '1.2rem', fontWeight: '600', color: '#495057', marginBottom: '0' }}>
+                                        ${amount}
+                                    </p>
+                                </div>
+                                {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
+                                    <div className="mb-3">
+                                        <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
+                                            Extras
+                                        </p>
+                                        {extras.light && court?.light_price > 0 && (
+                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
+                                                Luz: ${court.light_price}
+                                            </p>
+                                        )}
+                                        {extras.ball && court?.ball_price > 0 && (
+                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
+                                                Pelota: ${court.ball_price}
+                                            </p>
+                                        )}
+                                        {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
+                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
+                                                Raquetas ({extras.number_of_rackets}): ${court.racket_price * extras.number_of_rackets}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                                <hr style={{ borderColor: '#dee2e6', margin: '16px 0' }} />
                                 <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '8px' }}>
                                     Total a pagar
                                 </p>
                                 <p style={{ fontSize: '3rem', fontWeight: '700', color: '#000', marginBottom: '0', lineHeight: '1' }}>
-                                    ${amount}
+                                    ${calculateTotalPrice()}
                                 </p>
                             </div>
                         </Col>
@@ -152,7 +259,7 @@ const BookingConfirmationModal = ({
                     {/* Botón izquierdo - Pagar en el club */}
                     <Button
                         variant="outline-dark"
-                        onClick={onPayInClub}
+                        onClick={() => onPayInClub(extras)}
                         style={{ minWidth: '180px', fontWeight: '500' }}
                     >
                         Pagar en el club
@@ -169,7 +276,7 @@ const BookingConfirmationModal = ({
                     ) : (
                         <Button
                             variant="primary"
-                            onClick={onPayWithMercadoPago}
+                            onClick={() => onPayWithMercadoPago(extras)}
                             disabled={isLoadingPreference}
                             style={{ 
                                 minWidth: '180px', 

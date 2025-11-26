@@ -13,7 +13,10 @@ const ManageCourts = () => {
     const [createForm, setCreateForm] = useState({
         name: '',
         sport: 'futbol',
-        amount: '',
+        base_price: '',
+        light_price: 0,
+        ball_price: 0,
+        racket_price: 0,
     });
     const [createLoading, setCreateLoading] = useState(false);
     const [createError, setCreateError] = useState(null);
@@ -61,7 +64,10 @@ const ManageCourts = () => {
         setCreateForm({
             name: '',
             sport: 'futbol',
-            amount: '',
+            base_price: '',
+            light_price: 0,
+            ball_price: 0,
+            racket_price: 0,
         });
         setCreateError(null);
         setShowCreateModal(true);
@@ -71,7 +77,9 @@ const ManageCourts = () => {
         const { name, value } = e.target;
         setCreateForm(prev => ({
             ...prev,
-            [name]: name === 'amount' ? value : value
+            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price') 
+                ? value 
+                : value
         }));
     };
 
@@ -84,7 +92,10 @@ const ManageCourts = () => {
             await createCourt({
                 name: createForm.name,
                 sport: createForm.sport,
-                amount: parseFloat(createForm.amount),
+                base_price: parseFloat(createForm.base_price),
+                light_price: parseFloat(createForm.light_price) || 0,
+                ball_price: parseFloat(createForm.ball_price) || 0,
+                racket_price: parseFloat(createForm.racket_price) || 0,
             });
             setShowCreateModal(false);
             fetchCourts(selectedSport);
@@ -275,11 +286,11 @@ const ManageCourts = () => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: '500' }}>Precio</Form.Label>
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Base</Form.Label>
                             <Form.Control
                                 type="number"
-                                name="amount"
-                                value={createForm.amount}
+                                name="base_price"
+                                value={createForm.base_price}
                                 onChange={handleCreateInputChange}
                                 placeholder="0.00"
                                 required
@@ -288,6 +299,60 @@ const ManageCourts = () => {
                                 disabled={createLoading}
                                 style={{ borderRadius: '8px' }}
                             />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Luz Artificial</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="light_price"
+                                value={createForm.light_price}
+                                onChange={handleCreateInputChange}
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                disabled={createLoading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                            <Form.Text className="text-muted">
+                                Opcional. Dejar en 0 si no se ofrece.
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio Pelota</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="ball_price"
+                                value={createForm.ball_price}
+                                onChange={handleCreateInputChange}
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                disabled={createLoading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                            <Form.Text className="text-muted">
+                                Opcional. Dejar en 0 si no se ofrece.
+                            </Form.Text>
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label style={{ fontWeight: '500' }}>Precio por Raqueta</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="racket_price"
+                                value={createForm.racket_price}
+                                onChange={handleCreateInputChange}
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                disabled={createLoading}
+                                style={{ borderRadius: '8px' }}
+                            />
+                            <Form.Text className="text-muted">
+                                Opcional. Dejar en 0 si no se ofrece.
+                            </Form.Text>
                         </Form.Group>
 
                         <div className="d-flex justify-content-end gap-2 mt-4">

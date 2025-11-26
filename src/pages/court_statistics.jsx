@@ -64,7 +64,8 @@ const CourtStatistics = () => {
                 
                 if (reservation.payment?.status === "pagado" || reservation.payment?.status === "paid") {
                     courtMap[courtId].paidReservations++;
-                    courtMap[courtId].totalRevenue += parseFloat(reservation.court.amount);
+                    // Usar el monto del pago, no el de la cancha (incluye extras)
+                    courtMap[courtId].totalRevenue += parseFloat(reservation.payment.amount);
                 } else {
                     courtMap[courtId].pendingReservations++;
                 }

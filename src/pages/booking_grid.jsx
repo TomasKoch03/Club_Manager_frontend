@@ -115,7 +115,8 @@ const BookingGrid = () => {
             date: selectedDate.toISOString(),
             startTime: slotStart.toISOString(),
             endTime: slotEnd.toISOString(),
-            amount: selectedCourt?.amount || 0
+            amount: selectedCourt?.base_price || 0,
+            court: selectedCourt  // Agregar el objeto court completo
         });
 
         // Resetear el preferenceId al abrir un nuevo modal
@@ -124,7 +125,7 @@ const BookingGrid = () => {
     };
 
     // <CHANGE> Handler para pagar en el club (crea la reserva)
-    const handlePayInClub = async () => {
+    const handlePayInClub = async (extras) => {
         if (!selectedBooking) return;
 
         try {
@@ -133,18 +134,33 @@ const BookingGrid = () => {
                 ? await postReservationForUser(userId, {
                     court_id: selectedBooking.courtId,
                     start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime
+                    end_time: selectedBooking.endTime,
+                    light: extras.light,
+                    ball: extras.ball,
+                    number_of_rackets: extras.number_of_rackets
                 })
                 : await postReservation({
                     court_id: selectedBooking.courtId,
                     start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime
+                    end_time: selectedBooking.endTime,
+                    light: extras.light,
+                    ball: extras.ball,
+                    number_of_rackets: extras.number_of_rackets
                 });
+
+            // Calcular el monto total incluyendo extras
+            const court = selectedBooking.court;
+            let totalAmount = court.base_price;
+            if (extras.light && court.light_price) totalAmount += court.light_price;
+            if (extras.ball && court.ball_price) totalAmount += court.ball_price;
+            if (extras.number_of_rackets > 0 && court.racket_price) {
+                totalAmount += court.racket_price * extras.number_of_rackets;
+            }
 
             await postPayment({
                 method: 'efectivo',
                 status: 'pendiente',
-                amount: data.court.amount,
+                amount: totalAmount,
                 reservation_id: data.id
             });
 
@@ -168,7 +184,7 @@ const BookingGrid = () => {
         }
     };
 
-    const handlePayWithMercadoPago = async () => {
+    const handlePayWithMercadoPago = async (extras) => {
         if (!selectedBooking) return;
 
         try {
@@ -179,13 +195,36 @@ const BookingGrid = () => {
                 ? await postReservationForUser(userId, {
                     court_id: selectedBooking.courtId,
                     start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime
+                    end_time: selectedBooking.endTime,
+                    light: extras.light,
+                    ball: extras.ball,
+                    number_of_rackets: extras.number_of_rackets
                 })
                 : await postReservation({
                     court_id: selectedBooking.courtId,
                     start_time: selectedBooking.startTime,
-                    end_time: selectedBooking.endTime
+                    end_time: selectedBooking.endTime,
+                    light: extras.light,
+                    ball: extras.ball,
+                    number_of_rackets: extras.number_of_rackets
                 });
+
+            // Calcular el monto total incluyendo extras
+            const court = selectedBooking.court;
+            let totalAmount = court.base_price;
+            if (extras.light && court.light_price) totalAmount += court.light_price;
+            if (extras.ball && court.ball_price) totalAmount += court.ball_price;
+            if (extras.number_of_rackets > 0 && court.racket_price) {
+                totalAmount += court.racket_price * extras.number_of_rackets;
+            }
+
+            // Crear un pago pendiente (será reemplazado cuando se pague con MP)
+            await postPayment({
+                method: 'mercadopago',
+                status: 'pendiente',
+                amount: totalAmount,
+                reservation_id: data.id
+            });
 
             // Crear la preferencia de Mercado Pago
             const preference = await createMercadoPagoPreference(data.id);

@@ -16,7 +16,10 @@ const EditReservationModal = ({
         court_id: '',
         user_id: '',
         start_time: '',
-        end_time: ''
+        end_time: '',
+        light: false,
+        ball: false,
+        number_of_rackets: 0
     });
     const [localError, setLocalError] = useState('');
 
@@ -41,7 +44,10 @@ const EditReservationModal = ({
                 court_id: reservation.court.id,
                 user_id: reservation.user.id,
                 start_time: formatForInput(startDate),
-                end_time: formatForInput(endDate)
+                end_time: formatForInput(endDate),
+                light: reservation.light || false,
+                ball: reservation.ball || false,
+                number_of_rackets: reservation.number_of_rackets || 0
             });
             setLocalError('');
         }
@@ -49,7 +55,7 @@ const EditReservationModal = ({
 
     if (!reservation) return null;
 
-    const hasPayment = reservation.payment.status !== "pendiente";
+    const hasPayment = reservation.payment && reservation.payment.status !== "pendiente";
 
     // Formatear fecha para mostrar
     const formatDate = (dateString) => {
@@ -105,7 +111,10 @@ const EditReservationModal = ({
             court_id: parseInt(formData.court_id),
             user_id: parseInt(formData.user_id),
             start_time: formatToLocalISO(formData.start_time),
-            end_time: formatToLocalISO(formData.end_time)
+            end_time: formatToLocalISO(formData.end_time),
+            light: formData.light,
+            ball: formData.ball,
+            number_of_rackets: formData.number_of_rackets
         };
 
         onSave(reservation.id, payload);
@@ -222,7 +231,7 @@ const EditReservationModal = ({
                                     </Form.Select>
                                     {selectedCourt && (
                                         <Form.Text className="text-muted">
-                                            Deporte: {selectedCourt.sport} | Precio: ${selectedCourt.amount}
+                                            Deporte: {selectedCourt.sport} | Precio base: ${selectedCourt.base_price}
                                         </Form.Text>
                                     )}
                                 </Form.Group>
@@ -270,6 +279,69 @@ const EditReservationModal = ({
                             </Col>
                         </Row>
 
+                        {/* Sección de Extras */}
+                        <Row className="mt-3">
+                            <Col xs={12}>
+                                <h6 style={{ fontWeight: '600', color: '#000', marginBottom: '16px' }}>
+                                    Extras
+                                </h6>
+                            </Col>
+                            
+                            <Col xs={12} md={6}>
+                                {/* Luz artificial */}
+                                <Form.Group className="mb-3">
+                                    <Form.Check 
+                                        type="checkbox"
+                                        id="light-checkbox"
+                                        label={`Luz artificial ${selectedCourt?.light_price > 0 ? `(+$${selectedCourt.light_price})` : ''}`}
+                                        checked={formData.light}
+                                        onChange={(e) => handleInputChange('light', e.target.checked)}
+                                        disabled={hasPayment}
+                                        style={{ opacity: hasPayment ? 0.6 : 1 }}
+                                    />
+                                </Form.Group>
+
+                                {/* Pelota */}
+                                <Form.Group className="mb-3">
+                                    <Form.Check 
+                                        type="checkbox"
+                                        id="ball-checkbox"
+                                        label={`Pelota ${selectedCourt?.ball_price > 0 ? `(+$${selectedCourt.ball_price})` : ''}`}
+                                        checked={formData.ball}
+                                        onChange={(e) => handleInputChange('ball', e.target.checked)}
+                                        disabled={hasPayment}
+                                        style={{ opacity: hasPayment ? 0.6 : 1 }}
+                                    />
+                                </Form.Group>
+                            </Col>
+
+                            <Col xs={12} md={6}>
+                                {/* Raquetas */}
+                                <Form.Group className="mb-3">
+                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
+                                        Cantidad de raquetas {selectedCourt?.racket_price > 0 ? `($${selectedCourt.racket_price} c/u)` : ''}
+                                    </Form.Label>
+                                    <Form.Select
+                                        value={formData.number_of_rackets}
+                                        onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
+                                        disabled={hasPayment}
+                                        style={{
+                                            borderRadius: '8px',
+                                            padding: '10px',
+                                            maxWidth: '150px',
+                                            opacity: hasPayment ? 0.6 : 1
+                                        }}
+                                    >
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+
                         {/* Información adicional */}
                         <div
                             className="mt-3 p-3"
@@ -283,7 +355,7 @@ const EditReservationModal = ({
                                 <strong>Reserva ID:</strong> #{reservation.id}
                             </div>
                             <div className="mb-2">
-                                <strong>Estado:</strong> {reservation.payment.status}
+                                <strong>Estado:</strong> {reservation.payment ? reservation.payment.status : 'pendiente'}
                             </div>
                             <div>
                                 <strong>Creada el:</strong> {formatDate(reservation.created_at)}
@@ -315,7 +387,7 @@ const EditReservationModal = ({
                         {hasPayment ? 'Cerrar' : 'Cancelar'}
                     </Button>
 
-                    {reservation.payment.status === "pendiente" && (
+                    {(!reservation.payment || reservation.payment.status === "pendiente") && (
                         <Button
                             variant="dark"
                             onClick={handleSubmit}
