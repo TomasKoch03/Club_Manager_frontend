@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Spinner, Alert } from 'react-bootstrap';
 import UserCard from '../components/users/UserCard';
 import { getAllUsers } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -36,7 +35,7 @@ const SelectUser = () => {
             height: 'calc(100vh - 80px)',
             overflowY: 'auto',
             overflowX: 'hidden',
-            padding: "40px 20px 60px 20px"
+            padding: "16px 32px 60px 32px"
         }}>
             <style>
                 {`
@@ -57,63 +56,44 @@ const SelectUser = () => {
                     }
                 `}
             </style>
-            <Container style={{ maxWidth: "900px" }} className="users-container">
-                {/* Título */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "none",
-                        padding: "24px",
-                        marginBottom: "24px",
-                    }}
-                >
-                    <h2 className="mb-0" style={{ fontWeight: '600', color: '#000' }}>
-                        Usuarios
-                    </h2>
-                    <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.95rem' }}>
-                        Selecciona un usuario para realizar una reserva
-                    </p>
+            <div className="max-w-6xl mx-auto pb-20 users-container">
+                {/* HEADER - Toolbar Horizontal */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        {/* Título */}
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">Seleccionar Usuario</h1>
+                            <p className="text-sm text-gray-500">Selecciona un usuario para realizar una reserva</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Loading */}
                 {loading && (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" variant="dark" />
-                        <p className="mt-3" style={{ color: '#000' }}>Cargando usuarios...</p>
+                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                        <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-gray-600">Cargando usuarios...</p>
                     </div>
                 )}
 
                 {/* Error */}
                 {error && (
-                    <Alert variant="danger" style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
                         {error}
-                    </Alert>
+                    </div>
                 )}
 
-                {/* Lista de usuarios */}
+                {/* Lista de usuarios - BENTO STRIPS */}
                 {!loading && !error && (
                     <>
                         {users.length === 0 ? (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                    backdropFilter: "blur(10px)",
-                                    borderRadius: "16px",
-                                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                                    border: "none",
-                                    padding: "48px 24px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                <p style={{ color: '#6c757d', fontSize: '1.1rem', marginBottom: '0' }}>
+                            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                                <p className="text-gray-600 text-lg">
                                     No hay usuarios registrados
                                 </p>
                             </div>
                         ) : (
-                            <div>
+                            <div className="flex flex-col gap-3">
                                 {users.map((user) => (
                                     <UserCard
                                         key={user.id}
@@ -124,7 +104,7 @@ const SelectUser = () => {
                         )}
                     </>
                 )}
-            </Container>
+            </div>
         </div>
     );
 };

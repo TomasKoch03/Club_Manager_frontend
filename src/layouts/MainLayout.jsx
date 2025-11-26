@@ -1,9 +1,20 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from "../components/NavBar";
+import fondo from '../assets/fondo_landing_page.jpg';
 
 const MainLayout = () => {
     return (
-        <div className="h-screen w-full flex flex-col overflow-hidden bg-gray-50 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]">
+        <div
+            className="fixed inset-0 overflow-hidden p-0 m-0"
+            style={{
+                backgroundImage: `url(${fondo})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+            }}
+        >
+            <div className="absolute inset-0 filter backdrop-blur-md bg-black/30">
+            </div>
+
             <div className="relative z-10 flex flex-col h-full">
                 <Navbar />
                 {/* Main content area - flex-1 takes remaining space after navbar */}

@@ -23,7 +23,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         if (sportLower === 'futbol' || sportLower === 'fútbol') {
             return <IoFootballOutline size={24} className="text-green-600" />;
         } else if (sportLower === 'paddle') {
-            return <IoTennisballOutline size={24} className="text-blue-600" />;
+            return <IoTennisballOutline size={24} className="text-yellow-600" />;
         } else if (sportLower === 'basquet' || sportLower === 'básquet') {
             return <IoBasketballOutline size={24} className="text-orange-600" />;
         }
@@ -34,7 +34,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
     const getSportIconBg = (sport) => {
         const sportLower = sport.toLowerCase();
         if (sportLower === 'futbol' || sportLower === 'fútbol') return 'bg-green-50';
-        if (sportLower === 'paddle') return 'bg-blue-50';
+        if (sportLower === 'paddle') return 'bg-yellow-50';
         if (sportLower === 'basquet' || sportLower === 'básquet') return 'bg-orange-50';
         return 'bg-gray-50';
     };

@@ -6,9 +6,9 @@ const getVariantStyles = (variant) => {
             return 'text-green-600 group-hover:text-green-700';
         case 'paddle':
         case 'tennis':
-            return 'text-orange-500 group-hover:text-orange-600';
+            return 'text-yellow-600 group-hover:text-yellow-700';
         case 'basketball':
-            return 'text-red-600 group-hover:text-red-700';
+            return 'text-orange-600 group-hover:text-orange-700';
         case 'dark':
             return 'text-white';
         default:
