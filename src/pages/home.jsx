@@ -58,7 +58,7 @@ const Home = () => {
                             icon={IoCalendarOutline}
                             text="Mis Reservas"
                             href="/club-manager/mis-reservas"
-                            variant="default"
+                            variant="dark"
                         />
                     </div>
                     {/* Estado del Socio */}
