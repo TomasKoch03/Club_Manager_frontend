@@ -1,15 +1,12 @@
-import { IoCalendarOutline, IoLocationOutline, IoLockClosed, IoPencil, IoTimeOutline } from 'react-icons/io5';
+import { IoBasketballOutline, IoCalendarOutline, IoFootballOutline, IoLockClosed, IoPencil, IoReceiptOutline, IoTennisballOutline, IoTimeOutline } from 'react-icons/io5';
 
 const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, isAdmin }) => {
-    // Formatear fecha
-    const formatDate = (dateString) => {
+    // Formatear fecha corta
+    const formatDateShort = (dateString) => {
         const date = new Date(dateString);
-        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const months = [
-            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-        ];
-        return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]}`;
     };
 
     // Formatear hora
@@ -20,124 +17,117 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
         return `${hours}:${minutes}`;
     };
 
-    // Calcular duración en horas
-    const calculateDuration = () => {
-        const start = new Date(reservation.start_time);
-        const end = new Date(reservation.end_time);
-        const durationMinutes = (end - start) / (1000 * 60);
-        return (durationMinutes / 60).toFixed(2);
+    // Obtener ícono del deporte
+    const getSportIcon = (sport) => {
+        const sportLower = sport.toLowerCase();
+        if (sportLower === 'futbol' || sportLower === 'fútbol') {
+            return <IoFootballOutline size={24} className="text-green-600" />;
+        } else if (sportLower === 'paddle') {
+            return <IoTennisballOutline size={24} className="text-blue-600" />;
+        } else if (sportLower === 'basquet' || sportLower === 'básquet') {
+            return <IoBasketballOutline size={24} className="text-orange-600" />;
+        }
+        return <IoTennisballOutline size={24} className="text-gray-600" />;
     };
 
-    // Capitalizar primera letra
-    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+    // Obtener color de fondo del ícono según el deporte
+    const getSportIconBg = (sport) => {
+        const sportLower = sport.toLowerCase();
+        if (sportLower === 'futbol' || sportLower === 'fútbol') return 'bg-green-50';
+        if (sportLower === 'paddle') return 'bg-blue-50';
+        if (sportLower === 'basquet' || sportLower === 'básquet') return 'bg-orange-50';
+        return 'bg-gray-50';
+    };
 
     const isPaid = reservation.payment?.status === "pagado" || reservation.payment?.status === "paid";
     const paymentStatus = reservation.payment
         ? reservation.payment.status.toUpperCase()
-        : "SIN PAGAR";
+        : "PENDIENTE";
 
     // Obtener monto
     const paymentAmount = Number(reservation.payment?.amount ?? reservation.court?.price ?? 0);
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                {/* Información principal */}
-                <div className="flex-1">
-                    {/* Nombre de la cancha y deporte */}
-                    <div className="flex items-center gap-2 mb-3">
-                        <IoLocationOutline size={24} className="text-gray-700" />
-                        <h3 className="text-xl font-bold text-gray-900">{reservation.court.name}</h3>
+        <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between transition-all hover:shadow-md border border-gray-100">
+            {/* ZONA 1: Icon Box del Deporte */}
+            <div className="flex items-center gap-4 flex-1">
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${getSportIconBg(reservation.court.sport)}`}>
+                    {getSportIcon(reservation.court.sport)}
+                </div>
+
+                {/* ZONA 2: Información Principal (Nombre + Fecha/Hora) */}
+                <div className="flex-1 min-w-0">
+                    {/* Nombre de la cancha */}
+                    <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2 truncate">
+                        {reservation.court.name}
                         {isPaid && (
                             <IoLockClosed
-                                size={18}
-                                className="text-gray-400"
+                                size={16}
+                                className="text-gray-400 shrink-0"
                                 title="Reserva con pago - No editable"
                             />
                         )}
-                    </div>
+                    </h3>
 
-                    {/* Badge del deporte */}
-                    <div className="mb-4">
-                        <span className="inline-block px-3 py-1 bg-gray-900 text-white text-sm font-semibold rounded-lg">
-                            {capitalize(reservation.court.sport)}
+                    {/* Fecha y Hora en una línea */}
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5">
+                            <IoCalendarOutline size={14} />
+                            {formatDateShort(reservation.start_time)}
                         </span>
-                    </div>
-
-                    {/* Fecha del turno */}
-                    <div className="flex items-center gap-2 mb-2 text-gray-600">
-                        <IoCalendarOutline size={18} />
-                        <span className="font-medium">{formatDate(reservation.start_time)}</span>
-                    </div>
-
-                    {/* Horario */}
-                    <div className="flex items-center gap-2 mb-3 text-gray-600">
-                        <IoTimeOutline size={18} />
-                        <span className="font-semibold text-gray-900">
+                        <span className="text-gray-300">•</span>
+                        <span className="flex items-center gap-1.5">
+                            <IoTimeOutline size={14} />
                             {formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}
                         </span>
-                        <span className="text-sm text-gray-500">
-                            ({calculateDuration()}h)
-                        </span>
                     </div>
+                </div>
+            </div>
 
-                    {/* Fechas de solicitud y pago */}
-                    <div className="space-y-1">
-                        <p className="text-sm text-gray-500">
-                            Solicitado el {formatDate(reservation.created_at)}
-                        </p>
-                        {isPaid && reservation.payment?.updated_at && (
-                            <p className="text-sm text-green-600 font-medium">
-                                Pagado el {formatDate(reservation.payment.updated_at)}
-                            </p>
-                        )}
+            {/* ZONA 3: Metadata & Actions (Precio, Estado, Botones) */}
+            <div className="flex items-center gap-4 ml-4">
+                {/* Precio */}
+                <div className="text-right hidden md:block">
+                    <div className="text-lg font-bold text-gray-900">
+                        ${paymentAmount.toLocaleString('es-AR')}
                     </div>
                 </div>
 
-                {/* Estado y acciones */}
-                <div className="flex flex-col items-end gap-3">
-                    {/* Estado de pago y monto */}
-                    <div className="text-right">
-                        <span
-                            className={`inline-block px-4 py-2 rounded-xl font-bold text-sm mb-2 ${isPaid
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                                }`}
+                {/* Badge de Estado */}
+                <div className="hidden sm:block">
+                    <span
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${isPaid
+                            ? 'bg-green-100 text-green-700 border border-green-200'
+                            : 'bg-red-100 text-red-700 border border-red-200'
+                            }`}
+                    >
+                        {paymentStatus}
+                    </span>
+                </div>
+
+                {/* Icon Buttons */}
+                <div className="flex items-center gap-2">
+                    {/* Botón de Editar/Ver */}
+                    {onEditClick && (
+                        <button
+                            onClick={() => onEditClick(reservation.id)}
+                            className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                            title={isPaid ? 'Ver detalles' : 'Editar reserva'}
                         >
-                            {paymentStatus}
-                        </span>
-                        <div className="text-2xl font-bold text-gray-900">
-                            ${paymentAmount.toFixed(2)}
-                        </div>
-                    </div>
+                            <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                        </button>
+                    )}
 
-                    {/* Botones de acción */}
-                    <div className="flex gap-2">
-                        {/* Botón de editar */}
-                        {onEditClick && (
-                            <button
-                                onClick={() => onEditClick(reservation.id)}
-                                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${isPaid
-                                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    : 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-2 border-blue-200'
-                                    }`}
-                                title={isPaid ? 'Ver detalles (no editable)' : 'Editar reserva'}
-                            >
-                                <IoPencil size={16} />
-                                {isPaid ? 'Ver' : 'Editar'}
-                            </button>
-                        )}
-
-                        {/* Botón de pagar */}
-                        {!isPaid && onPayClick && (
-                            <button
-                                onClick={() => onPayClick(reservation.id)}
-                                className="px-4 py-2 bg-gray-900 text-white font-semibold rounded-xl hover:bg-gray-800 transition-all"
-                            >
-                                {payButtonText}
-                            </button>
-                        )}
-                    </div>
+                    {/* Botón de Pagar/Ver Pago */}
+                    {onPayClick && (
+                        <button
+                            onClick={() => onPayClick(reservation.id)}
+                            className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                            title={isPaid ? 'Ver detalles de pago' : 'Detalles del Pago'}
+                        >
+                            <IoReceiptOutline className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
