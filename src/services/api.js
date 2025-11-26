@@ -106,11 +106,11 @@ export const getCourts = async (sport) => {
         const endpoint = `/court/?sport=${encodeURIComponent(sport)}`;
         return apiRequest(endpoint);
     }
-    return apiRequest('/court');
+    return apiRequest('/court/');
 };
 
 export const getAllCourts = async () => {
-    const endpoint = `/court`;
+    const endpoint = `/court/`;
     return apiRequest(endpoint);
 };
 
@@ -156,7 +156,7 @@ export const getMyReservations = async () => {
 };
 
 export const getAllReservations = async () => {
-    return apiRequest('/reservation', {
+    return apiRequest('/reservation/', {
         method: 'GET',
     });
 };

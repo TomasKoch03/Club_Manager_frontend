@@ -1,51 +1,37 @@
-import { Row, Col, Button, ButtonGroup } from 'react-bootstrap';
-import { IoInformationCircleOutline } from 'react-icons/io5';
+import { IoChevronBack, IoChevronForward, IoInformationCircleOutline } from 'react-icons/io5';
 
 const BookingGridHeader = ({ sport, selectedDate, formatDate, onPrevDate, onNextDate }) => {
     return (
-        <>
-            <Row className="mb-3 align-items-center">
-                <Col xs={12} md={4}>
-                    <h2 className="text-capitalize mb-0">{sport}</h2>
-                </Col>
-                <Col xs={12} md={4} className="text-center">
-                    <ButtonGroup>
-                        <Button variant="outline-dark" onClick={onPrevDate}>
-                            ←
-                        </Button>
-                        <Button variant="outline-dark" disabled>
-                            {formatDate(selectedDate)}
-                        </Button>
-                        <Button variant="outline-dark" onClick={onNextDate}>
-                            →
-                        </Button>
-                    </ButtonGroup>
-                </Col>
-                <Col xs={12} md={4}>
-                    {/* Columna vacía para balance */}
-                </Col>
-            </Row>
-            <Row className="mb-3">
-                <Col xs={12}>
-                    <div
-                        style={{
-                            backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                            border: '1px solid rgba(13, 110, 253, 0.3)',
-                            borderRadius: '8px',
-                            padding: '12px 16px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}
+        <div className="mb-6">
+            <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+                <h2 className="text-3xl font-bold text-gray-800 capitalize">{sport}</h2>
+
+                <div className="flex items-center bg-gray-100 rounded-full p-1 shadow-inner">
+                    <button
+                        onClick={onPrevDate}
+                        className="p-2 rounded-full bg-transparent hover:bg-white hover:shadow-sm transition-all text-gray-600"
                     >
-                        <IoInformationCircleOutline size={20} style={{ color: '#0d6efd', flexShrink: 0 }} />
-                        <span style={{ fontSize: '0.9rem', color: '#495057' }}>
-                            <strong>Arrastra para seleccionar:</strong> Haz clic y arrastra sobre los horarios disponibles para elegir el tiempo que necesitas. Los bloques en rojo están ocupados.
-                        </span>
-                    </div>
-                </Col>
-            </Row>
-        </>
+                        <IoChevronBack size={20} />
+                    </button>
+                    <span className="px-6 font-medium text-gray-700 min-w-[140px] text-center">
+                        {formatDate(selectedDate)}
+                    </span>
+                    <button
+                        onClick={onNextDate}
+                        className="p-2 rounded-full bg-transparent hover:bg-white hover:shadow-sm transition-all text-gray-600"
+                    >
+                        <IoChevronForward size={20} />
+                    </button>
+                </div>                <div className="w-full md:w-auto md:min-w-[100px]"></div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3 text-blue-800">
+                <IoInformationCircleOutline size={24} className="flex-shrink-0 mt-0.5" />
+                <p className="text-sm leading-relaxed">
+                    <span className="font-semibold">Arrastra para seleccionar:</span> Haz clic y arrastra sobre los horarios disponibles para elegir el tiempo que necesitas. Los bloques en <span className="font-semibold text-red-500">rojo</span> están ocupados.
+                </p>
+            </div>
+        </div>
     );
 };
 
