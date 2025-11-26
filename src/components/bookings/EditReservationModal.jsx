@@ -1,7 +1,5 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Alert, Button, Col, Form, Modal, Row } from 'react-bootstrap';
-import { IoCalendarOutline, IoLocationOutline, IoLockClosed, IoPerson, IoTimeOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoPerson, IoTimeOutline } from 'react-icons/io5';
 
 const EditReservationModal = ({
     show,
@@ -53,7 +51,7 @@ const EditReservationModal = ({
         }
     }, [reservation]);
 
-    if (!reservation) return null;
+    if (!reservation || !show) return null;
 
     const hasPayment = reservation.payment && reservation.payment.status !== "pendiente";
 
@@ -124,73 +122,63 @@ const EditReservationModal = ({
     const selectedUser = users.find(u => u.id === parseInt(formData.user_id));
 
     return (
-        <Modal
-            show={show}
-            onHide={onHide}
-            centered
-            size="lg"
-            backdrop="static"
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div
-                style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.98)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "16px",
-                    border: "none",
-                }}
-            >
-                <Modal.Header
-                    closeButton
-                    style={{
-                        borderBottom: '1px solid #dee2e6',
-                        backgroundColor: 'transparent',
-                    }}
-                >
-                    <Modal.Title style={{ fontWeight: '600', color: '#000' }}>
-                        {hasPayment ? 'Detalles de la Reserva' : 'Editar Reserva'}
-                    </Modal.Title>
-                </Modal.Header>
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+                onClick={onHide}
+            ></div>
 
-                <Modal.Body style={{ padding: '32px' }}>
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+                    <h3 className="text-xl font-bold text-gray-900">
+                        {hasPayment ? 'Detalles de la Reserva' : 'Editar Reserva'}
+                    </h3>
+                    <button
+                        onClick={onHide}
+                        className="p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors text-gray-500"
+                    >
+                        <IoClose size={24} />
+                    </button>
+                </div>
+
+                {/* Body */}
+                <div className="p-4 md:p-6 overflow-y-auto custom-scrollbar">
                     {/* Alerta si tiene pago asociado */}
                     {hasPayment && (
-                        <Alert variant="warning" className="d-flex align-items-center mb-4">
-                            <IoLockClosed size={24} style={{ marginRight: '12px' }} />
+                        <div className="flex items-center gap-3 p-3 mb-4 text-yellow-800 bg-yellow-50 rounded-xl border border-yellow-100">
+                            <IoLockClosed size={20} className="shrink-0" />
                             <div>
-                                <strong> Esta reserva no se puede modificar</strong>
-                                <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>
-                                    La reserva tiene un pago asociado y no puede ser editada.
-                                </div>
+                                <strong className="block font-semibold text-sm">Esta reserva no se puede modificar</strong>
+                                <span className="text-xs">La reserva tiene un pago asociado y no puede ser editada.</span>
                             </div>
-                        </Alert>
+                        </div>
                     )}
 
                     {/* Error local de validación */}
                     {localError && (
-                        <Alert variant="danger" className="mb-4">
+                        <div className="p-3 mb-4 text-red-800 bg-red-50 rounded-xl border border-red-100 text-sm">
                             {localError}
-                        </Alert>
+                        </div>
                     )}
 
-                    <Form onSubmit={handleSubmit}>
-                        <Row>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {/* Columna izquierda - Usuario y Cancha */}
-                            <Col xs={12} md={6}>
+                            <div className="space-y-4">
                                 {/* Select de Usuario */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
-                                        <IoPerson size={18} style={{ marginRight: '8px' }} />
-                                        Usuario
-                                    </Form.Label>
-                                    <Form.Select
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
+                                            <IoPerson size={16} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Usuario</span>
+                                    </div>
+                                    <select
                                         value={formData.user_id}
                                         onChange={(e) => handleInputChange('user_id', e.target.value)}
                                         disabled={hasPayment}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '10px',
-                                            opacity: hasPayment ? 0.6 : 1
-                                        }}
+                                        className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         <option value="">Seleccionar usuario...</option>
                                         {users.filter(u => u.is_active).map(user => (
@@ -198,29 +186,27 @@ const EditReservationModal = ({
                                                 {user.full_name} ({user.email})
                                             </option>
                                         ))}
-                                    </Form.Select>
+                                    </select>
                                     {selectedUser && (
-                                        <Form.Text className="text-muted">
+                                        <p className="mt-1 text-xs text-gray-500">
                                             Email: {selectedUser.email}
-                                        </Form.Text>
+                                        </p>
                                     )}
-                                </Form.Group>
+                                </div>
 
                                 {/* Select de Cancha */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
-                                        <IoLocationOutline size={18} style={{ marginRight: '8px' }} />
-                                        Cancha
-                                    </Form.Label>
-                                    <Form.Select
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="p-1.5 bg-blue-50 rounded-lg text-blue-600">
+                                            <IoLocationOutline size={16} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Cancha</span>
+                                    </div>
+                                    <select
                                         value={formData.court_id}
                                         onChange={(e) => handleInputChange('court_id', e.target.value)}
                                         disabled={hasPayment}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '10px',
-                                            opacity: hasPayment ? 0.6 : 1
-                                        }}
+                                        className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
                                         <option value="">Seleccionar cancha...</option>
                                         {courts.map(court => (
@@ -228,178 +214,176 @@ const EditReservationModal = ({
                                                 {court.name} - {court.sport}
                                             </option>
                                         ))}
-                                    </Form.Select>
+                                    </select>
                                     {selectedCourt && (
-                                        <Form.Text className="text-muted">
+                                        <p className="mt-1 text-xs text-gray-500">
                                             Deporte: {selectedCourt.sport} | Precio base: ${selectedCourt.base_price}
-                                        </Form.Text>
+                                        </p>
                                     )}
-                                </Form.Group>
-                            </Col>
+                                </div>
+                            </div>
 
                             {/* Columna derecha - Fechas */}
-                            <Col xs={12} md={6}>
+                            <div className="space-y-4">
                                 {/* Fecha y Hora de Inicio */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
-                                        <IoCalendarOutline size={18} style={{ marginRight: '8px' }} />
-                                        Fecha y Hora de Inicio
-                                    </Form.Label>
-                                    <Form.Control
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="p-1.5 bg-purple-50 rounded-lg text-purple-600">
+                                            <IoCalendarOutline size={16} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Fecha y Hora de Inicio</span>
+                                    </div>
+                                    <input
                                         type="datetime-local"
                                         value={formData.start_time}
                                         onChange={(e) => handleInputChange('start_time', e.target.value)}
                                         disabled={hasPayment}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '10px',
-                                            opacity: hasPayment ? 0.6 : 1
-                                        }}
+                                        className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                     />
-                                </Form.Group>
+                                </div>
 
                                 {/* Fecha y Hora de Fin */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
-                                        <IoTimeOutline size={18} style={{ marginRight: '8px' }} />
-                                        Fecha y Hora de Fin
-                                    </Form.Label>
-                                    <Form.Control
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="p-1.5 bg-orange-50 rounded-lg text-orange-600">
+                                            <IoTimeOutline size={16} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Fecha y Hora de Fin</span>
+                                    </div>
+                                    <input
                                         type="datetime-local"
                                         value={formData.end_time}
                                         onChange={(e) => handleInputChange('end_time', e.target.value)}
                                         disabled={hasPayment}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '10px',
-                                            opacity: hasPayment ? 0.6 : 1
-                                        }}
+                                        className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
                                     />
-                                </Form.Group>
-                            </Col>
-                        </Row>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Sección de Extras */}
-                        <Row className="mt-3">
-                            <Col xs={12}>
-                                <h6 style={{ fontWeight: '600', color: '#000', marginBottom: '16px' }}>
-                                    Extras
-                                </h6>
-                            </Col>
-                            
-                            <Col xs={12} md={6}>
-                                {/* Luz artificial */}
-                                <Form.Group className="mb-3">
-                                    <Form.Check 
-                                        type="checkbox"
-                                        id="light-checkbox"
-                                        label={`Luz artificial ${selectedCourt?.light_price > 0 ? `(+$${selectedCourt.light_price})` : ''}`}
-                                        checked={formData.light}
-                                        onChange={(e) => handleInputChange('light', e.target.checked)}
-                                        disabled={hasPayment}
-                                        style={{ opacity: hasPayment ? 0.6 : 1 }}
-                                    />
-                                </Form.Group>
+                        <div className="pt-4 border-t border-gray-100">
+                            <h6 className="font-semibold text-gray-900 mb-3 text-sm">Extras</h6>
 
-                                {/* Pelota */}
-                                <Form.Group className="mb-3">
-                                    <Form.Check 
-                                        type="checkbox"
-                                        id="ball-checkbox"
-                                        label={`Pelota ${selectedCourt?.ball_price > 0 ? `(+$${selectedCourt.ball_price})` : ''}`}
-                                        checked={formData.ball}
-                                        onChange={(e) => handleInputChange('ball', e.target.checked)}
-                                        disabled={hasPayment}
-                                        style={{ opacity: hasPayment ? 0.6 : 1 }}
-                                    />
-                                </Form.Group>
-                            </Col>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-2">
+                                    {/* Luz artificial */}
+                                    <label className={`relative flex flex-row items-center w-full gap-3 p-2.5 border border-gray-200 rounded-xl transition-colors ${hasPayment ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.light}
+                                            onChange={(e) => handleInputChange('light', e.target.checked)}
+                                            disabled={hasPayment}
+                                            className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                            style={{
+                                                backgroundImage: formData.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                backgroundSize: '100% 100%',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat'
+                                            }}
+                                        />
+                                        <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
+                                            Luz artificial {selectedCourt?.light_price > 0 ? `(+$${selectedCourt.light_price})` : ''}
+                                        </span>
+                                    </label>
 
-                            <Col xs={12} md={6}>
-                                {/* Raquetas */}
-                                <Form.Group className="mb-3">
-                                    <Form.Label style={{ fontWeight: '500', color: '#000' }}>
-                                        Cantidad de raquetas {selectedCourt?.racket_price > 0 ? `($${selectedCourt.racket_price} c/u)` : ''}
-                                    </Form.Label>
-                                    <Form.Select
-                                        value={formData.number_of_rackets}
-                                        onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
-                                        disabled={hasPayment}
-                                        style={{
-                                            borderRadius: '8px',
-                                            padding: '10px',
-                                            maxWidth: '150px',
-                                            opacity: hasPayment ? 0.6 : 1
-                                        }}
-                                    >
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                    </Form.Select>
-                                </Form.Group>
-                            </Col>
-                        </Row>
+                                    {/* Pelota */}
+                                    <label className={`relative flex flex-row items-center w-full gap-4 p-2.5 border border-gray-200 rounded-xl transition-colors ${hasPayment ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.ball}
+                                            onChange={(e) => handleInputChange('ball', e.target.checked)}
+                                            disabled={hasPayment}
+                                            className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                            style={{
+                                                backgroundImage: formData.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                backgroundSize: '100% 100%',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat'
+                                            }}
+                                        />
+                                        <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
+                                            Pelota {selectedCourt?.ball_price > 0 ? `(+$${selectedCourt.ball_price})` : ''}
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div>
+                                    {/* Raquetas */}
+                                    <div className={`p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 ${hasPayment ? 'opacity-60' : ''}`}>
+                                        <label className="text-xs text-gray-600 block mb-1.5 font-medium">
+                                            Cantidad de raquetas {selectedCourt?.racket_price > 0 ? `($${selectedCourt.racket_price} c/u)` : ''}
+                                        </label>
+                                        <select
+                                            value={formData.number_of_rackets}
+                                            onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
+                                            disabled={hasPayment}
+                                            className="w-full p-1.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:cursor-not-allowed text-sm"
+                                        >
+                                            {[0, 1, 2, 3, 4].map(num => (
+                                                <option key={num} value={num}>{num}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Información adicional */}
-                        <div
-                            className="mt-3 p-3"
-                            style={{
-                                backgroundColor: '#f8f9fa',
-                                borderRadius: '8px',
-                                fontSize: '0.9rem'
-                            }}
-                        >
-                            <div className="mb-2">
-                                <strong>Reserva ID:</strong> #{reservation.id}
+                        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 text-sm space-y-2">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Reserva ID:</span>
+                                <span className="font-medium text-gray-900">#{reservation.id}</span>
                             </div>
-                            <div className="mb-2">
-                                <strong>Estado:</strong> {reservation.payment ? reservation.payment.status : 'pendiente'}
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Estado:</span>
+                                <span className="font-medium text-gray-900 capitalize">
+                                    {reservation.payment ? reservation.payment.status : 'pendiente'}
+                                </span>
                             </div>
-                            <div>
-                                <strong>Creada el:</strong> {formatDate(reservation.created_at)}
+                            <div className="flex justify-between">
+                                <span className="text-gray-500">Creada el:</span>
+                                <span className="font-medium text-gray-900">{formatDate(reservation.created_at)}</span>
                             </div>
                             {reservation.payment?.status === "pagado" && reservation.payment?.updated_at && (
-                                <div className="mt-1">
-                                    <strong>Fecha de pago:</strong> {formatDate(reservation.payment.updated_at)}
+                                <div className="flex justify-between pt-2 border-t border-gray-200 mt-2">
+                                    <span className="text-gray-500">Fecha de pago:</span>
+                                    <span className="font-medium text-gray-900">{formatDate(reservation.payment.updated_at)}</span>
                                 </div>
                             )}
                         </div>
-                    </Form>
-                </Modal.Body>
+                    </form>
+                </div>
 
-                <Modal.Footer
-                    style={{
-                        borderTop: '1px solid #dee2e6',
-                        backgroundColor: 'transparent',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '20px 32px',
-                    }}
-                >
-                    <Button
-                        variant="outline-dark"
+                {/* Footer */}
+                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-between items-center sticky bottom-0 z-10">
+                    <button
                         onClick={onHide}
                         disabled={isSaving}
-                        style={{ minWidth: '120px', fontWeight: '500' }}
+                        className="px-6 py-2.5 rounded-xl border-2 border-gray-200 bg-white text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all disabled:opacity-50"
                     >
                         {hasPayment ? 'Cerrar' : 'Cancelar'}
-                    </Button>
+                    </button>
 
                     {(!reservation.payment || reservation.payment.status === "pendiente") && (
-                        <Button
-                            variant="dark"
+                        <button
                             onClick={handleSubmit}
                             disabled={isSaving}
-                            style={{ minWidth: '120px', fontWeight: '500' }}
+                            className="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-bold hover:bg-gray-800 shadow-lg shadow-gray-200 transition-all disabled:opacity-50 flex items-center gap-2"
                         >
-                            {isSaving ? 'Guardando...' : 'Guardar Cambios'}
-                        </Button>
+                            {isSaving ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Guardando...</span>
+                                </>
+                            ) : (
+                                'Guardar Cambios'
+                            )}
+                        </button>
                     )}
-                </Modal.Footer>
+                </div>
             </div>
-        </Modal>
+        </div>
     );
 };
 
