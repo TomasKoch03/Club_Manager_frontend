@@ -1,14 +1,16 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { Form } from 'react-bootstrap';
 
 const AuthLink = ({ text, linkText, to, controlId }) => {
     return (
-        <Form.Group className="text-center mb-3" controlId={controlId}>
-            <p>
-                {text} <Link to={to}>{linkText}</Link>
-            </p>
-        </Form.Group>
+        <div className="text-center mt-4 text-sm text-gray-600">
+            {text}{' '}
+            <Link
+                to={to}
+                className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
+            >
+                {linkText}
+            </Link>
+        </div>
     );
 };
 

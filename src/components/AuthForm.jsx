@@ -1,5 +1,3 @@
-import React from 'react';
-import { Form, Button } from 'react-bootstrap';
 
 const AuthForm = ({
     title,
@@ -9,15 +7,22 @@ const AuthForm = ({
     submitVariant = "dark"
 }) => {
     return (
-        <>
-            <h2 className="mb-3">{title}</h2>
-            <Form className='w-100 h-100' onSubmit={onSubmit}>
+        <div className="w-full">
+            <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">{title}</h2>
+            <form className="flex flex-col gap-4" onSubmit={onSubmit}>
                 {children}
-                <Button className='m-4 px-5' variant={submitVariant} type="submit">
+                <button
+                    type="submit"
+                    className="
+                        w-full mt-6 py-3 px-4 rounded-xl font-semibold text-white
+                        bg-slate-900 hover:bg-slate-800 hover:-translate-y-0.5
+                        transition-all duration-200 shadow-md hover:shadow-lg
+                    "
+                >
                     {submitText}
-                </Button>
-            </Form>
-        </>
+                </button>
+            </form>
+        </div>
     );
 };
 
