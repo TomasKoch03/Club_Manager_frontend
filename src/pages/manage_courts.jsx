@@ -1,8 +1,8 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Alert, Container, Spinner, Form, Row, Col, Button, Modal } from 'react-bootstrap';
+import { Button, Form, Modal } from 'react-bootstrap';
 import CourtManagementCard from '../components/courts/CourtManagementCard';
-import { getCourts, createCourt } from '../services/api';
+import { createCourt, getCourts } from '../services/api';
 
 const ManageCourts = () => {
     const [courts, setCourts] = useState([]);
@@ -77,8 +77,8 @@ const ManageCourts = () => {
         const { name, value } = e.target;
         setCreateForm(prev => ({
             ...prev,
-            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price') 
-                ? value 
+            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price')
+                ? value
                 : value
         }));
     };
@@ -112,7 +112,7 @@ const ManageCourts = () => {
             height: 'calc(100vh - 80px)',
             overflowY: 'auto',
             overflowX: 'hidden',
-            padding: "40px 20px 60px 20px"
+            padding: "16px 32px 60px 32px"
         }}>
             <style>
                 {`
@@ -131,104 +131,79 @@ const ManageCourts = () => {
                     .courts-container::-webkit-scrollbar-thumb:hover {
                         background-color: rgba(0, 0, 0, 0.5);
                     }
+                    /* Ocultar botones de incremento/decremento en inputs de tipo number */
+                    input[type="number"]::-webkit-inner-spin-button,
+                    input[type="number"]::-webkit-outer-spin-button {
+                        -webkit-appearance: none;
+                        margin: 0;
+                    }
+                    input[type="number"] {
+                        -moz-appearance: textfield;
+                        appearance: textfield;
+                    }
                 `}
             </style>
-            <Container style={{ maxWidth: "900px" }} className="courts-container">
-                {/* Título */}
-                <div
-                    style={{
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        backdropFilter: "blur(10px)",
-                        borderRadius: "16px",
-                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                        border: "none",
-                        padding: "24px",
-                        marginBottom: "24px",
-                    }}
-                >
-                    <Row className="align-items-center">
-                        <Col xs={12} md={6}>
-                            <h2 className="mb-0" style={{ fontWeight: '600', color: '#000' }}>
-                                Gestión de Canchas
-                            </h2>
-                            <p className="text-muted mb-0 mt-2" style={{ fontSize: '0.95rem' }}>
-                                Administra las canchas del club y su información
-                            </p>
-                        </Col>
-                        <Col xs={12} md={3} className="mt-3 mt-md-0">
-                            <Form.Group>
-                                <Form.Label style={{ fontWeight: '500', fontSize: '0.9rem', marginBottom: '8px' }}>
-                                    Filtrar por deporte
-                                </Form.Label>
-                                <Form.Select
-                                    value={selectedSport}
-                                    onChange={handleSportFilterChange}
-                                    style={{
-                                        borderRadius: '8px',
-                                        border: '2px solid #000',
-                                        fontWeight: '500',
-                                    }}
-                                >
-                                    <option value="">Todos los deportes</option>
-                                    <option value="futbol">Fútbol</option>
-                                    <option value="paddle">Paddle</option>
-                                    <option value="basquet">Básquet</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-                        <Col xs={12} md={3} className="mt-3 mt-md-0 d-flex align-items-end">
-                            <Button
-                                variant="dark"
+            <div className="max-w-6xl mx-auto pb-20 courts-container">
+                {/* HEADER - Toolbar Horizontal */}
+                <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        {/* Título */}
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 mb-1">Canchas</h1>
+                            <p className="text-sm text-gray-500">Administra las canchas del club</p>
+                        </div>
+
+                        {/* Action Area - Filtro y botón */}
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                            {/* Filtro por deporte */}
+                            <select
+                                value={selectedSport}
+                                onChange={handleSportFilterChange}
+                                className="flex-1 md:flex-none h-10 px-3 bg-white border-none shadow-sm rounded-lg text-sm font-medium text-gray-900 ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                            >
+                                <option value="">Todos los deportes</option>
+                                <option value="futbol">Fútbol</option>
+                                <option value="paddle">Paddle</option>
+                                <option value="basquet">Básquet</option>
+                            </select>
+
+                            {/* Botón Nueva Cancha */}
+                            <button
                                 onClick={handleCreateClick}
-                                style={{
-                                    width: '100%',
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    padding: '10px',
-                                }}
+                                className="h-10 px-4 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm whitespace-nowrap"
                             >
                                 + Nueva Cancha
-                            </Button>
-                        </Col>
-                    </Row>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Loading */}
                 {loading && (
-                    <div className="text-center py-5">
-                        <Spinner animation="border" variant="dark" />
-                        <p className="mt-3" style={{ color: '#000' }}>Cargando canchas...</p>
+                    <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                        <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-gray-600">Cargando canchas...</p>
                     </div>
                 )}
 
                 {/* Error */}
                 {error && (
-                    <Alert variant="danger" style={{ backgroundColor: "rgba(255, 255, 255, 0.95)" }}>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-800">
                         {error}
-                    </Alert>
+                    </div>
                 )}
 
-                {/* Lista de canchas */}
+                {/* Lista de canchas - BENTO STRIPS */}
                 {!loading && !error && (
                     <>
                         {courts.length === 0 ? (
-                            <div
-                                style={{
-                                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                                    backdropFilter: "blur(10px)",
-                                    borderRadius: "16px",
-                                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                                    border: "none",
-                                    padding: "48px 24px",
-                                    textAlign: "center",
-                                }}
-                            >
-                                <p style={{ color: '#6c757d', fontSize: '1.1rem', marginBottom: '0' }}>
+                            <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+                                <p className="text-gray-600 text-lg">
                                     No hay canchas registradas
                                 </p>
                             </div>
                         ) : (
-                            <div>
+                            <div className="space-y-3">
                                 {courts.map((court) => (
                                     <CourtManagementCard
                                         key={court.id}
@@ -241,7 +216,7 @@ const ManageCourts = () => {
                         )}
                     </>
                 )}
-            </Container>
+            </div>
 
             {/* Modal de Creación de Cancha */}
             <Modal show={showCreateModal} onHide={() => !createLoading && setShowCreateModal(false)} centered>
@@ -292,6 +267,7 @@ const ManageCourts = () => {
                                 name="base_price"
                                 value={createForm.base_price}
                                 onChange={handleCreateInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 placeholder="0.00"
                                 required
                                 min="0"
@@ -308,6 +284,7 @@ const ManageCourts = () => {
                                 name="light_price"
                                 value={createForm.light_price}
                                 onChange={handleCreateInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
@@ -326,6 +303,7 @@ const ManageCourts = () => {
                                 name="ball_price"
                                 value={createForm.ball_price}
                                 onChange={handleCreateInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
@@ -344,6 +322,7 @@ const ManageCourts = () => {
                                 name="racket_price"
                                 value={createForm.racket_price}
                                 onChange={handleCreateInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 placeholder="0.00"
                                 min="0"
                                 step="0.01"
