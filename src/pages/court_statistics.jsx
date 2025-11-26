@@ -95,8 +95,8 @@ const CourtStatistics = () => {
     const getSportBadgeColor = (sport) => {
         const sportLower = sport.toLowerCase();
         if (sportLower === 'futbol' || sportLower === 'fútbol') return 'success';
-        if (sportLower === 'paddle') return 'info';
-        if (sportLower === 'basquet' || sportLower === 'básquet') return 'warning';
+        if (sportLower === 'paddle') return 'warning';
+        if (sportLower === 'basquet' || sportLower === 'básquet') return 'danger';
         return 'secondary';
     };
 

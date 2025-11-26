@@ -1,8 +1,6 @@
-import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
-import { IoCalendarOutline, IoTimeOutline, IoLocationOutline } from 'react-icons/io5';
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { IoCalendarOutline, IoClose, IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -11,24 +9,26 @@ if (MP_PUBLIC_KEY) {
 }
 
 const BookingConfirmationModal = ({
-                                      show,
-                                      onHide,
-                                      bookingData,
-                                      onPayInClub,
-                                      onPayWithMercadoPago,
-                                      preferenceId,
-                                      isLoadingPreference
-                                  }) => {
+    show,
+    onHide,
+    bookingData,
+    onPayInClub,
+    onPayWithMercadoPago,
+    preferenceId,
+    isLoadingPreference
+}) => {
     const [extras, setExtras] = useState({
         light: false,
         ball: false,
         number_of_rackets: 0
     });
-    
+
     const [timeSelection, setTimeSelection] = useState({
         startTime: '',
         endTime: ''
     });
+
+    const [isLoadingClubPayment, setIsLoadingClubPayment] = useState(false);
 
     // Inicializar tiempos cuando se abre el modal
     useEffect(() => {
@@ -47,20 +47,20 @@ const BookingConfirmationModal = ({
         }
     }, [bookingData, show]);
 
-    if (!bookingData) return null;
+    if (!show || !bookingData) return null;
 
     const { courtName, date, court } = bookingData;
 
     // Calcular duración en horas basándose en los tiempos seleccionados
     const calculateDuration = () => {
         if (!timeSelection.startTime || !timeSelection.endTime) return 0;
-        
+
         const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
         const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
-        
+
         const startTotalMinutes = startHours * 60 + startMinutes;
         const endTotalMinutes = endHours * 60 + endMinutes;
-        
+
         const durationMinutes = endTotalMinutes - startTotalMinutes;
         return durationMinutes > 0 ? durationMinutes / 60 : 0;
     };
@@ -93,312 +93,264 @@ const BookingConfirmationModal = ({
 
     const isValidTimeSelection = () => {
         if (!timeSelection.startTime || !timeSelection.endTime) return false;
-        
+
         const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
         const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
-        
+
         const startTotalMinutes = startHours * 60 + startMinutes;
         const endTotalMinutes = endHours * 60 + endMinutes;
-        
+
         return endTotalMinutes > startTotalMinutes;
     };
 
     // Formatear fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
+        return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]}`;
     };
 
     return (
-        <Modal
-            show={show}
-            onHide={onHide}
-            centered
-            size="lg"
-            backdrop="static"
-            style={{
-                backdropFilter: 'blur(8px)',
-            }}
-        >
-            <style>
-                {`
-                    .modal-backdrop.show {
-                        backdrop-filter: blur(8px);
-                        background-color: rgba(0, 0, 0, 0.5);
-                    }
-                `}
-            </style>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div
-                style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.98)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "16px",
-                    border: "none",
-                }}
-            >
-                <Modal.Header
-                    closeButton
-                    style={{
-                        borderBottom: '1px solid #dee2e6',
-                        backgroundColor: 'transparent',
-                    }}
-                >
-                    <Modal.Title style={{ fontWeight: '600', color: '#000' }}>
-                        Confirmar Reserva
-                    </Modal.Title>
-                </Modal.Header>
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+                onClick={onHide}
+            ></div>
 
-                <Modal.Body style={{ padding: '32px' }}>
-                    <Row>
-                        {/* Información de la reserva - Izquierda */}
-                        <Col xs={12} md={7} className="mb-4 mb-md-0">
-                            <h5 className="mb-4" style={{ fontWeight: '600', color: '#000' }}>
-                                Detalles de la Reserva
-                            </h5>
+            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white sticky top-0 z-10">
+                    <h3 className="text-xl font-bold text-gray-900">Confirmar Reserva</h3>
+                    <button
+                        onClick={onHide}
+                        className="p-2 rounded-full bg-transparent hover:bg-gray-100 transition-colors text-gray-500"
+                    >
+                        <IoClose size={24} />
+                    </button>
+                </div>
 
-                            {/* Cancha */}
-                            <div className="mb-3">
-                                <div className="d-flex align-items-center mb-2">
-                                    <IoLocationOutline size={20} style={{ marginRight: '8px', color: '#6c757d' }} />
-                                    <span style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: '500' }}>
-                                        Cancha
-                                    </span>
+                {/* Body */}
+                <div className="p-6 overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Left Column - Configuración (2/3 del espacio) */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {/* Detalles Compactos en Grid Horizontal */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {/* Cancha */}
+                                <div className="flex items-center gap-3 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                    <IoLocationOutline size={20} className="text-blue-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Cancha</span>
+                                        <p className="text-sm font-bold text-gray-900 truncate">{courtName}</p>
+                                    </div>
                                 </div>
-                                <p style={{ fontSize: '1.1rem', color: '#000', marginLeft: '28px', marginBottom: '0' }}>
-                                    {courtName}
-                                </p>
-                            </div>
 
-                            {/* Fecha */}
-                            <div className="mb-3">
-                                <div className="d-flex align-items-center mb-2">
-                                    <IoCalendarOutline size={20} style={{ marginRight: '8px', color: '#6c757d' }} />
-                                    <span style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: '500' }}>
-                                        Fecha
-                                    </span>
+                                {/* Fecha */}
+                                <div className="flex items-center gap-3 bg-purple-50/50 p-3 rounded-xl border border-purple-100">
+                                    <IoCalendarOutline size={20} className="text-purple-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Fecha</span>
+                                        <p className="text-sm font-bold text-gray-900  ">{formatDate(date)}</p>
+                                    </div>
                                 </div>
-                                <p style={{ fontSize: '1.1rem', color: '#000', marginLeft: '28px', marginBottom: '0' }}>
-                                    {formatDate(date)}
-                                </p>
+
+                                {/* Duración */}
+                                <div className="flex items-center gap-3 bg-orange-50/50 p-3 rounded-xl border border-orange-100">
+                                    <IoTimeOutline size={20} className="text-orange-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Duración</span>
+                                        <p className="text-sm font-bold text-gray-900">
+                                            {isValidTimeSelection() ? `${calculateDuration().toFixed(2)}h` : '-'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Horario */}
-                            <div className="mb-3">
-                                <div className="d-flex align-items-center mb-2">
-                                    <IoTimeOutline size={20} style={{ marginRight: '8px', color: '#6c757d' }} />
-                                    <span style={{ fontSize: '0.85rem', color: '#6c757d', fontWeight: '500' }}>
-                                        Horario
-                                    </span>
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <span className="text-sm font-semibold text-gray-900 block mb-3">Horario de reserva</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Inicio</label>
+                                        <input
+                                            type="time"
+                                            value={timeSelection.startTime}
+                                            onChange={(e) => handleTimeChange('startTime', e.target.value)}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Fin</label>
+                                        <input
+                                            type="time"
+                                            value={timeSelection.endTime}
+                                            onChange={(e) => handleTimeChange('endTime', e.target.value)}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                        />
+                                    </div>
                                 </div>
-                                <Row className="g-2" style={{ marginLeft: '28px' }}>
-                                    <Col xs={12} sm={6}>
-                                        <Form.Group>
-                                            <Form.Label style={{ fontSize: '0.85rem', color: '#6c757d' }}>
-                                                Hora de inicio
-                                            </Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={timeSelection.startTime}
-                                                onChange={(e) => handleTimeChange('startTime', e.target.value)}
-                                                style={{
-                                                    borderRadius: '8px',
-                                                    padding: '8px 12px',
-                                                    fontSize: '1rem'
-                                                }}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                    <Col xs={12} sm={6}>
-                                        <Form.Group>
-                                            <Form.Label style={{ fontSize: '0.85rem', color: '#6c757d' }}>
-                                                Hora de fin
-                                            </Form.Label>
-                                            <Form.Control
-                                                type="time"
-                                                value={timeSelection.endTime}
-                                                onChange={(e) => handleTimeChange('endTime', e.target.value)}
-                                                style={{
-                                                    borderRadius: '8px',
-                                                    padding: '8px 12px',
-                                                    fontSize: '1rem'
-                                                }}
-                                            />
-                                        </Form.Group>
-                                    </Col>
-                                </Row>
-                                {isValidTimeSelection() && (
-                                    <p style={{ 
-                                        fontSize: '0.9rem', 
-                                        color: '#000', 
-                                        marginLeft: '28px', 
-                                        marginTop: '8px',
-                                        marginBottom: '0',
-                                        fontWeight: '500'
-                                    }}>
-                                        Duración: {calculateDuration().toFixed(2)} hora(s)
-                                    </p>
-                                )}
                                 {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
-                                    <p style={{ 
-                                        fontSize: '0.85rem', 
-                                        color: '#dc3545', 
-                                        marginLeft: '28px', 
-                                        marginTop: '8px',
-                                        marginBottom: '0'
-                                    }}>
+                                    <p className="text-xs text-red-500 mt-2 font-medium">
                                         La hora de fin debe ser posterior a la de inicio
                                     </p>
                                 )}
                             </div>
 
-                            {/* Extras */}
-                            <div className="mt-4">
-                                <h6 className="mb-3" style={{ fontWeight: '600', color: '#000' }}>
-                                    Extras
-                                </h6>
-                                
-                                {/* Luz artificial */}
-                                {court?.light_price > 0 && (
-                                    <Form.Check 
-                                        type="checkbox"
-                                        id="light-checkbox"
-                                        label={`Luz artificial (+$${court.light_price})`}
-                                        checked={extras.light}
-                                        onChange={(e) => handleExtraChange('light', e.target.checked)}
-                                        className="mb-2"
-                                    />
-                                )}
+                            {/* Extras en Grid de 2 Columnas */}
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <h6 className="text-sm font-semibold text-gray-900 mb-3">Extras opcionales</h6>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {court?.light_price > 0 && (
+                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={extras.light}
+                                                onChange={(e) => handleExtraChange('light', e.target.checked)}
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                style={{
+                                                    backgroundImage: extras.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                    backgroundSize: '100% 100%',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            />
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Luz (+${court.light_price})</span>
+                                        </label>
+                                    )}
 
-                                {/* Pelota */}
-                                {court?.ball_price > 0 && (
-                                    <Form.Check 
-                                        type="checkbox"
-                                        id="ball-checkbox"
-                                        label={`Pelota (+$${court.ball_price})`}
-                                        checked={extras.ball}
-                                        onChange={(e) => handleExtraChange('ball', e.target.checked)}
-                                        className="mb-2"
-                                    />
-                                )}
+                                    {court?.ball_price > 0 && (
+                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={extras.ball}
+                                                onChange={(e) => handleExtraChange('ball', e.target.checked)}
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                style={{
+                                                    backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                    backgroundSize: '100% 100%',
+                                                    backgroundPosition: 'center',
+                                                    backgroundRepeat: 'no-repeat'
+                                                }}
+                                            />
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${court.ball_price})</span>
+                                        </label>
+                                    )}
 
-                                {/* Raquetas */}
-                                {court?.racket_price > 0 && (
-                                    <Form.Group className="mb-2">
-                                        <Form.Label style={{ fontSize: '0.9rem' }}>
-                                            Cantidad de raquetas (${court.racket_price} c/u)
-                                        </Form.Label>
-                                        <Form.Select
-                                            value={extras.number_of_rackets}
-                                            onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
-                                            style={{ maxWidth: '120px' }}
-                                        >
-                                            <option value="0">0</option>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                        </Form.Select>
-                                    </Form.Group>
-                                )}
-                            </div>
-                        </Col>
-
-                        {/* Monto a pagar - Derecha */}
-                        <Col xs={12} md={5} className="d-flex flex-column justify-content-end">
-                            <div className="text-end">
-                                <div className="mb-3">
-                                    <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
-                                        Precio base (por hora)
-                                    </p>
-                                    <p style={{ fontSize: '1.2rem', fontWeight: '600', color: '#495057', marginBottom: '0' }}>
-                                        ${court?.base_price || 0}
-                                    </p>
+                                    {court?.racket_price > 0 && (
+                                        <div className="p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2">
+                                            <label className="text-xs text-gray-600 block mb-1.5 font-medium">
+                                                Raquetas (${court.racket_price} c/u)
+                                            </label>
+                                            <select
+                                                value={extras.number_of_rackets}
+                                                onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
+                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                            >
+                                                {[0, 1, 2, 3, 4].map(num => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
                                 </div>
-                                {isValidTimeSelection() && (
-                                    <div className="mb-3">
-                                        <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
-                                            Subtotal cancha ({calculateDuration().toFixed(2)}h)
-                                        </p>
-                                        <p style={{ fontSize: '1.2rem', fontWeight: '600', color: '#495057', marginBottom: '0' }}>
-                                            ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
-                                        </p>
-                                    </div>
-                                )}
-                                {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
-                                    <div className="mb-3">
-                                        <p style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: '4px' }}>
-                                            Extras
-                                        </p>
-                                        {extras.light && court?.light_price > 0 && (
-                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
-                                                Luz: ${court.light_price}
-                                            </p>
-                                        )}
-                                        {extras.ball && court?.ball_price > 0 && (
-                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
-                                                Pelota: ${court.ball_price}
-                                            </p>
-                                        )}
-                                        {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
-                                            <p style={{ fontSize: '0.9rem', color: '#495057', marginBottom: '2px' }}>
-                                                Raquetas ({extras.number_of_rackets}): ${court.racket_price * extras.number_of_rackets}
-                                            </p>
-                                        )}
-                                    </div>
-                                )}
-                                <hr style={{ borderColor: '#dee2e6', margin: '16px 0' }} />
-                                <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '8px' }}>
-                                    Total a pagar
-                                </p>
-                                <p style={{ fontSize: '3rem', fontWeight: '700', color: '#000', marginBottom: '0', lineHeight: '1' }}>
-                                    ${calculateTotalPrice()}
-                                </p>
                             </div>
-                        </Col>
-                    </Row>
-                </Modal.Body>
+                        </div>
 
-                <Modal.Footer
-                    style={{
-                        borderTop: '1px solid #dee2e6',
-                        backgroundColor: 'transparent',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '20px 32px',
-                    }}
-                >
+                        {/* Right Column - Resumen Financiero (1/3 del espacio) */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 sticky top-6">
+                                <h6 className="text-sm font-semibold text-gray-900 mb-4">Resumen</h6>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">Precio base/hora</span>
+                                        <span className="text-gray-900 font-semibold">${court?.base_price || 0}</span>
+                                    </div>
+
+                                    {isValidTimeSelection() && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Subtotal cancha</span>
+                                            <span className="text-gray-900 font-semibold">
+                                                ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
+                                        <div className="pt-3 border-t border-gray-300 space-y-2">
+                                            <span className="text-gray-500 text-xs font-bold uppercase tracking-wider">Extras</span>
+                                            {extras.light && court?.light_price > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-600">Luz</span>
+                                                    <span className="text-gray-900 font-medium">${court.light_price}</span>
+                                                </div>
+                                            )}
+                                            {extras.ball && court?.ball_price > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-600">Pelota</span>
+                                                    <span className="text-gray-900 font-medium">${court.ball_price}</span>
+                                                </div>
+                                            )}
+                                            {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-600">Raquetas ({extras.number_of_rackets})</span>
+                                                    <span className="text-gray-900 font-medium">${court.racket_price * extras.number_of_rackets}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="pt-3 border-t border-gray-300 mt-3">
+                                        <span className="text-gray-600 text-xs block mb-1">Total a pagar</span>
+                                        <span className="text-3xl font-bold text-gray-900 tracking-tight">
+                                            ${calculateTotalPrice()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-0 z-10">
                     {/* Botón izquierdo - Pagar en el club */}
-                    <Button
-                        variant="outline-dark"
-                        onClick={() => {
+                    <button
+                        onClick={async () => {
                             if (!isValidTimeSelection()) return;
+                            setIsLoadingClubPayment(true);
                             const bookingWithTimes = {
                                 ...bookingData,
                                 startTime: timeSelection.startTime,
                                 endTime: timeSelection.endTime
                             };
-                            onPayInClub(extras, bookingWithTimes);
+                            await onPayInClub(extras, bookingWithTimes);
+                            setIsLoadingClubPayment(false);
                         }}
-                        disabled={!isValidTimeSelection()}
-                        style={{ minWidth: '180px', fontWeight: '500' }}
+                        disabled={!isValidTimeSelection() || isLoadingClubPayment}
+                        className="w-full sm:w-auto px-6 py-2.5 rounded-xl border-2 border-gray-300 bg-white !text-gray-700 font-bold hover:!bg-gray-50 hover:border-gray-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm flex items-center justify-center gap-2"
                     >
-                        Pagar en el club
-                    </Button>
+                        {isLoadingClubPayment ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Procesando...</span>
+                            </>
+                        ) : (
+                            'Pagar en el club'
+                        )}
+                    </button>
 
                     {/* Botón derecho - Pagar con Mercado Pago */}
                     {preferenceId ? (
-                        <div style={{ minWidth: '180px' }}>
-                            <Wallet 
+                        <div className="w-full sm:w-auto min-w-[200px]">
+                            <Wallet
                                 initialization={{ preferenceId: preferenceId }}
                                 customization={{ texts: { valueProp: 'smart_option' } }}
                             />
                         </div>
                     ) : (
-                        <Button
-                            variant="primary"
+                        <button
                             onClick={() => {
                                 if (!isValidTimeSelection()) return;
                                 const bookingWithTimes = {
@@ -409,19 +361,21 @@ const BookingConfirmationModal = ({
                                 onPayWithMercadoPago(extras, bookingWithTimes);
                             }}
                             disabled={isLoadingPreference || !isValidTimeSelection()}
-                            style={{ 
-                                minWidth: '180px', 
-                                fontWeight: '500',
-                                backgroundColor: '#009ee3',
-                                borderColor: '#009ee3'
-                            }}
+                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl !bg-[#009ee3] text-white font-bold hover:!bg-[#008ed0] shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm"
                         >
-                            {isLoadingPreference ? 'Cargando...' : 'Pagar con Mercado Pago'}
-                        </Button>
+                            {isLoadingPreference ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <span>Procesando...</span>
+                                </>
+                            ) : (
+                                'Pagar con Mercado Pago'
+                            )}
+                        </button>
                     )}
-                </Modal.Footer>
+                </div>
             </div>
-        </Modal>
+        </div>
     );
 };
 

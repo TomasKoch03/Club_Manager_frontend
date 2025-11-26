@@ -1,5 +1,4 @@
-import { Badge, Button, Card, Col, Row } from 'react-bootstrap';
-import { IoCheckmarkCircleOutline, IoLockClosedOutline, IoMailOutline, IoPersonOutline } from 'react-icons/io5';
+import { IoCheckmarkCircleOutline, IoCloseCircleOutline, IoPencil, IoTrashOutline } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 
 const UserManagementCard = ({ user }) => {
@@ -9,97 +8,70 @@ const UserManagementCard = ({ user }) => {
         navigate(`/admin/usuarios/${user.id}/edit`);
     };
 
+    const handleDeleteUser = () => {
+        // TODO: Implementar modal de confirmación de eliminación
+        console.log('Delete user:', user.id);
+    };
+
+    // Obtener iniciales del nombre completo
+    const getInitials = (fullName) => {
+        if (!fullName) return 'U';
+        const names = fullName.trim().split(' ');
+        if (names.length === 1) return names[0].charAt(0).toUpperCase();
+        return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+    };
+
     return (
-        <Card
-            style={{
-                backgroundColor: "rgba(255, 255, 255, 0.95)",
-                backdropFilter: "blur(10px)",
-                borderRadius: "12px",
-                boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
-                border: "none",
-                marginBottom: "16px",
-            }}
-        >
-            <Card.Body className="p-4">
-                <Row className="align-items-center">
-                    <Col xs={12} md={6}>
-                        {/* Nombre completo */}
-                        <div className="mb-3">
-                            <h5 className="mb-1" style={{ fontWeight: '600', color: '#000' }}>
-                                <IoPersonOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />
-                                {user.full_name}
-                            </h5>
-                        </div>
+        <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between transition-all hover:shadow-md border border-gray-100">
+            {/* Avatar + Info */}
+            <div className="flex items-center gap-4 flex-1">
+                {/* Avatar Circular con Iniciales */}
+                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <span className="text-blue-600 font-bold text-lg">
+                        {getInitials(user.full_name)}
+                    </span>
+                </div>
 
-                        {/* Email */}
-                        <div className="mb-2">
-                            <IoMailOutline size={18} style={{ marginRight: '8px', color: '#6c757d' }} />
-                            <span style={{ color: '#495057', fontSize: '0.95rem' }}>
-                                {user.email}
-                            </span>
-                        </div>
-                    </Col>
+                {/* Información del Usuario */}
+                <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 mb-0.5 truncate">{user.full_name}</h3>
+                    <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                </div>
+            </div>
 
-                    <Col xs={12} md={3} className="d-flex justify-content-md-center mt-3 mt-md-0">
-                        {/* Estado del usuario */}
-                        {user.is_active ?(
-                            <Badge
-                                bg="success"
-                                style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '500',
-                                    padding: '12px 32px',
-                                    borderRadius: '12px',
-                                    minWidth: '160px',
-                                    textAlign: 'center',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                }}
-                            >
-                                <IoCheckmarkCircleOutline style={{ fontSize: '20px', margin: 0, flexShrink: 0 }} />
-                                <span style={{ lineHeight: 1 }}>Activo</span>
-                            </Badge>
-                        )
-                        :    <Badge
-                                bg="danger"
-                                style={{
-                                    fontSize: '1.1rem',
-                                    fontWeight: '500',
-                                    padding: '12px 32px',
-                                    borderRadius: '12px',
-                                    minWidth: '160px',
-                                    textAlign: 'center',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '10px',
-                                }}
-                            >
-                                <IoLockClosedOutline style={{ fontSize: '20px', margin: 0, flexShrink: 0 }} />
-                                <span style={{ lineHeight: 1 }}>Bloqueado</span>
-                            </Badge>
-                        }
-                    </Col>
+            {/* Status Badge */}
+            <div className="hidden md:flex items-center mr-4">
+                {user.is_active ? (
+                    <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium border border-green-200">
+                        <IoCheckmarkCircleOutline size={14} />
+                        Activo
+                    </span>
+                ) : (
+                    <span className="inline-flex items-center gap-1.5 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium border border-red-200">
+                        <IoCloseCircleOutline size={14} />
+                        Bloqueado
+                    </span>
+                )}
+            </div>
 
-                    <Col xs={12} md={3} className="d-flex justify-content-end mt-3 mt-md-0">
-                        {/* Botón de editar */}
-                        <Button
-                            variant="outline-dark"
-                            size="sm"
-                            onClick={handleEditUser}
-                            style={{
-                                minWidth: '120px',
-                                fontWeight: '500',
-                            }}
-                        >
-                            Modificar
-                        </Button>
-                    </Col>
-                </Row>
-            </Card.Body>
-        </Card>
+            {/* Botón de Editar */}
+            <div className="flex items-center gap-2 ml-4">
+                <button
+                    onClick={handleEditUser}
+                    className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                    title="Editar usuario"
+                >
+                    <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                </button>
+                <button
+                    onClick={handleDeleteUser}
+                    className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                    title="Eliminar usuario"
+                >
+                    <IoTrashOutline className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors" />
+                </button>
+            </div>
+        </div>
     );
 };
 

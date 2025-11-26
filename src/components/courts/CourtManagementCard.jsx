@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Badge, Button, Card, Col, Row, Modal, Form } from 'react-bootstrap';
-import { IoTennisballOutline, IoFootballOutline, IoBasketballOutline, IoPricetagOutline } from 'react-icons/io5';
-import { MdSportsTennis } from 'react-icons/md';
-import { updateCourt, deleteCourt } from '../../services/api';
+import { Button, Form, Modal } from 'react-bootstrap';
+import { IoBasketballOutline, IoFootballOutline, IoPencil, IoTennisballOutline, IoTrashOutline } from 'react-icons/io5';
+import { deleteCourt, updateCourt } from '../../services/api';
 
 const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
     const [showEditModal, setShowEditModal] = useState(false);
@@ -22,22 +21,22 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
     const getSportIcon = (sport) => {
         const sportLower = sport.toLowerCase();
         if (sportLower === 'futbol' || sportLower === 'fútbol') {
-            return <IoFootballOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />;
+            return <IoFootballOutline size={24} className="text-green-600" />;
         } else if (sportLower === 'paddle') {
-            return <IoTennisballOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />;
+            return <IoTennisballOutline size={24} className="text-yellow-600" />;
         } else if (sportLower === 'basquet' || sportLower === 'básquet') {
-            return <IoBasketballOutline size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />;
+            return <IoBasketballOutline size={24} className="text-orange-600" />;
         }
-        return <MdSportsTennis size={20} style={{ marginRight: '8px', marginBottom: '2px' }} />;
+        return <IoTennisballOutline size={24} className="text-gray-600" />;
     };
 
-    // Función para obtener el color del badge según el deporte
-    const getSportBadgeColor = (sport) => {
+    // Función para obtener el color de fondo del ícono según el deporte
+    const getSportIconBg = (sport) => {
         const sportLower = sport.toLowerCase();
-        if (sportLower === 'futbol' || sportLower === 'fútbol') return 'success';
-        if (sportLower === 'paddle') return 'info';
-        if (sportLower === 'basquet' || sportLower === 'básquet') return 'warning';
-        return 'secondary';
+        if (sportLower === 'futbol' || sportLower === 'fútbol') return 'bg-green-50';
+        if (sportLower === 'paddle') return 'bg-yellow-50';
+        if (sportLower === 'basquet' || sportLower === 'básquet') return 'bg-orange-50';
+        return 'bg-gray-50';
     };
 
     const handleEditClick = () => {
@@ -101,96 +100,63 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         const { name, value } = e.target;
         setEditForm(prev => ({
             ...prev,
-            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price') 
-                ? parseFloat(value) 
+            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price')
+                ? value
                 : value
         }));
     };
 
     return (
         <>
-            <Card
-                style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.95)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.1)",
-                    border: "none",
-                    marginBottom: "16px",
-                }}
-            >
-                <Card.Body className="p-4">
-                    <Row className="align-items-center">
-                        <Col xs={12} md={5}>
-                            {/* Nombre de la cancha */}
-                            <div className="mb-3">
-                                <h5 className="mb-1" style={{ fontWeight: '600', color: '#000' }}>
-                                    {getSportIcon(court.sport)}
-                                    {court.name}
-                                </h5>
-                            </div>
+            {/* Bento Strip Card */}
+            <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between transition-all hover:shadow-md border border-gray-100">
+                {/* Icon Box */}
+                <div className="flex items-center gap-4 flex-1">
+                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${getSportIconBg(court.sport)}`}>
+                        {getSportIcon(court.sport)}
+                    </div>
 
-                            {/* Precio */}
-                            <div className="mb-2">
-                                <IoPricetagOutline size={18} style={{ marginRight: '8px', color: '#6c757d' }} />
-                                <span style={{ color: '#495057', fontSize: '0.95rem' }}>
-                                    ${court.base_price.toLocaleString('es-AR')}
-                                </span>
-                            </div>
-                        </Col>
+                    {/* Info Principal */}
+                    <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-0.5">{court.name}</h3>
+                        <p className="text-sm text-gray-500">
+                            ${court.base_price.toLocaleString('es-AR')} / hora
+                        </p>
+                    </div>
+                </div>
 
-                        <Col xs={12} md={3} className="d-flex justify-content-md-center mt-3 mt-md-0">
-                            {/* Deporte */}
-                            <Badge
-                                bg={getSportBadgeColor(court.sport)}
-                                style={{
-                                    fontSize: '1rem',
-                                    fontWeight: '500',
-                                    padding: '10px 24px',
-                                    borderRadius: '12px',
-                                    minWidth: '140px',
-                                    textAlign: 'center',
-                                }}
-                            >
-                                {court.sport}
-                            </Badge>
-                        </Col>
+                {/* Badge */}
+                <div className="hidden md:block">
+                    <span className="inline-block bg-gray-100 text-gray-600 text-sm px-4 py-2 rounded-full border border-gray-200 font-medium">
+                        {court.sport.charAt(0).toUpperCase() + court.sport.slice(1)}
+                    </span>
+                </div>
 
-                        <Col xs={12} md={4} className="d-flex justify-content-end gap-2 mt-3 mt-md-0">
-                            {/* Botones de acción */}
-                            <Button
-                                variant="outline-dark"
-                                size="sm"
-                                onClick={handleEditClick}
-                                style={{
-                                    minWidth: '100px',
-                                    fontWeight: '500',
-                                }}
-                            >
-                                Modificar
-                            </Button>
-                            <Button
-                                variant="outline-danger"
-                                size="sm"
-                                onClick={handleDeleteClick}
-                                style={{
-                                    minWidth: '100px',
-                                    fontWeight: '500',
-                                }}
-                            >
-                                Eliminar
-                            </Button>
-                        </Col>
-                    </Row>
-                </Card.Body>
-            </Card>
+                {/* Acciones - Icon Buttons */}
+                <div className="flex items-center gap-2 ml-4">
+                    <button
+                        onClick={handleEditClick}
+                        className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                        title="Editar cancha"
+                    >
+                        <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
+                    </button>
+                    <button
+                        onClick={handleDeleteClick}
+                        className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                        title="Eliminar cancha"
+                    >
+                        <IoTrashOutline className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors" />
+                    </button>
+                </div>
+            </div>
 
             {/* Modal de Edición */}
             <Modal show={showEditModal} onHide={() => !loading && setShowEditModal(false)} centered>
                 <Modal.Header closeButton style={{ borderBottom: '1px solid #dee2e6' }}>
                     <Modal.Title style={{ fontWeight: '600' }}>Editar Cancha</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{ maxHeight: 'calc(100vh - 200px)', overflowY: 'auto' }}>
                     {error && (
                         <div className="alert alert-danger" role="alert">
                             {error}
@@ -233,6 +199,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                                 name="base_price"
                                 value={editForm.base_price}
                                 onChange={handleInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 required
                                 min="0"
                                 step="0.01"
@@ -248,6 +215,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                                 name="light_price"
                                 value={editForm.light_price}
                                 onChange={handleInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 min="0"
                                 step="0.01"
                                 disabled={loading}
@@ -262,6 +230,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                                 name="ball_price"
                                 value={editForm.ball_price}
                                 onChange={handleInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 min="0"
                                 step="0.01"
                                 disabled={loading}
@@ -276,6 +245,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                                 name="racket_price"
                                 value={editForm.racket_price}
                                 onChange={handleInputChange}
+                                onWheel={(e) => e.target.blur()}
                                 min="0"
                                 step="0.01"
                                 disabled={loading}

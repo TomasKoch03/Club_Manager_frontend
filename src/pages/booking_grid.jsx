@@ -1,13 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom'
-import { Container, Card } from 'react-bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
+import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
-import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal.jsx'; // <CHANGE> Importar el modal
-import { useSearchParams } from "react-router-dom";
-import {getCourts, getReservationsBySportAndDay, postReservation, postReservationForUser, postPayment, createMercadoPagoPreference} from "../services/api.js";
 import { useToast } from '../hooks/useToast';
+import { createMercadoPagoPreference, getCourts, getReservationsBySportAndDay, postPayment, postReservation, postReservationForUser } from "../services/api.js";
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -88,10 +85,10 @@ const BookingGrid = () => {
 
             const bookingStart = new Date(booking.start_time);
             const bookingEnd = new Date(booking.end_time);
-            
+
             const hour = Math.floor(time);
             const minute = Math.round((time - hour) * 60);
-            
+
             const slotStart = new Date(selectedDate);
             slotStart.setHours(hour, minute, 0, 0);
             const slotEnd = new Date(slotStart);
@@ -112,7 +109,7 @@ const BookingGrid = () => {
         const startMinute = Math.round((startTime - startHour) * 60);
         const endHour = Math.floor(endTime);
         const endMinute = Math.round((endTime - endHour) * 60);
-        
+
         // Crear fecha de inicio
         const slotStart = new Date(Date.UTC(
             selectedDate.getFullYear(),
@@ -157,7 +154,7 @@ const BookingGrid = () => {
             const endTimeISO = `${selectedDateStr}T${bookingWithTimes.endTime}:00`;
 
             // Si hay userId en los params, es admin haciendo reserva para un usuario
-            const data = userId 
+            const data = userId
                 ? await postReservationForUser(userId, {
                     court_id: bookingWithTimes.courtId,
                     start_time: startTimeISO,
@@ -221,14 +218,14 @@ const BookingGrid = () => {
 
         try {
             setIsLoadingPreference(true);
-            
+
             // Construir las fechas completas usando la fecha seleccionada y las horas del formulario
             const selectedDateStr = selectedDate.toISOString().split('T')[0];
             const startTimeISO = `${selectedDateStr}T${bookingWithTimes.startTime}:00`;
             const endTimeISO = `${selectedDateStr}T${bookingWithTimes.endTime}:00`;
-            
+
             // Primero crear la reserva
-            const data = userId 
+            const data = userId
                 ? await postReservationForUser(userId, {
                     court_id: bookingWithTimes.courtId,
                     start_time: startTimeISO,
@@ -270,10 +267,10 @@ const BookingGrid = () => {
 
             // Crear la preferencia de Mercado Pago
             const preference = await createMercadoPagoPreference(data.id);
-            
+
             // Establecer el preferenceId para mostrar el botón de MP
             setPreferenceId(preference.id);
-            
+
         } catch (error) {
             console.error('Error al crear preferencia de Mercado Pago:', error);
             toast.error('No se pudo crear la preferencia de pago.');
@@ -302,29 +299,9 @@ const BookingGrid = () => {
     };
 
     return (
-        <div
-            style={{
-                minHeight: "100vh",
-                backgroundAttachment: "fixed",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "20px 20px 60px 20px",
-            }}
-        >
-            <Card
-                style={{
-                    backgroundColor: "rgba(255, 255, 255, 1)",
-                    backdropFilter: "blur(10px)",
-                    borderRadius: "16px",
-                    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-                    maxWidth: "1400px",
-                    width: "100%",
-                    border: "none",
-                }}
-                className={`d-flex align-items-center justify-content-center text-center`}
-            >
-                <Container fluid className="py-4">
+        <div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+            <div className="w-full max-w-[1400px] bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8 border border-white/20">
+                <div className="w-full">
                     <BookingGridHeader
                         sport={sport}
                         selectedDate={selectedDate}
@@ -334,7 +311,7 @@ const BookingGrid = () => {
                     />
 
                     {loading ? (
-                        <div className="text-center py-5">Cargando...</div>
+                        <div className="text-center py-12 text-gray-500 font-medium">Cargando...</div>
                     ) : (
                         <BookingTable
                             courts={courts}
@@ -344,8 +321,8 @@ const BookingGrid = () => {
                             bookings={bookings}
                         />
                     )}
-                </Container>
-            </Card>
+                </div>
+            </div>
 
             {/* <CHANGE> Modal de confirmación de reserva */}
             <BookingConfirmationModal
