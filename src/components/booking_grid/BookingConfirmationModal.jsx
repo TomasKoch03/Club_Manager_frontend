@@ -28,6 +28,8 @@ const BookingConfirmationModal = ({
         endTime: ''
     });
 
+    const [isLoadingClubPayment, setIsLoadingClubPayment] = useState(false);
+
     // Inicializar tiempos cuando se abre el modal
     useEffect(() => {
         if (bookingData && show) {
@@ -104,10 +106,10 @@ const BookingConfirmationModal = ({
     // Formatear fecha
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
-        return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]} ${date.getFullYear()}`;
+        return `${days[date.getDay()]} ${date.getDate()} de ${months[date.getMonth()]}`;
     };
 
     return (
@@ -130,85 +132,83 @@ const BookingConfirmationModal = ({
                 </div>
 
                 {/* Body */}
-                <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
-                    <div className="flex flex-col md:flex-row gap-8">
-                        {/* Left Column */}
-                        <div className="flex-1 space-y-6">
-                            <h5 className="font-semibold text-gray-900 text-lg">Detalles de la Reserva</h5>
+                <div className="p-6 overflow-y-auto custom-scrollbar">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Left Column - Configuración (2/3 del espacio) */}
+                        <div className="lg:col-span-2 space-y-4">
+                            {/* Detalles Compactos en Grid Horizontal */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                {/* Cancha */}
+                                <div className="flex items-center gap-3 bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                    <IoLocationOutline size={20} className="text-blue-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Cancha</span>
+                                        <p className="text-sm font-bold text-gray-900 truncate">{courtName}</p>
+                                    </div>
+                                </div>
 
-                            {/* Cancha */}
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
-                                    <IoLocationOutline size={24} />
+                                {/* Fecha */}
+                                <div className="flex items-center gap-3 bg-purple-50/50 p-3 rounded-xl border border-purple-100">
+                                    <IoCalendarOutline size={20} className="text-purple-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Fecha</span>
+                                        <p className="text-sm font-bold text-gray-900  ">{formatDate(date)}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <span className="text-sm font-medium text-gray-500 block mb-1">Cancha</span>
-                                    <p className="text-lg font-bold text-gray-900">{courtName}</p>
-                                </div>
-                            </div>
 
-                            {/* Fecha */}
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-purple-50 rounded-xl text-purple-600">
-                                    <IoCalendarOutline size={24} />
-                                </div>
-                                <div>
-                                    <span className="text-sm font-medium text-gray-500 block mb-1">Fecha</span>
-                                    <p className="text-lg font-bold text-gray-900 capitalize">{formatDate(date)}</p>
+                                {/* Duración */}
+                                <div className="flex items-center gap-3 bg-orange-50/50 p-3 rounded-xl border border-orange-100">
+                                    <IoTimeOutline size={20} className="text-orange-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <span className="text-xs font-medium text-gray-500 block">Duración</span>
+                                        <p className="text-sm font-bold text-gray-900">
+                                            {isValidTimeSelection() ? `${calculateDuration().toFixed(2)}h` : '-'}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
 
                             {/* Horario */}
-                            <div className="flex items-start gap-4">
-                                <div className="p-3 bg-orange-50 rounded-xl text-orange-600">
-                                    <IoTimeOutline size={24} />
-                                </div>
-                                <div className="w-full">
-                                    <span className="text-sm font-medium text-gray-500 block mb-2">Horario</span>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-xs text-gray-500 mb-1.5 block font-medium">Inicio</label>
-                                            <input
-                                                type="time"
-                                                value={timeSelection.startTime}
-                                                onChange={(e) => handleTimeChange('startTime', e.target.value)}
-                                                className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-xs text-gray-500 mb-1.5 block font-medium">Fin</label>
-                                            <input
-                                                type="time"
-                                                value={timeSelection.endTime}
-                                                onChange={(e) => handleTimeChange('endTime', e.target.value)}
-                                                className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900"
-                                            />
-                                        </div>
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <span className="text-sm font-semibold text-gray-900 block mb-3">Horario de reserva</span>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Inicio</label>
+                                        <input
+                                            type="time"
+                                            value={timeSelection.startTime}
+                                            onChange={(e) => handleTimeChange('startTime', e.target.value)}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                        />
                                     </div>
-                                    {isValidTimeSelection() && (
-                                        <p className="text-sm text-green-600 mt-2 font-medium">
-                                            Duración: {calculateDuration().toFixed(2)} hora(s)
-                                        </p>
-                                    )}
-                                    {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
-                                        <p className="text-sm text-red-500 mt-2 font-medium">
-                                            La hora de fin debe ser posterior a la de inicio
-                                        </p>
-                                    )}
+                                    <div>
+                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Fin</label>
+                                        <input
+                                            type="time"
+                                            value={timeSelection.endTime}
+                                            onChange={(e) => handleTimeChange('endTime', e.target.value)}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                        />
+                                    </div>
                                 </div>
+                                {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
+                                    <p className="text-xs text-red-500 mt-2 font-medium">
+                                        La hora de fin debe ser posterior a la de inicio
+                                    </p>
+                                )}
                             </div>
 
-                            {/* Extras */}
-                            <div className="pt-6 border-t border-gray-100">
-                                <h6 className="font-semibold text-gray-900 mb-4">Extras</h6>
-                                <div className="flex flex-col gap-3">
+                            {/* Extras en Grid de 2 Columnas */}
+                            <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                <h6 className="text-sm font-semibold text-gray-900 mb-3">Extras opcionales</h6>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {court?.light_price > 0 && (
-                                        <label className="relative flex flex-row items-center w-full gap-4 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                                             <input
                                                 type="checkbox"
                                                 checked={extras.light}
                                                 onChange={(e) => handleExtraChange('light', e.target.checked)}
-                                                className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
                                                 style={{
                                                     backgroundImage: extras.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
                                                     backgroundSize: '100% 100%',
@@ -216,17 +216,17 @@ const BookingConfirmationModal = ({
                                                     backgroundRepeat: 'no-repeat'
                                                 }}
                                             />
-                                            <span className="font-medium text-gray-700 leading-5 ml-2">Luz artificial (+${court.light_price})</span>
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Luz (+${court.light_price})</span>
                                         </label>
                                     )}
 
                                     {court?.ball_price > 0 && (
-                                        <label className="relative flex flex-row items-center w-full gap-4 p-3 border border-gray-200 rounded-xl cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                                             <input
                                                 type="checkbox"
                                                 checked={extras.ball}
                                                 onChange={(e) => handleExtraChange('ball', e.target.checked)}
-                                                className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
                                                 style={{
                                                     backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
                                                     backgroundSize: '100% 100%',
@@ -234,19 +234,19 @@ const BookingConfirmationModal = ({
                                                     backgroundRepeat: 'no-repeat'
                                                 }}
                                             />
-                                            <span className="font-medium text-gray-700 leading-5 ml-2">Pelota (+${court.ball_price})</span>
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${court.ball_price})</span>
                                         </label>
                                     )}
 
                                     {court?.racket_price > 0 && (
-                                        <div className="p-3 rounded-xl border border-gray-200 bg-gray-50/50">
-                                            <label className="text-sm text-gray-600 block mb-2 font-medium">
-                                                Cantidad de raquetas (${court.racket_price} c/u)
+                                        <div className="p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2">
+                                            <label className="text-xs text-gray-600 block mb-1.5 font-medium">
+                                                Raquetas (${court.racket_price} c/u)
                                             </label>
                                             <select
                                                 value={extras.number_of_rackets}
                                                 onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
-                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                                             >
                                                 {[0, 1, 2, 3, 4].map(num => (
                                                     <option key={num} value={num}>{num}</option>
@@ -258,18 +258,19 @@ const BookingConfirmationModal = ({
                             </div>
                         </div>
 
-                        {/* Right Column - Summary */}
-                        <div className="w-full md:w-80 flex flex-col justify-end">
-                            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                                <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-gray-500 text-sm">Precio base / hora</span>
+                        {/* Right Column - Resumen Financiero (1/3 del espacio) */}
+                        <div className="lg:col-span-1">
+                            <div className="bg-gray-50 rounded-xl p-5 border border-gray-200 sticky top-6">
+                                <h6 className="text-sm font-semibold text-gray-900 mb-4">Resumen</h6>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">Precio base/hora</span>
                                         <span className="text-gray-900 font-semibold">${court?.base_price || 0}</span>
                                     </div>
 
                                     {isValidTimeSelection() && (
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-gray-500 text-sm">Subtotal cancha</span>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Subtotal cancha</span>
                                             <span className="text-gray-900 font-semibold">
                                                 ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
                                             </span>
@@ -277,22 +278,22 @@ const BookingConfirmationModal = ({
                                     )}
 
                                     {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
-                                        <div className="pt-4 border-t border-gray-200 space-y-2">
+                                        <div className="pt-3 border-t border-gray-300 space-y-2">
                                             <span className="text-gray-500 text-xs font-bold uppercase tracking-wider">Extras</span>
                                             {extras.light && court?.light_price > 0 && (
-                                                <div className="flex justify-between text-sm">
+                                                <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Luz</span>
                                                     <span className="text-gray-900 font-medium">${court.light_price}</span>
                                                 </div>
                                             )}
                                             {extras.ball && court?.ball_price > 0 && (
-                                                <div className="flex justify-between text-sm">
+                                                <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Pelota</span>
                                                     <span className="text-gray-900 font-medium">${court.ball_price}</span>
                                                 </div>
                                             )}
                                             {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
-                                                <div className="flex justify-between text-sm">
+                                                <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Raquetas ({extras.number_of_rackets})</span>
                                                     <span className="text-gray-900 font-medium">${court.racket_price * extras.number_of_rackets}</span>
                                                 </div>
@@ -300,9 +301,9 @@ const BookingConfirmationModal = ({
                                         </div>
                                     )}
 
-                                    <div className="pt-4 border-t border-gray-200 mt-4">
-                                        <span className="text-gray-500 text-sm block mb-1">Total a pagar</span>
-                                        <span className="text-4xl font-bold text-gray-900 tracking-tight">
+                                    <div className="pt-3 border-t border-gray-300 mt-3">
+                                        <span className="text-gray-600 text-xs block mb-1">Total a pagar</span>
+                                        <span className="text-3xl font-bold text-gray-900 tracking-tight">
                                             ${calculateTotalPrice()}
                                         </span>
                                     </div>
@@ -313,22 +314,31 @@ const BookingConfirmationModal = ({
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4 sticky bottom-0 z-10">
+                <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-0 z-10">
                     {/* Botón izquierdo - Pagar en el club */}
                     <button
-                        onClick={() => {
+                        onClick={async () => {
                             if (!isValidTimeSelection()) return;
+                            setIsLoadingClubPayment(true);
                             const bookingWithTimes = {
                                 ...bookingData,
                                 startTime: timeSelection.startTime,
                                 endTime: timeSelection.endTime
                             };
-                            onPayInClub(extras, bookingWithTimes);
+                            await onPayInClub(extras, bookingWithTimes);
+                            setIsLoadingClubPayment(false);
                         }}
-                        disabled={!isValidTimeSelection()}
-                        className="w-full sm:w-auto px-8 py-3.5 rounded-xl border-2 border-gray- bg-gray-50 !text-gray-700 font-bold hover:!bg-gray-50 hover:border-gray-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        disabled={!isValidTimeSelection() || isLoadingClubPayment}
+                        className="w-full sm:w-auto px-6 py-2.5 rounded-xl border-2 border-gray-300 bg-white !text-gray-700 font-bold hover:!bg-gray-50 hover:border-gray-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm flex items-center justify-center gap-2"
                     >
-                        Pagar en el club
+                        {isLoadingClubPayment ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                <span>Procesando...</span>
+                            </>
+                        ) : (
+                            'Pagar en el club'
+                        )}
                     </button>
 
                     {/* Botón derecho - Pagar con Mercado Pago */}
@@ -351,11 +361,11 @@ const BookingConfirmationModal = ({
                                 onPayWithMercadoPago(extras, bookingWithTimes);
                             }}
                             disabled={isLoadingPreference || !isValidTimeSelection()}
-                            className="w-full sm:w-auto px-8 py-3.5 rounded-xl !bg-[#009ee3] text-white font-bold hover:!bg-[#008ed0] shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-6 py-2.5 rounded-xl !bg-[#009ee3] text-white font-bold hover:!bg-[#008ed0] shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm"
                         >
                             {isLoadingPreference ? (
                                 <>
-                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                     <span>Procesando...</span>
                                 </>
                             ) : (
