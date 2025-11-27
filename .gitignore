@@ -24,11 +24,12 @@ lerna-debug.log*
 *.sw?
 
 # Build output
-dist/
-dist-ssr/
+#dist/
+#dist-ssr/
 
 # Environment variables
 .env
+.env.production
 .env.local
 .env.production.local
 .env.development.local
