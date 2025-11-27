@@ -137,7 +137,7 @@ const MyBookings = () => {
                 reservation_id: selectedPaymentReservation.reservationId
             });
 
-            toast.success('Pago registrado exitosamente. Podrás pagar en el club.');
+            toast.success('Reserva registrada exitosamente. Podrás pagar en el club.');
 
             // Recargar reservas
             const data = await getMyReservations();
