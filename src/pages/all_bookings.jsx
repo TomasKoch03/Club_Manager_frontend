@@ -31,6 +31,7 @@ const AllBookings = () => {
     const [filterValue, setFilterValue] = useState('');
     const [filterTypeToday, setFilterTypeToday] = useState('');
     const [filterValueToday, setFilterValueToday] = useState('todos');
+    const [availableCourts, setAvailableCourts] = useState([]);
 
     // Estados del rango de fechas
     const [showRangeFilter, setShowRangeFilter] = useState(false);
@@ -98,6 +99,19 @@ const AllBookings = () => {
         };
         fetchCourtsAndUsers();
     }, [currentUser, showEditModal, toast]);
+
+    // Cargar todas las canchas disponibles para los filtros
+    useEffect(() => {
+        const fetchAllCourts = async () => {
+            try {
+                const courtsData = await getCourts('');
+                setAvailableCourts(courtsData);
+            } catch (err) {
+                console.error('Error al cargar canchas para filtros:', err);
+            }
+        };
+        fetchAllCourts();
+    }, []);
 
     // Handler para abrir modal de pago
     const handlePayClick = (reservationId) => {
@@ -238,6 +252,8 @@ const AllBookings = () => {
             filters.sport = filterValue;
         } else if (filterType === 'estado' && filterValue !== 'todos') {
             filters.status = filterValue;
+        } else if (filterType === 'cancha' && filterValue !== 'todos') {
+            filters.courtId = filterValue;
         } else if (filterType === 'fecha' && startDate && endDate) {
             if (new Date(startDate) > new Date(endDate)) {
                 setDateRangeError("La fecha de inicio no puede ser posterior a la fecha de fin.");
@@ -326,7 +342,6 @@ const AllBookings = () => {
         const isoEnd = end.toISOString();
 
         try {
-            // Reutilizamos el endpoint de filtros con start_date / end_date
             const data = await getAllReservationsFiltered({ start_date: isoStart, end_date: isoEnd });
             const sortedData = data.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
             setTodayReservations(sortedData);
@@ -351,12 +366,14 @@ const AllBookings = () => {
         const isoStart = start.toISOString();
         const isoEnd = end.toISOString();
 
-        // Construir filtros base (sport/status) si el usuario eligió uno
+        // Construir filtros base (sport/status/cancha) si el usuario eligió uno
         const baseFilters = {};
         if (filterTypeToday === 'deporte' && filterValueToday && filterValueToday !== 'todos') {
             baseFilters.sport = filterValueToday;
         } else if (filterTypeToday === 'estado' && filterValueToday && filterValueToday !== 'todos') {
             baseFilters.status = filterValueToday;
+        } else if (filterTypeToday === 'cancha' && filterValueToday && filterValueToday !== 'todos') {
+            baseFilters.courtId = filterValueToday;
         }
 
         try {
@@ -364,10 +381,10 @@ const AllBookings = () => {
             let data = [];
 
             if (Object.keys(baseFilters).length === 0) {
-                // Si no hay filtro por deporte/estado, pedir directamente las reservas de hoy al backend
+                // Si no hay filtro por deporte/estado/cancha, pedir directamente las reservas de hoy al backend
                 data = await getAllReservationsFiltered({ start_date: isoStart, end_date: isoEnd });
             } else {
-                // Si hay filtro por deporte/estado, pedir al backend por ese filtro y luego filtrar por fecha en cliente
+                // Si hay filtro por deporte/estado/cancha, pedir al backend por ese filtro y luego filtrar por fecha en cliente
                 const apiData = await getAllReservationsFiltered(baseFilters);
                 
                 if (Array.isArray(apiData)) {
@@ -518,6 +535,7 @@ const AllBookings = () => {
                                 >
                                     <option value="">Seleccionar...</option>
                                     <option value="deporte">Deporte</option>
+                                    <option value="cancha">Cancha</option>
                                     <option value="estado">Estado de pago</option>
                                     <option value="fecha">Rango de fechas</option>
                                 </select>
@@ -538,6 +556,27 @@ const AllBookings = () => {
                                         <option value="futbol">Fútbol</option>
                                         <option value="basquet">Básquet</option>
                                         <option value="paddle">Paddle</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Filtro por Cancha */}
+                            {filterType === 'cancha' && (
+                                <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                        Cancha
+                                    </label>
+                                    <select
+                                        value={filterValue}
+                                        onChange={(e) => setFilterValue(e.target.value)}
+                                        className="h-10 px-3 bg-gray-50 border-transparent rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                    >
+                                        <option value="todos">Todos</option>
+                                        {availableCourts.map((court) => (
+                                            <option key={court.id} value={court.id}>
+                                                {court.name}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                             )}
@@ -694,6 +733,7 @@ const AllBookings = () => {
                                     >
                                         <option value="">Seleccionar...</option>
                                         <option value="deporte">Deporte</option>
+                                        <option value="cancha">Cancha</option>
                                         <option value="estado">Estado de pago</option>
                                     </select>
                                 </div>
@@ -713,6 +753,27 @@ const AllBookings = () => {
                                             <option value="futbol">Fútbol</option>
                                             <option value="basquet">Básquet</option>
                                             <option value="paddle">Paddle</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* Filtro por Cancha */}
+                                {filterTypeToday === 'cancha' && (
+                                    <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                            Cancha
+                                        </label>
+                                        <select
+                                            value={filterValueToday}
+                                            onChange={(e) => setFilterValueToday(e.target.value)}
+                                            className="h-10 px-3 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                        >
+                                            <option value="todos">Todos</option>
+                                            {availableCourts.map((court) => (
+                                                <option key={court.id} value={court.id}>
+                                                    {court.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
                                 )}
