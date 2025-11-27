@@ -21,8 +21,10 @@ jobs:
         run: |
           echo "VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}" >> .env
           echo "VITE_MP_PUBLIC_KEY=${{ secrets.VITE_MP_PUBLIC_KEY }}" >> .env
+          echo "VITE_BASE_PATH=/Club_Manager_frontend" >> .env
 
       - name: Install dependencies
+
         run: npm install
 
       - name: Build
