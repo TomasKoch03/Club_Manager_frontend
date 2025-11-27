@@ -4,6 +4,7 @@ import { Spinner } from 'react-bootstrap';
 import BookingConfirmationModal from '../components/booking_grid/BookingConfirmationModal';
 import EditReservationModal from '../components/bookings/EditReservationModal';
 import ReservationCard from '../components/bookings/ReservationCard';
+import CancelReservationModal from '../components/bookings/cancelReservationModal';
 import { useToast } from '../hooks/useToast';
 import { createMercadoPagoPreference, getAllCourts, getMyReservations, postPayment, updateOwnReservation, cancelReservationByUser } from '../services/api';
 
@@ -19,30 +20,15 @@ const MyBookings = () => {
     const [selectedPaymentReservation, setSelectedPaymentReservation] = useState(null);
     const [preferenceId, setPreferenceId] = useState(null);
     const [isLoadingPreference, setIsLoadingPreference] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [reservationToCancel, setReservationToCancel] = useState(null);
+    const [isCanceling, setIsCanceling] = useState(false);
     const toast = useToast();
-    const handleCancelClick = async (reservationId) => {
-        if (!window.confirm('¿Estás seguro que deseas cancelar esta reserva?')) {
-            return;
-        }
-
-        try {
-            setLoading(true);
-            await cancelReservationByUser(reservationId);
-            
-            toast.success('Reserva cancelada exitosamente');
-
-            const data = await getMyReservations();
-            const sortedData = data.sort((a, b) =>
-                new Date(b.start_time) - new Date(a.start_time)
-            );
-            setReservations(sortedData);
-
-        } catch (error) {
-            console.error('Error al cancelar:', error);
-            const errorMessage = error.detail || 'No se pudo cancelar la reserva.';
-            toast.error(errorMessage);
-        } finally {
-            setLoading(false);
+    const handleCancelClick = (reservationId) => {
+        const reservation = reservations.find(r => r.id === reservationId);
+        if (reservation) {
+            setReservationToCancel(reservation);
+            setShowCancelModal(true);
         }
     };
 
@@ -81,6 +67,32 @@ const MyBookings = () => {
 
         fetchCourts();
     }, []);
+
+    const handleConfirmCancel = async (reservationId) => {
+        try {
+            setIsCanceling(true);
+            await cancelReservationByUser(reservationId);
+            
+            toast.success('Reserva cancelada exitosamente');
+
+            // Recargar lista
+            const data = await getMyReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+            
+            setShowCancelModal(false);
+            setReservationToCancel(null);
+
+        } catch (error) {
+            console.error('Error al cancelar:', error);
+            const errorMessage = error.detail || 'No se pudo cancelar la reserva.';
+            toast.error(errorMessage);
+        } finally {
+            setIsCanceling(false);
+        }
+    };
 
     const handlePayClick = (reservationId) => {
         const reservation = reservations.find(r => r.id === reservationId);
@@ -345,6 +357,14 @@ const MyBookings = () => {
                     isLoadingPreference={isLoadingPreference}
                 />
             )}
+
+            <CancelReservationModal
+                show={showCancelModal}
+                onHide={() => !isCanceling && setShowCancelModal(false)}
+                reservation={reservationToCancel}
+                onConfirm={handleConfirmCancel}
+                isProcessing={isCanceling}
+            />
         </div>
     );
 };
