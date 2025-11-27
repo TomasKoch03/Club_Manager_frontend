@@ -30,7 +30,7 @@ const BookingConfirmationModal = ({
 
     const [isLoadingClubPayment, setIsLoadingClubPayment] = useState(false);
 
-    // Inicializar tiempos cuando se abre el modal
+    // Inicializar tiempos y extras cuando se abre el modal
     useEffect(() => {
         if (bookingData && show) {
             const formatForInput = (dateString) => {
@@ -44,6 +44,11 @@ const BookingConfirmationModal = ({
                 startTime: formatForInput(bookingData.startTime),
                 endTime: formatForInput(bookingData.endTime)
             });
+
+            // Si hay extras iniciales (reserva existente), establecerlos
+            if (bookingData.initialExtras) {
+                setExtras(bookingData.initialExtras);
+            }
         }
     }, [bookingData, show]);
 
@@ -178,7 +183,8 @@ const BookingConfirmationModal = ({
                                             type="time"
                                             value={timeSelection.startTime}
                                             onChange={(e) => handleTimeChange('startTime', e.target.value)}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                            disabled={bookingData.isExistingReservation}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                                         />
                                     </div>
                                     <div>
@@ -187,7 +193,8 @@ const BookingConfirmationModal = ({
                                             type="time"
                                             value={timeSelection.endTime}
                                             onChange={(e) => handleTimeChange('endTime', e.target.value)}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm"
+                                            disabled={bookingData.isExistingReservation}
+                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                                         />
                                     </div>
                                 </div>
@@ -203,12 +210,13 @@ const BookingConfirmationModal = ({
                                 <h6 className="text-sm font-semibold text-gray-900 mb-3">Extras opcionales</h6>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {court?.light_price > 0 && (
-                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <label className={`flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg transition-colors ${!bookingData.isExistingReservation ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-60'}`}>
                                             <input
                                                 type="checkbox"
                                                 checked={extras.light}
                                                 onChange={(e) => handleExtraChange('light', e.target.checked)}
-                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                disabled={bookingData.isExistingReservation}
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
                                                 style={{
                                                     backgroundImage: extras.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
                                                     backgroundSize: '100% 100%',
@@ -221,12 +229,13 @@ const BookingConfirmationModal = ({
                                     )}
 
                                     {court?.ball_price > 0 && (
-                                        <label className="flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <label className={`flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg transition-colors ${!bookingData.isExistingReservation ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-60'}`}>
                                             <input
                                                 type="checkbox"
                                                 checked={extras.ball}
                                                 onChange={(e) => handleExtraChange('ball', e.target.checked)}
-                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                                disabled={bookingData.isExistingReservation}
+                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
                                                 style={{
                                                     backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
                                                     backgroundSize: '100% 100%',
@@ -239,14 +248,15 @@ const BookingConfirmationModal = ({
                                     )}
 
                                     {court?.racket_price > 0 && (
-                                        <div className="p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2">
+                                        <div className={`p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2 ${bookingData.isExistingReservation ? 'opacity-60' : ''}`}>
                                             <label className="text-xs text-gray-600 block mb-1.5 font-medium">
                                                 Raquetas (${court.racket_price} c/u)
                                             </label>
                                             <select
                                                 value={extras.number_of_rackets}
                                                 onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
-                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                                                disabled={bookingData.isExistingReservation}
+                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm disabled:cursor-not-allowed disabled:opacity-60"
                                             >
                                                 {[0, 1, 2, 3, 4].map(num => (
                                                     <option key={num} value={num}>{num}</option>
