@@ -124,17 +124,26 @@ const AllBookings = () => {
 
     // Handler para aprobar el pago
     const handleApprovePayment = async (reservationId) => {
-        const reservation = reservations.find((r) => r.id === reservationId);
+        // Buscar la reserva en ambos arrays (general o de hoy)
+        const reservation = showToday 
+            ? todayReservations.find((r) => r.id === reservationId)
+            : reservations.find((r) => r.id === reservationId);
+
+        if (!reservation) {
+            toast.error('No se pudo encontrar la reserva');
+            return;
+        }
+
         try {
             await patchPayment(reservation.payment.id, { status: 'pagado' });
             toast.success('Pago aprobado exitosamente');
 
             setLoading(true);
+            
+            // Refrescar reservas generales
             const data = await getAllReservations();
             const sortedData = data.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
             setReservations(sortedData);
-            setShowPaymentModal(false);
-            setSelectedReservation(null);
 
             // Si la vista 'Hoy' está activa, refrescar también las reservas de hoy
             if (showToday) {
@@ -148,6 +157,9 @@ const AllBookings = () => {
                     console.error('Error al refrescar reservas de hoy después del pago:', err);
                 }
             }
+
+            setShowPaymentModal(false);
+            setSelectedReservation(null);
         } catch (err) {
             console.error('Error al aprobar pago:', err);
             toast.error('Error al aprobar el pago');
@@ -536,7 +548,7 @@ const AllBookings = () => {
                                     <option value="">Seleccionar...</option>
                                     <option value="deporte">Deporte</option>
                                     <option value="cancha">Cancha</option>
-                                    <option value="estado">Estado de pago</option>
+                                    <option value="estado">Estado de reserva</option>
                                     <option value="fecha">Rango de fechas</option>
                                 </select>
                             </div>
@@ -585,7 +597,7 @@ const AllBookings = () => {
                             {filterType === 'estado' && (
                                 <div className="flex-shrink-0 animate-in fade-in duration-200">
                                     <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                                        Estado de pago
+                                        Estado de reserva
                                     </label>
                                     <select
                                         value={filterValue}
@@ -595,6 +607,7 @@ const AllBookings = () => {
                                         <option value="todos">Todos</option>
                                         <option value="pagado">Pagado</option>
                                         <option value="pendiente">Pendiente</option>
+                                        <option value="cancelled">Cancelado</option>
                                     </select>
                                 </div>
                             )}
@@ -734,7 +747,7 @@ const AllBookings = () => {
                                         <option value="">Seleccionar...</option>
                                         <option value="deporte">Deporte</option>
                                         <option value="cancha">Cancha</option>
-                                        <option value="estado">Estado de pago</option>
+                                        <option value="estado">Estado de reserva</option>
                                     </select>
                                 </div>
 
@@ -782,7 +795,7 @@ const AllBookings = () => {
                                 {filterTypeToday === 'estado' && (
                                     <div className="flex-shrink-0 animate-in fade-in duration-200">
                                         <label className="block text-xs font-medium text-gray-500 mb-1.5">
-                                            Estado de pago
+                                            Estado de reserva
                                         </label>
                                         <select
                                             value={filterValueToday}
@@ -792,6 +805,7 @@ const AllBookings = () => {
                                             <option value="todos">Todos</option>
                                             <option value="pagado">Pagado</option>
                                             <option value="pendiente">Pendiente</option>
+                                            <option value="cancelled">Cancelado</option>
                                         </select>
                                     </div>
                                 )}
