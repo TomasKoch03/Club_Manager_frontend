@@ -218,7 +218,7 @@ const AllBookings = () => {
                 // ❌ NO modificar ninguna reserva
                 // ✅ El usuario puede corregir el horario y volver a intentar
             } else {
-                toast.error(`Error al actualizar la reserva: \n${err.detail}.\nPor favor, intenta nuevamente.`);
+                toast.error(`Error al actualizar la reserva. Por favor, intenta nuevamente.`);
             }
 
             // IMPORTANTE: NO cerrar el modal ni recargar reservas cuando hay error
@@ -796,7 +796,7 @@ const AllBookings = () => {
                             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
                                 <IoCalendarOutline size={64} className="mx-auto text-gray-300 mb-4" />
                                 <p className="text-gray-600 text-lg">
-                                    No hay reservas para mostrar
+                                    No tienes reservas aún
                                 </p>
                             </div>
                         ) : (

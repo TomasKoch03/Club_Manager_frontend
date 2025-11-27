@@ -308,24 +308,26 @@ const EditReservationModal = ({
                                     </label>
                                 </div>
 
-                                <div>
-                                    {/* Raquetas */}
-                                    <div className={`p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 ${hasPayment ? 'opacity-60' : ''}`}>
-                                        <label className="text-xs text-gray-600 block mb-1.5 font-medium">
-                                            Cantidad de raquetas {selectedCourt?.racket_price > 0 ? `($${selectedCourt.racket_price} c/u)` : ''}
-                                        </label>
-                                        <select
-                                            value={formData.number_of_rackets}
-                                            onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
-                                            disabled={hasPayment}
-                                            className="w-full p-1.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:cursor-not-allowed text-sm"
-                                        >
-                                            {[0, 1, 2, 3, 4].map(num => (
-                                                <option key={num} value={num}>{num}</option>
-                                            ))}
-                                        </select>
+                                {selectedCourt?.racket_price > 0 && (
+                                    <div>
+                                        {/* Raquetas */}
+                                        <div className={`p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 ${hasPayment ? 'opacity-60' : ''}`}>
+                                            <label className="text-xs text-gray-600 block mb-1.5 font-medium">
+                                                Cantidad de raquetas (${selectedCourt.racket_price} c/u)
+                                            </label>
+                                            <select
+                                                value={formData.number_of_rackets}
+                                                onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
+                                                disabled={hasPayment}
+                                                className="w-full p-1.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:cursor-not-allowed text-sm"
+                                            >
+                                                {[0, 1, 2, 3, 4].map(num => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
 

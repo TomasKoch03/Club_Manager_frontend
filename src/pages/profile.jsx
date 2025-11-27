@@ -57,7 +57,7 @@ const Profile = () => {
             setIsEditing(false);
             toast.success('Datos actualizados correctamente');
         } catch (err) {
-            toast.error('Error al guardar los cambios');
+            toast.error(err.detail);
             console.error('Error saving user data:', err);
         } finally {
             setSaving(false);
