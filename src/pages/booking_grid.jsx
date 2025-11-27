@@ -4,7 +4,7 @@ import BookingConfirmationModal from '../components/booking_grid/BookingConfirma
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import { useToast } from '../hooks/useToast';
-import { createMercadoPagoPreference, getCourts, getReservationsBySportAndDay, postPayment, postReservation, postReservationForUser } from "../services/api.js";
+import { createMercadoPagoPreference, getCourts, getReservationsBySportAndDay, getUserData, postPayment, postReservation, postReservationForUser } from "../services/api.js";
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -24,6 +24,7 @@ const BookingGrid = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [preferenceId, setPreferenceId] = useState(null);
     const [isLoadingPreference, setIsLoadingPreference] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
     const toast = useToast();
 
     const generateTimeSlots = () => {
@@ -45,6 +46,22 @@ const BookingGrid = () => {
     };
 
     const timeSlots = generateTimeSlots();
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const userData = await getUserData();
+                setCurrentUser({
+                    ...userData,
+                    is_blocked: !userData.is_active // Si no está activo, está bloqueado
+                });
+            } catch (error) {
+                console.error('Error al obtener datos del usuario:', error);
+            }
+        };
+
+        fetchCurrentUser();
+    }, []);
 
     useEffect(() => {
         const fetchCourts = async () => {
@@ -337,6 +354,7 @@ const BookingGrid = () => {
                 onPayWithMercadoPago={handlePayWithMercadoPago}
                 preferenceId={preferenceId}
                 isLoadingPreference={isLoadingPreference}
+                isUserBlocked={currentUser?.is_blocked || false}
             />
         </div>
     );

@@ -1,6 +1,6 @@
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
-import { IoCalendarOutline, IoClose, IoLocationOutline, IoTimeOutline } from 'react-icons/io5';
+import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoTimeOutline } from 'react-icons/io5';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -15,7 +15,8 @@ const BookingConfirmationModal = ({
     onPayInClub,
     onPayWithMercadoPago,
     preferenceId,
-    isLoadingPreference
+    isLoadingPreference,
+    isUserBlocked = false
 }) => {
     const [extras, setExtras] = useState({
         light: false,
@@ -141,6 +142,19 @@ const BookingConfirmationModal = ({
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Left Column - Configuración (2/3 del espacio) */}
                         <div className="lg:col-span-2 space-y-4">
+                            {/* Cartel de usuario bloqueado */}
+                            {isUserBlocked && (
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+                                    <IoLockClosed size={20} className="text-red-600 shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="text-sm font-semibold text-red-900 mb-1">No se puede reservar</h4>
+                                        <p className="text-sm text-red-700">
+                                            Tu cuenta está bloqueada y no puedes realizar reservas en este momento.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Detalles Compactos en Grid Horizontal */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {/* Cancha */}
@@ -338,7 +352,7 @@ const BookingConfirmationModal = ({
                             await onPayInClub(extras, bookingWithTimes);
                             setIsLoadingClubPayment(false);
                         }}
-                        disabled={!isValidTimeSelection() || isLoadingClubPayment}
+                        disabled={!isValidTimeSelection() || isLoadingClubPayment || isUserBlocked}
                         className="w-full sm:w-auto px-6 py-2.5 rounded-xl border-2 border-gray-300 bg-white !text-gray-700 font-bold hover:!bg-gray-50 hover:border-gray-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm flex items-center justify-center gap-2"
                     >
                         {isLoadingClubPayment ? (
@@ -370,7 +384,7 @@ const BookingConfirmationModal = ({
                                 };
                                 onPayWithMercadoPago(extras, bookingWithTimes);
                             }}
-                            disabled={isLoadingPreference || !isValidTimeSelection()}
+                            disabled={isLoadingPreference || !isValidTimeSelection() || isUserBlocked}
                             className="w-full sm:w-auto px-6 py-2.5 rounded-xl !bg-[#009ee3] text-white font-bold hover:!bg-[#008ed0] shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm"
                         >
                             {isLoadingPreference ? (

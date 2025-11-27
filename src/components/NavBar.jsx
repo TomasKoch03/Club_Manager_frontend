@@ -9,10 +9,6 @@ import NavBarLogo from './NavBarItems/NavBarLogo';
 const Navbar = () => {
     const navigate = useNavigate(); // <CHANGE> Hook para navegación
 
-    const handleNotificationClick = () => {
-        console.log('Notificaciones clicked');
-    };
-
     const handleProfileClick = async () => {
         try {
             const userData = await getUserData();
@@ -63,11 +59,6 @@ const Navbar = () => {
 
                 <BSNavbar.Collapse id="basic-navbar-nav">
                     <Nav className="ms-auto">
-                        <NavBarItem
-                            onClick={handleNotificationClick}
-                            icon={FaRegBell}
-                            ariaLabel="Notificaciones"
-                        />
                         <NavDropdown
                             title={<FaRegUserCircle size={24} />}
                             id="user-dropdown"
