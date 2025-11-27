@@ -647,7 +647,6 @@ const AllBookings = () => {
                                         <option value="todos">Todos</option>
                                         <option value="pagado">Pagado</option>
                                         <option value="pendiente">Pendiente</option>
-                                        <option value="cancelled">Cancelado</option>
                                     </select>
                                 </div>
                             )}
@@ -846,7 +845,6 @@ const AllBookings = () => {
                                             <option value="todos">Todos</option>
                                             <option value="pagado">Pagado</option>
                                             <option value="pendiente">Pendiente</option>
-                                            <option value="cancelled">Cancelado</option>
                                         </select>
                                     </div>
                                 )}
