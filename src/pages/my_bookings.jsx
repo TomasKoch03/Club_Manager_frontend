@@ -5,7 +5,7 @@ import BookingConfirmationModal from '../components/booking_grid/BookingConfirma
 import EditReservationModal from '../components/bookings/EditReservationModal';
 import ReservationCard from '../components/bookings/ReservationCard';
 import { useToast } from '../hooks/useToast';
-import { createMercadoPagoPreference, getAllCourts, getMyReservations, postPayment, updateOwnReservation } from '../services/api';
+import { createMercadoPagoPreference, getAllCourts, getMyReservations, postPayment, updateOwnReservation, cancelReservationByUser } from '../services/api';
 
 const MyBookings = () => {
     const [reservations, setReservations] = useState([]);
@@ -20,6 +20,31 @@ const MyBookings = () => {
     const [preferenceId, setPreferenceId] = useState(null);
     const [isLoadingPreference, setIsLoadingPreference] = useState(false);
     const toast = useToast();
+    const handleCancelClick = async (reservationId) => {
+        if (!window.confirm('¿Estás seguro que deseas cancelar esta reserva?')) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await cancelReservationByUser(reservationId);
+            
+            toast.success('Reserva cancelada exitosamente');
+
+            const data = await getMyReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+
+        } catch (error) {
+            console.error('Error al cancelar:', error);
+            const errorMessage = error.detail || 'No se pudo cancelar la reserva.';
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
         const fetchReservations = async () => {
@@ -280,6 +305,7 @@ const MyBookings = () => {
                                         onPayClick={handlePayClick}
                                         payButtonText={'Pagar'}
                                         onEditClick={handleEditClick}
+                                        onCancelClick={handleCancelClick}
                                         isAdmin={false}
                                     />
                                 ))}

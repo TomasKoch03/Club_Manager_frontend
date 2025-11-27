@@ -271,3 +271,9 @@ export const deleteCourt = async (courtId) => {
         method: 'DELETE',
     });
 };
+
+export const cancelReservationByUser = async (reservationId) => {
+    return apiRequest(`/reservation/${reservationId}/cancel`, {
+        method: 'PATCH',
+    });
+};
