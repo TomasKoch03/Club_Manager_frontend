@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import { buildRoute } from '../../utils/routes';
 
 const NavBarItem = ({
                         href,
@@ -15,7 +16,7 @@ const NavBarItem = ({
             }
             onClick();
         } else if (href) {
-            window.location.href = href;
+            window.location.href = buildRoute(href);
         }
     };
 
