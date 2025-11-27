@@ -29,13 +29,18 @@ const AllBookings = () => {
     // Estados de filtro
     const [filterType, setFilterType] = useState('');
     const [filterValue, setFilterValue] = useState('');
+    const [filterTypeToday, setFilterTypeToday] = useState('');
+    const [filterValueToday, setFilterValueToday] = useState('todos');
 
     // Estados del rango de fechas
     const [showRangeFilter, setShowRangeFilter] = useState(false);
+    const [showToday, setShowToday] = useState(false);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [rangeReservations, setRangeReservations] = useState([]);
     const [totalIncome, setTotalIncome] = useState(null);
+    const [todayReservations, setTodayReservations] = useState([]);
+    const [todayLoading, setTodayLoading] = useState(false);
     const [dateRangeError, setDateRangeError] = useState(null);
 
     // Cargar datos del usuario actual
@@ -116,6 +121,19 @@ const AllBookings = () => {
             setReservations(sortedData);
             setShowPaymentModal(false);
             setSelectedReservation(null);
+
+            // Si la vista 'Hoy' está activa, refrescar también las reservas de hoy
+            if (showToday) {
+                try {
+                    await handleGetTodayReservations();
+                    // Asegurarse de que la UI de filtros para 'Hoy' quede limpia
+                    setFilterTypeToday('');
+                    setFilterValueToday('todos');
+                } catch (err) {
+                    // No bloquear el flujo ante un error al refrescar 'hoy'
+                    console.error('Error al refrescar reservas de hoy después del pago:', err);
+                }
+            }
         } catch (err) {
             console.error('Error al aprobar pago:', err);
             toast.error('Error al aprobar el pago');
@@ -159,6 +177,23 @@ const AllBookings = () => {
                 new Date(b.start_time) - new Date(a.start_time)
             );
             setReservations(sortedData);
+
+            // Si la vista 'Hoy' está activa, refrescar también las reservas de hoy para reflejar cambios inmediatos
+            if (showToday) {
+                try {
+                    await handleGetTodayReservations();
+                } catch (err) {
+                    console.error('Error al refrescar reservas de hoy después de editar:', err);
+                }
+            }
+
+            // Limpiar filtros (que no quede ningún selector seleccionado en el panel)
+            setFilterType('');
+            setFilterValue('');
+            setFilterTypeToday('');
+            setFilterValueToday('todos');
+            setStartDate('');
+            setEndDate('');
 
             // Cerrar modal SOLO si fue exitoso
             setShowEditModal(false);
@@ -278,6 +313,87 @@ const AllBookings = () => {
         }
     };
 
+    // Obtener reservas del día de hoy
+    const handleGetTodayReservations = async () => {
+        setTodayReservations([]);
+        setError(null);
+        setTodayLoading(true);
+
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const isoStart = start.toISOString();
+        const isoEnd = end.toISOString();
+
+        try {
+            // Reutilizamos el endpoint de filtros con start_date / end_date
+            const data = await getAllReservationsFiltered({ start_date: isoStart, end_date: isoEnd });
+            const sortedData = data.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+            setTodayReservations(sortedData);
+            setError(null);
+        } catch (err) {
+            console.error('Error al obtener reservas de hoy:', err);
+            setError('No se pudieron obtener las reservas de hoy.');
+        } finally {
+            setTodayLoading(false);
+        }
+    };
+
+    // Aplicar filtros a las reservas de hoy
+    const handleApplyTodayFilters = async () => {
+        setError(null);
+        setTodayLoading(true);
+        const filters = {};
+
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const isoStart = start.toISOString();
+        const isoEnd = end.toISOString();
+
+        // Construir filtros base (sport/status) si el usuario eligió uno
+        const baseFilters = {};
+        if (filterTypeToday === 'deporte' && filterValueToday && filterValueToday !== 'todos') {
+            baseFilters.sport = filterValueToday;
+        } else if (filterTypeToday === 'estado' && filterValueToday && filterValueToday !== 'todos') {
+            baseFilters.status = filterValueToday;
+        }
+
+        try {
+            
+            let data = [];
+
+            if (Object.keys(baseFilters).length === 0) {
+                // Si no hay filtro por deporte/estado, pedir directamente las reservas de hoy al backend
+                data = await getAllReservationsFiltered({ start_date: isoStart, end_date: isoEnd });
+            } else {
+                // Si hay filtro por deporte/estado, pedir al backend por ese filtro y luego filtrar por fecha en cliente
+                const apiData = await getAllReservationsFiltered(baseFilters);
+                
+                if (Array.isArray(apiData)) {
+                    data = apiData.filter((r) => {
+                        const t = new Date(r.start_time).getTime();
+                        return t >= new Date(isoStart).getTime() && t <= new Date(isoEnd).getTime();
+                    });
+                } else {
+                    data = [];
+                }
+            }
+
+            const sortedData = data.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+            setTodayReservations(sortedData);
+            setError(null);
+        } catch (err) {
+            console.error('Error al aplicar filtros a reservas de hoy:', err);
+            setError('No se pudieron filtrar las reservas de hoy.');
+        } finally {
+            setTodayLoading(false);
+        }
+    };
+
+    // Etiqueta con la fecha de hoy (formateada en español)
+    const todayLabel = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
+
 
     return (
         <div style={{
@@ -315,11 +431,13 @@ const AllBookings = () => {
                     </p>
                 </div>
 
-                {/* BOTÓN DE TOGGLE ENTRE FILTROS E INGRESOS */}
-                <div className="mb-6">
+                {/* BOTONES DE TOGGLE */}
+                <div className="mb-6 flex flex-wrap gap-3">
+                    {/* Botón Reportes de ingresos */}
                     <button
                         onClick={() => {
                             setShowRangeFilter(!showRangeFilter);
+                            setShowToday(false);
                             if (!showRangeFilter) {
                                 // Limpiar filtros al entrar a ingresos
                                 setFilterType('');
@@ -347,10 +465,42 @@ const AllBookings = () => {
                             </>
                         )}
                     </button>
+
+                    {/* Botón Reservas de hoy */}
+                    <button
+                        onClick={() => {
+                            setShowToday(!showToday);
+                            setShowRangeFilter(false);
+                            if (!showToday) {
+                                // Cargar reservas de hoy al activar
+                                handleGetTodayReservations();
+                                // Limpiar filtros
+                                setFilterTypeToday('');
+                                setFilterValueToday('todos');
+                            } else {
+                                // Salir del modo hoy
+                                setTodayReservations([]);
+                                setError(null);
+                            }
+                        }}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 rounded-xl font-semibold text-gray-900 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
+                    >
+                        {!showToday ? (
+                            <>
+                                <IoCalendarOutline size={20} />
+                                Reservas de hoy
+                            </>
+                        ) : (
+                            <>
+                                <IoFilterOutline size={20} />
+                                ← Todas las reservas
+                            </>
+                        )}
+                    </button>
                 </div>
 
                 {/* SECCIÓN DE FILTROS */}
-                {!showRangeFilter && (
+                {!showRangeFilter && !showToday && (
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
                         <div className="flex flex-col lg:flex-row lg:items-end gap-4">
                             {/* Selector de tipo de filtro */}
@@ -387,7 +537,7 @@ const AllBookings = () => {
                                         <option value="todos">Todos</option>
                                         <option value="futbol">Fútbol</option>
                                         <option value="basquet">Básquet</option>
-                                        <option value="paddle">Pádel</option>
+                                        <option value="paddle">Paddle</option>
                                     </select>
                                 </div>
                             )}
@@ -517,8 +667,130 @@ const AllBookings = () => {
                     </div>
                 )}
 
+                {/* SECCIÓN DE RESERVAS DE HOY */}
+                {showToday && (
+                    <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <IoCalendarOutline size={24} className="text-gray-700" />
+                                    <h3 className="text-lg font-semibold text-gray-900">Reservas de hoy</h3>
+                                    <span className="text-sm text-gray-500 ml-3">{todayLabel}</span>
+                                </div>
+
+                        {/* BARRA DE FILTROS PARA HOY (sin opción de fechas) */}
+                        <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-6">
+                            <div className="flex flex-col lg:flex-row lg:items-end gap-4">
+                                {/* Selector de tipo de filtro */}
+                                <div className="flex-shrink-0">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                        Filtrar por
+                                    </label>
+                                    <select
+                                        value={filterTypeToday}
+                                        onChange={(e) => {
+                                            setFilterTypeToday(e.target.value);
+                                            setFilterValueToday('todos');
+                                        }}
+                                        className="h-10 px-3 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                    >
+                                        <option value="">Seleccionar...</option>
+                                        <option value="deporte">Deporte</option>
+                                        <option value="estado">Estado de pago</option>
+                                    </select>
+                                </div>
+
+                                {/* Filtro por Deporte */}
+                                {filterTypeToday === 'deporte' && (
+                                    <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                            Deporte
+                                        </label>
+                                        <select
+                                            value={filterValueToday}
+                                            onChange={(e) => setFilterValueToday(e.target.value)}
+                                            className="h-10 px-3 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                        >
+                                            <option value="todos">Todos</option>
+                                            <option value="futbol">Fútbol</option>
+                                            <option value="basquet">Básquet</option>
+                                            <option value="paddle">Paddle</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* Filtro por Estado */}
+                                {filterTypeToday === 'estado' && (
+                                    <div className="flex-shrink-0 animate-in fade-in duration-200">
+                                        <label className="block text-xs font-medium text-gray-500 mb-1.5">
+                                            Estado de pago
+                                        </label>
+                                        <select
+                                            value={filterValueToday}
+                                            onChange={(e) => setFilterValueToday(e.target.value)}
+                                            className="h-10 px-3 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                                        >
+                                            <option value="todos">Todos</option>
+                                            <option value="pagado">Pagado</option>
+                                            <option value="pendiente">Pendiente</option>
+                                        </select>
+                                    </div>
+                                )}
+
+                                {/* Botón Aplicar Filtros */}
+                                <div className="flex-shrink-0 lg:ml-auto">
+                                    <button
+                                        onClick={handleApplyTodayFilters}
+                                        disabled={todayLoading}
+                                        className="h-10 px-6 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {todayLoading ? (
+                                            <>
+                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                <span>Filtrando...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <IoFilterOutline size={16} />
+                                                Aplicar
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {todayLoading && (
+                            <div className="p-8 text-center">
+                                <div className="w-12 h-12 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+                                <p className="text-gray-600">Cargando reservas de hoy...</p>
+                            </div>
+                        )}
+
+                        {!todayLoading && todayReservations.length === 0 && (
+                            <div className="p-8 text-center">
+                                <IoCalendarOutline size={48} className="mx-auto text-gray-300 mb-3" />
+                                <p className="text-gray-600">No hay reservas para hoy</p>
+                            </div>
+                        )}
+
+                        {!todayLoading && todayReservations.length > 0 && (
+                            <div className="space-y-4">
+                                {todayReservations.map((r) => (
+                                    <ReservationCard
+                                        key={r.id}
+                                        reservation={r}
+                                        onPayClick={handlePayClick}
+                                        payButtonText={'Ver pago'}
+                                        onEditClick={handleEditClick}
+                                        isAdmin={currentUser?.is_admin}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* LISTADO DE RESERVAS */}
-                {!showRangeFilter && !loading && !error && (
+                {!showRangeFilter && !showToday && !loading && !error && (
                     <>
                         {reservations.length === 0 ? (
                             <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
