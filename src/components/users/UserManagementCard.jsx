@@ -8,10 +8,6 @@ const UserManagementCard = ({ user }) => {
         navigate(`/admin/usuarios/${user.id}/edit`);
     };
 
-    const handleDeleteUser = () => {
-        // TODO: Implementar modal de confirmación de eliminación
-        console.log('Delete user:', user.id);
-    };
 
     // Obtener iniciales del nombre completo
     const getInitials = (fullName) => {
@@ -62,13 +58,6 @@ const UserManagementCard = ({ user }) => {
                     title="Editar usuario"
                 >
                     <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                </button>
-                <button
-                    onClick={handleDeleteUser}
-                    className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-                    title="Eliminar usuario"
-                >
-                    <IoTrashOutline className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors" />
                 </button>
             </div>
         </div>
