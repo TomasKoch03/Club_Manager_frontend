@@ -74,11 +74,11 @@ const Home = () => {
                     <div className="flex-1">
                         <div className={`
                             relative flex flex-col items-center justify-center w-full h-full py-6 px-6
-                            rounded-2xl shadow-md border transition-all duration-300
-                            ${loading ? 'bg-gray-100 border-gray-200' :
+                            rounded-2xl shadow-lg transition-all duration-300
+                            ${loading ? 'bg-gray-100 border-4 border-gray-200' :
                                 userStatus
-                                    ? 'bg-green-50 border-green-100'
-                                    : 'bg-red-50 border-red-100'}
+                                    ? 'bg-green-50 border-4 border-green-500'
+                                    : 'bg-red-50 border-4 border-red-500'}
                         `}>
                             {loading ? (
                                 <div className="animate-pulse flex flex-col items-center">
