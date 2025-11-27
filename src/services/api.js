@@ -274,6 +274,12 @@ export const deleteCourt = async (courtId) => {
 
 export const cancelReservationByUser = async (reservationId) => {
     return apiRequest(`/reservation/${reservationId}/cancel`, {
-        method: 'PATCH',
+        method: 'DELETE',
+    });
+};
+
+export const cancelReservationByAdmin = async (reservationId) => {
+    return apiRequest(`/reservation/admin/${reservationId}/cancel`, {
+        method: 'DELETE',
     });
 };

@@ -3,8 +3,9 @@ import { IoCalendarOutline, IoFilterOutline, IoTrendingUpOutline } from 'react-i
 import EditReservationModal from '../components/bookings/EditReservationModal';
 import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
 import ReservationCard from '../components/bookings/ReservationCard';
+import CancelReservationModal  from '../components/bookings/cancelReservationModal';
 import { useToast } from '../hooks/useToast';
-import { getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation } from '../services/api';
+import { getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation , cancelReservationByAdmin} from '../services/api';
 
 
 const AllBookings = () => {
@@ -43,6 +44,10 @@ const AllBookings = () => {
     const [todayReservations, setTodayReservations] = useState([]);
     const [todayLoading, setTodayLoading] = useState(false);
     const [dateRangeError, setDateRangeError] = useState(null);
+
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [reservationToCancel, setReservationToCancel] = useState(null);
+    const [isCanceling, setIsCanceling] = useState(false);
 
     // Cargar datos del usuario actual
     useEffect(() => {
@@ -119,6 +124,41 @@ const AllBookings = () => {
         if (reservation) {
             setSelectedReservation(reservation);
             setShowPaymentModal(true);
+        }
+    };
+
+    const handleCancelClick = (reservationId) => {
+        const reservation = reservations.find(r => r.id === reservationId);
+        if (reservation) {
+            setReservationToCancel(reservation);
+            setShowCancelModal(true);
+        }
+    };
+
+    const handleConfirmCancel = async (reservationId) => {
+        try {
+            setIsCanceling(true);
+            // Llamamos al endpoint de ADMIN
+            await cancelReservationByAdmin(reservationId);
+            
+            toast.success('Reserva cancelada exitosamente');
+
+            // Recargar lista
+            const data = await getAllReservations();
+            const sortedData = data.sort((a, b) =>
+                new Date(b.start_time) - new Date(a.start_time)
+            );
+            setReservations(sortedData);
+
+        } catch (error) {
+            console.error('Error al cancelar:', error);
+            // Muestra el error del backend (ej: "No se puede cancelar si no está pendiente")
+            const errorMessage = error.detail || 'Error al cancelar la reserva';
+            toast.error(errorMessage);
+        } finally {
+            setIsCanceling(false);
+            setShowCancelModal(false);
+            setReservationToCancel(null);
         }
     };
 
@@ -711,6 +751,7 @@ const AllBookings = () => {
                                         key={r.id}
                                         reservation={r}
                                         onPayClick={handlePayClick}
+                                        onCancelClick={handleCancelClick}
                                         payButtonText={'Ver pago'}
                                     />
                                 ))}
@@ -883,6 +924,7 @@ const AllBookings = () => {
                                         onPayClick={handlePayClick}
                                         payButtonText={'Ver pago'}
                                         onEditClick={handleEditClick}
+                                        onCancelClick={handleCancelClick}
                                         isAdmin={currentUser?.is_admin}
                                     />
                                 ))}
@@ -930,6 +972,14 @@ const AllBookings = () => {
                     isSaving={isSaving}
                 />
             )}
+
+            <CancelReservationModal
+                show={showCancelModal}
+                onHide={() => !isCanceling && setShowCancelModal(false)}
+                reservation={reservationToCancel}
+                onConfirm={handleConfirmCancel}
+                isProcessing={isCanceling}
+            />
         </div>
     );
 };
