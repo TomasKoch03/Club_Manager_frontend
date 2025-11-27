@@ -106,7 +106,19 @@ const BookingConfirmationModal = ({
         const startTotalMinutes = startHours * 60 + startMinutes;
         const endTotalMinutes = endHours * 60 + endMinutes;
 
-        return endTotalMinutes > startTotalMinutes;
+        // Verificar que la hora de fin sea posterior a la de inicio
+        if (endTotalMinutes <= startTotalMinutes) return false;
+
+        // Verificar que el horario de inicio no sea pasado
+        if (bookingData?.date) {
+            const now = new Date();
+            const selectedDateTime = new Date(bookingData.date);
+            selectedDateTime.setHours(startHours, startMinutes, 0, 0);
+
+            if (selectedDateTime < now) return false;
+        }
+
+        return true;
     };
 
     // Formatear fecha

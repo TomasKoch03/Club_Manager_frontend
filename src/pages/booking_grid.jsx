@@ -154,6 +154,16 @@ const BookingGrid = () => {
             startHour, startMinute, 0, 0
         ));
 
+        // Validar que la hora de inicio no sea pasada
+        const now = new Date();
+        const localSlotStart = new Date(selectedDate);
+        localSlotStart.setHours(startHour, startMinute, 0, 0);
+
+        if (localSlotStart < now) {
+            toast.error('No se pueden realizar reservas en horarios pasados');
+            return;
+        }
+
         // Crear fecha de fin
         const slotEnd = new Date(Date.UTC(
             selectedDate.getFullYear(),
@@ -355,6 +365,7 @@ const BookingGrid = () => {
                             isSlotOccupied={isSlotOccupied}
                             onSlotClick={handleSlotClick}
                             bookings={bookings}
+                            selectedDate={selectedDate}
                         />
                     )}
                 </div>
