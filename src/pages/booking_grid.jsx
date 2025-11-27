@@ -4,7 +4,7 @@ import BookingConfirmationModal from '../components/booking_grid/BookingConfirma
 import BookingGridHeader from '../components/booking_grid/BookingGridHeader.jsx';
 import BookingTable from '../components/booking_grid/BookingTable.jsx';
 import { useToast } from '../hooks/useToast';
-import { createMercadoPagoPreference, getCourts, getReservationsBySportAndDay, getUserData, postPayment, postReservation, postReservationForUser } from "../services/api.js";
+import { createMercadoPagoPreference, getCourts, getReservationsBySportAndDay, getUserById, getUserData, postPayment, postReservation, postReservationForUser } from "../services/api.js";
 
 const BOOKING_CONFIG = {
     startHour: 9,
@@ -25,6 +25,7 @@ const BookingGrid = () => {
     const [preferenceId, setPreferenceId] = useState(null);
     const [isLoadingPreference, setIsLoadingPreference] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
     const toast = useToast();
 
     const generateTimeSlots = () => {
@@ -62,6 +63,24 @@ const BookingGrid = () => {
 
         fetchCurrentUser();
     }, []);
+
+    useEffect(() => {
+        const fetchSelectedUser = async () => {
+            if (userId) {
+                try {
+                    const userData = await getUserById(userId);
+                    setSelectedUser({
+                        ...userData,
+                        is_blocked: !userData.is_active // Si no está activo, está bloqueado
+                    });
+                } catch (error) {
+                    console.error('Error al obtener datos del usuario seleccionado:', error);
+                }
+            }
+        };
+
+        fetchSelectedUser();
+    }, [userId]);
 
     useEffect(() => {
         const fetchCourts = async () => {
@@ -134,6 +153,16 @@ const BookingGrid = () => {
             selectedDate.getDate(),
             startHour, startMinute, 0, 0
         ));
+
+        // Validar que la hora de inicio no sea pasada
+        const now = new Date();
+        const localSlotStart = new Date(selectedDate);
+        localSlotStart.setHours(startHour, startMinute, 0, 0);
+
+        if (localSlotStart < now) {
+            toast.error('No se pueden realizar reservas en horarios pasados');
+            return;
+        }
 
         // Crear fecha de fin
         const slotEnd = new Date(Date.UTC(
@@ -336,6 +365,7 @@ const BookingGrid = () => {
                             isSlotOccupied={isSlotOccupied}
                             onSlotClick={handleSlotClick}
                             bookings={bookings}
+                            selectedDate={selectedDate}
                         />
                     )}
                 </div>
@@ -354,7 +384,7 @@ const BookingGrid = () => {
                 onPayWithMercadoPago={handlePayWithMercadoPago}
                 preferenceId={preferenceId}
                 isLoadingPreference={isLoadingPreference}
-                isUserBlocked={currentUser?.is_blocked || false}
+                isUserBlocked={(selectedUser || currentUser)?.is_blocked || false}
             />
         </div>
     );

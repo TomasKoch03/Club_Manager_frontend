@@ -40,10 +40,6 @@ const ManageUsers = () => {
         user.email.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    const handleCreateUser = () => {
-        navigate('/admin/register');
-    };
-
     return (
         <div style={{
             height: 'calc(100vh - 80px)',
@@ -93,14 +89,6 @@ const ManageUsers = () => {
                                     className="w-full h-10 pl-10 pr-4 bg-white border-none shadow-sm rounded-lg text-sm text-gray-900 ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all placeholder:text-gray-400"
                                 />
                             </div>
-
-                            {/* Botón Nuevo Usuario */}
-                            <button
-                                onClick={handleCreateUser}
-                                className="h-10 px-4 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-all shadow-sm whitespace-nowrap"
-                            >
-                                + Nuevo Usuario
-                            </button>
                         </div>
                     </div>
                 </div>

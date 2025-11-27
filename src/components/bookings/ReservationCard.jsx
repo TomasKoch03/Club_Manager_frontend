@@ -1,7 +1,18 @@
-import { IoBasketballOutline, IoCalendarOutline, IoCashOutline, IoFootballOutline, IoLockClosed, IoPencil, IoReceiptOutline, IoTennisballOutline, IoTimeOutline } from 'react-icons/io5';
+import { 
+    IoBasketballOutline, 
+    IoCalendarOutline, 
+    IoCashOutline, 
+    IoFootballOutline, 
+    IoLockClosed, 
+    IoPencil, 
+    IoReceiptOutline, 
+    IoTennisballOutline, 
+    IoTimeOutline,
+    IoTrashOutline, 
+} from 'react-icons/io5';
 import jsPDF from 'jspdf';
 
-const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, isAdmin }) => {
+const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, onCancelClick, isAdmin }) => {
     // Formatear fecha corta
     const formatDateShort = (dateString) => {
         const date = new Date(dateString);
@@ -233,6 +244,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                     </div>
                 </div>
 
+
                 {/* Badge de Estado */}
                 <div className="hidden sm:block">
                     <span
@@ -240,7 +252,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                             ? 'bg-green-100 text-green-700 border border-green-200'
                             : 'bg-red-100 text-red-700 border border-red-200'
                             }`}
-                    >
+                            >
                         {paymentStatus}
                     </span>
                 </div>
@@ -250,18 +262,27 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                     {/* Botón de Editar/Ver */}
                     {onEditClick && (
                         <button
-                            onClick={() => onEditClick(reservation.id)}
-                            className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-                            title={isPaid ? 'Ver detalles' : 'Editar reserva'}
+                        onClick={() => onEditClick(reservation.id)}
+                        className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                        title={isPaid ? 'Ver detalles' : 'Editar reserva'}
                         >
                             <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
                         </button>
                     )}
+                    {!isPaid && onCancelClick && (
+                            <button
+                                onClick={() => onCancelClick(reservation.id)}
+                                className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                                title="Cancelar reserva"
+                            >
+                                <IoTrashOutline className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors" />
+                            </button>
+                        )}
 
                     {/* Botón de Pagar o Comprobante */}
                     {isPaid ? (
                         <button
-                            onClick={generatePaymentReceipt}
+                        onClick={generatePaymentReceipt}
                             className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
                             title="Descargar comprobante de pago"
                         >

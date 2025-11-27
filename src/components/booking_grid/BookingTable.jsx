@@ -1,9 +1,21 @@
 import { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings }) => {
+const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings, selectedDate }) => {
     const [selection, setSelection] = useState(null);
     const [isSelecting, setIsSelecting] = useState(false);
+
+    // Función para verificar si un slot ya pasó
+    const isSlotPast = (time) => {
+        const now = new Date();
+        const hour = Math.floor(time);
+        const minute = Math.round((time - hour) * 60);
+
+        const slotDateTime = new Date(selectedDate);
+        slotDateTime.setHours(hour, minute, 0, 0);
+
+        return slotDateTime < now;
+    };
 
     // Limpiar selección cuando se presiona ESC
     useEffect(() => {
@@ -17,7 +29,7 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
     }, []);
 
     const handleMouseDown = (courtId, time) => {
-        if (isSlotOccupied(courtId, time)) return;
+        if (isSlotOccupied(courtId, time) || isSlotPast(time)) return;
         setIsSelecting(true);
         setSelection({
             courtId,
@@ -29,25 +41,25 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
     const handleMouseEnter = (courtId, time) => {
         if (!isSelecting || !selection) return;
         if (courtId !== selection.courtId) return;
-        
-        // Verificar que no haya slots ocupados en el rango
+
+        // Verificar que no haya slots ocupados ni pasados en el rango
         const minTime = Math.min(selection.startTime, time);
         const maxTime = Math.max(selection.startTime, time);
-        
+
         // Comprobar todos los slots en el rango
-        const slotsInRange = timeSlots.filter(slot => 
+        const slotsInRange = timeSlots.filter(slot =>
             slot.time >= minTime && slot.time <= maxTime
         );
-        
-        let hasOccupied = false;
+
+        let hasOccupiedOrPast = false;
         for (const slot of slotsInRange) {
-            if (isSlotOccupied(courtId, slot.time)) {
-                hasOccupied = true;
+            if (isSlotOccupied(courtId, slot.time) || isSlotPast(slot.time)) {
+                hasOccupiedOrPast = true;
                 break;
             }
         }
-        
-        if (!hasOccupied) {
+
+        if (!hasOccupiedOrPast) {
             setSelection({
                 ...selection,
                 endTime: time
@@ -95,10 +107,10 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
             if (booking.court.id !== courtId) return false;
             const bookingStart = new Date(booking.start_time);
             const bookingEnd = new Date(booking.end_time);
-            
+
             const hour = Math.floor(time);
             const minute = Math.round((time - hour) * 60);
-            
+
             const slotStart = new Date(bookingStart);
             slotStart.setHours(hour, minute, 0, 0);
             const slotEnd = new Date(slotStart);
@@ -116,12 +128,12 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
     const isStartOfReservation = (courtId, time) => {
         const reservations = getReservationsInSlot(courtId, time);
         if (reservations.length === 0) return false;
-        
+
         const reservation = reservations[0];
         const bookingStart = new Date(reservation.start_time);
         const hour = Math.floor(time);
         const minute = Math.round((time - hour) * 60);
-        
+
         return bookingStart.getHours() === hour && bookingStart.getMinutes() === minute;
     };
 
@@ -191,6 +203,12 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
                     .time-slot.available {
                         background-color: #f8f9fa;
                     }
+                    .time-slot.past {
+                        background-color: #e9ecef;
+                        color: #adb5bd;
+                        cursor: not-allowed;
+                        opacity: 0.5;
+                    }
                     .reservation-block {
                         font-size: 0.7rem;
                         font-weight: 500;
@@ -206,92 +224,93 @@ const BookingTable = ({ courts, timeSlots, isSlotOccupied, onSlotClick, bookings
                     backgroundColor: 'rgba(255, 255, 255, 0.95)',
                     backdropFilter: 'blur(10px)'
                 }}>
-                <tr>
-                    <th style={{
-                        width: '100px',
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                        backdropFilter: 'blur(10px)',
-                        color: '#000',
-                        position: 'sticky',
-                        left: 0,
-                        zIndex: 11
-                    }}></th>
-                    {courts.map(court => (
-                        <th
-                            key={court.id}
-                            className="text-center"
-                            style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                backdropFilter: 'blur(10px)',
-                                color: '#000'
-                            }}
-                        >
-                            {court.name}
-                        </th>
-                    ))}
-                </tr>
+                    <tr>
+                        <th style={{
+                            width: '100px',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            color: '#000',
+                            position: 'sticky',
+                            left: 0,
+                            zIndex: 11
+                        }}></th>
+                        {courts.map(court => (
+                            <th
+                                key={court.id}
+                                className="text-center"
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    backdropFilter: 'blur(10px)',
+                                    color: '#000'
+                                }}
+                            >
+                                {court.name}
+                            </th>
+                        ))}
+                    </tr>
                 </thead>
                 <tbody>
-                {timeSlots.map((slot, index) => (
-                    <tr key={`${slot.hour}-${slot.minute}`}>
-                        <td
-                            className="text-center align-middle"
-                            style={{
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                backdropFilter: 'blur(10px)',
-                                color: '#000',
-                                fontWeight: '500',
-                                position: 'sticky',
-                                left: 0,
-                                zIndex: 5,
-                                fontSize: '0.85rem'
-                            }}
-                        >
-                            {slot.label}
-                        </td>
-                        {courts.map(court => {
-                            const occupied = isSlotOccupied(court.id, slot.time);
-                            const selected = isInSelection(court.id, slot.time);
-                            const isTop = isStartOfSelection(court.id, slot.time);
-                            const isBottom = isEndOfSelection(court.id, slot.time);
-                            const reservations = getReservationsInSlot(court.id, slot.time);
-                            const isReservationStart = isStartOfReservation(court.id, slot.time);
-                            
-                            return (
-                                <td 
-                                    key={court.id} 
-                                    className="p-0"
-                                    style={{ padding: 0 }}
-                                >
-                                    <div
-                                        className={`time-slot ${occupied ? 'occupied' : 'available'} ${selected ? 'selected' : ''} ${isTop ? 'top' : ''} ${isBottom ? 'bottom' : ''}`}
-                                        onMouseDown={() => handleMouseDown(court.id, slot.time)}
-                                        onMouseEnter={() => handleMouseEnter(court.id, slot.time)}
+                    {timeSlots.map((slot, index) => (
+                        <tr key={`${slot.hour}-${slot.minute}`}>
+                            <td
+                                className="text-center align-middle"
+                                style={{
+                                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                    backdropFilter: 'blur(10px)',
+                                    color: '#000',
+                                    fontWeight: '500',
+                                    position: 'sticky',
+                                    left: 0,
+                                    zIndex: 5,
+                                    fontSize: '0.85rem'
+                                }}
+                            >
+                                {slot.label}
+                            </td>
+                            {courts.map(court => {
+                                const occupied = isSlotOccupied(court.id, slot.time);
+                                const selected = isInSelection(court.id, slot.time);
+                                const isTop = isStartOfSelection(court.id, slot.time);
+                                const isBottom = isEndOfSelection(court.id, slot.time);
+                                const reservations = getReservationsInSlot(court.id, slot.time);
+                                const isReservationStart = isStartOfReservation(court.id, slot.time);
+                                const isPast = isSlotPast(slot.time);
+
+                                return (
+                                    <td
+                                        key={court.id}
+                                        className="p-0"
+                                        style={{ padding: 0 }}
                                     >
-                                        {occupied && reservations.length > 0 && isReservationStart ? (
-                                            <div className="reservation-block">
-                                                <div>{reservations[0].user.full_name}</div>
-                                                <div style={{ fontSize: '0.6rem', opacity: 0.9 }}>
-                                                    {new Date(reservations[0].start_time).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-                                                    {' - '}
-                                                    {new Date(reservations[0].end_time).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                        <div
+                                            className={`time-slot ${occupied ? 'occupied' : isPast ? 'past' : 'available'} ${selected ? 'selected' : ''} ${isTop ? 'top' : ''} ${isBottom ? 'bottom' : ''}`}
+                                            onMouseDown={() => handleMouseDown(court.id, slot.time)}
+                                            onMouseEnter={() => handleMouseEnter(court.id, slot.time)}
+                                        >
+                                            {occupied && reservations.length > 0 && isReservationStart ? (
+                                                <div className="reservation-block">
+                                                    <div>{reservations[0].user.full_name}</div>
+                                                    <div style={{ fontSize: '0.6rem', opacity: 0.9 }}>
+                                                        {new Date(reservations[0].start_time).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                        {' - '}
+                                                        {new Date(reservations[0].end_time).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ) : occupied ? (
-                                            ''
-                                        ) : selected && isTop ? (
-                                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                {Math.abs(selection.endTime - selection.startTime + 0.5).toFixed(1)}h
-                                            </div>
-                                        ) : (
-                                            ''
-                                        )}
-                                    </div>
-                                </td>
-                            );
-                        })}
-                    </tr>
-                ))}
+                                            ) : occupied ? (
+                                                ''
+                                            ) : selected && isTop ? (
+                                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>
+                                                    {Math.abs(selection.endTime - selection.startTime + 0.5).toFixed(1)}h
+                                                </div>
+                                            ) : (
+                                                ''
+                                            )}
+                                        </div>
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
