@@ -285,3 +285,27 @@ export const cancelReservationByAdmin = async (reservationId) => {
         method: 'DELETE',
     });
 };
+
+// Equipment endpoints
+export const getEquipment = async (sport = null, name = null) => {
+    const params = new URLSearchParams();
+    if (sport) params.append('sport', sport);
+    if (name) params.append('name', name);
+    const queryString = params.toString();
+    const endpoint = queryString ? `/equipment/?${queryString}` : '/equipment/';
+    return apiRequest(endpoint, { method: 'GET' });
+};
+
+export const createEquipment = async (data) => {
+    return apiRequest('/equipment/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
+
+export const updateEquipment = async (equipmentId, data) => {
+    return apiRequest(`/equipment/${equipmentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};

@@ -206,36 +206,22 @@ const BookingGrid = () => {
                     start_time: startTimeISO,
                     end_time: endTimeISO,
                     light: extras.light,
-                    ball: extras.ball,
-                    number_of_rackets: extras.number_of_rackets
+                    equipment_items: extras.equipment_items || []
                 })
                 : await postReservation({
                     court_id: bookingWithTimes.courtId,
                     start_time: startTimeISO,
                     end_time: endTimeISO,
                     light: extras.light,
-                    ball: extras.ball,
-                    number_of_rackets: extras.number_of_rackets
+                    equipment_items: extras.equipment_items || []
                 });
 
-            // Calcular duración en horas
-            const [startHours, startMinutes] = bookingWithTimes.startTime.split(':').map(Number);
-            const [endHours, endMinutes] = bookingWithTimes.endTime.split(':').map(Number);
-            const durationHours = (endHours * 60 + endMinutes - startHours * 60 - startMinutes) / 60;
-
-            // Calcular el monto total: precio_base * duración + extras
-            const court = bookingWithTimes.court;
-            let totalAmount = court.base_price * durationHours;
-            if (extras.light && court.light_price) totalAmount += court.light_price;
-            if (extras.ball && court.ball_price) totalAmount += court.ball_price;
-            if (extras.number_of_rackets > 0 && court.racket_price) {
-                totalAmount += court.racket_price * extras.number_of_rackets;
-            }
-
+            // El backend NO devuelve payment en la respuesta de creación
+            // Así que siempre necesitamos crear el pago
             await postPayment({
                 method: 'efectivo',
                 status: 'pendiente',
-                amount: totalAmount,
+                amount: extras.totalAmount, // Usar el monto calculado en el frontend
                 reservation_id: data.id
             });
 
@@ -277,37 +263,22 @@ const BookingGrid = () => {
                     start_time: startTimeISO,
                     end_time: endTimeISO,
                     light: extras.light,
-                    ball: extras.ball,
-                    number_of_rackets: extras.number_of_rackets
+                    equipment_items: extras.equipment_items || []
                 })
                 : await postReservation({
                     court_id: bookingWithTimes.courtId,
                     start_time: startTimeISO,
                     end_time: endTimeISO,
                     light: extras.light,
-                    ball: extras.ball,
-                    number_of_rackets: extras.number_of_rackets
+                    equipment_items: extras.equipment_items || []
                 });
 
-            // Calcular duración en horas
-            const [startHours, startMinutes] = bookingWithTimes.startTime.split(':').map(Number);
-            const [endHours, endMinutes] = bookingWithTimes.endTime.split(':').map(Number);
-            const durationHours = (endHours * 60 + endMinutes - startHours * 60 - startMinutes) / 60;
-
-            // Calcular el monto total: precio_base * duración + extras
-            const court = bookingWithTimes.court;
-            let totalAmount = court.base_price * durationHours;
-            if (extras.light && court.light_price) totalAmount += court.light_price;
-            if (extras.ball && court.ball_price) totalAmount += court.ball_price;
-            if (extras.number_of_rackets > 0 && court.racket_price) {
-                totalAmount += court.racket_price * extras.number_of_rackets;
-            }
-
-            // Crear un pago pendiente (será reemplazado cuando se pague con MP)
+            // El backend NO devuelve payment en la respuesta
+            // Crear el pago con el monto calculado en el frontend
             await postPayment({
                 method: 'mercadopago',
                 status: 'pendiente',
-                amount: totalAmount,
+                amount: extras.totalAmount, // Usar el monto calculado en el frontend
                 reservation_id: data.id
             });
 

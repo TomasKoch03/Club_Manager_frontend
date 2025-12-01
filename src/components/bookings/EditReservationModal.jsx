@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoPerson, IoTimeOutline } from 'react-icons/io5';
+import { getEquipment } from '../../services/api';
 
 const EditReservationModal = ({
     show,
@@ -16,9 +17,10 @@ const EditReservationModal = ({
         start_time: '',
         end_time: '',
         light: false,
-        ball: false,
-        number_of_rackets: 0
+        equipment_items: []
     });
+    const [availableEquipment, setAvailableEquipment] = useState([]);
+    const [loadingEquipment, setLoadingEquipment] = useState(false);
     const [localError, setLocalError] = useState('');
 
     // Inicializar formulario cuando cambia la reserva
@@ -44,12 +46,36 @@ const EditReservationModal = ({
                 start_time: formatForInput(startDate),
                 end_time: formatForInput(endDate),
                 light: reservation.light || false,
-                ball: reservation.ball || false,
-                number_of_rackets: reservation.number_of_rackets || 0
+                equipment_items: reservation.equipment_items?.map(item => ({
+                    id: item.id,
+                    quantity: item.quantity
+                })) || []
             });
             setLocalError('');
         }
     }, [reservation]);
+
+    // Cargar equipamientos cuando cambia la cancha
+    useEffect(() => {
+        const fetchEquipment = async () => {
+            if (!formData.court_id || !courts) return;
+            
+            const selectedCourt = courts.find(c => c.id === parseInt(formData.court_id));
+            if (!selectedCourt) return;
+            
+            try {
+                setLoadingEquipment(true);
+                const equipment = await getEquipment(selectedCourt.sport);
+                setAvailableEquipment(equipment);
+            } catch (error) {
+                console.error('Error al cargar equipamientos:', error);
+            } finally {
+                setLoadingEquipment(false);
+            }
+        };
+
+        fetchEquipment();
+    }, [formData.court_id, courts]);
 
     if (!reservation || !show) return null;
 
@@ -111,11 +137,39 @@ const EditReservationModal = ({
             start_time: formatToLocalISO(formData.start_time),
             end_time: formatToLocalISO(formData.end_time),
             light: formData.light,
-            ball: formData.ball,
-            number_of_rackets: formData.number_of_rackets
+            equipment_items: formData.equipment_items
         };
 
         onSave(reservation.id, payload);
+    };
+
+    const handleEquipmentChange = (equipmentId, quantity) => {
+        setFormData(prev => {
+            const existing = prev.equipment_items.find(item => item.id === equipmentId);
+            
+            if (quantity === 0) {
+                // Remover si la cantidad es 0
+                return {
+                    ...prev,
+                    equipment_items: prev.equipment_items.filter(item => item.id !== equipmentId)
+                };
+            } else if (existing) {
+                // Actualizar cantidad existente
+                return {
+                    ...prev,
+                    equipment_items: prev.equipment_items.map(item =>
+                        item.id === equipmentId ? { ...item, quantity } : item
+                    )
+                };
+            } else {
+                // Agregar nuevo item
+                return {
+                    ...prev,
+                    equipment_items: [...prev.equipment_items, { id: equipmentId, quantity }]
+                };
+            }
+        });
+        setLocalError('');
     };
 
     const selectedCourt = courts.find(c => c.id === parseInt(formData.court_id));
@@ -265,16 +319,16 @@ const EditReservationModal = ({
                         <div className="pt-4 border-t border-gray-100">
                             <h6 className="font-semibold text-gray-900 mb-3 text-sm">Extras</h6>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-2">
-                                    {/* Luz artificial */}
-                                    <label className={`relative flex flex-row items-center w-full gap-3 p-2.5 border border-gray-200 rounded-xl transition-colors ${hasPayment ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
+                            <div className="space-y-4">
+                                {/* Luz artificial */}
+                                {selectedCourt?.light_price > 0 && (
+                                    <label className={`relative flex flex-row items-start w-full gap-3 p-2.5 border border-gray-200 rounded-xl transition-colors ${hasPayment ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
                                         <input
                                             type="checkbox"
                                             checked={formData.light}
                                             onChange={(e) => handleInputChange('light', e.target.checked)}
                                             disabled={hasPayment}
-                                            className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
+                                            className="appearance-none w-5 h-5 mt-0.5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
                                             style={{
                                                 backgroundImage: formData.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
                                                 backgroundSize: '100% 100%',
@@ -283,51 +337,55 @@ const EditReservationModal = ({
                                             }}
                                         />
                                         <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
-                                            Luz artificial {selectedCourt?.light_price > 0 ? `(+$${selectedCourt.light_price})` : ''}
+                                            Luz artificial (+${selectedCourt.light_price})
                                         </span>
                                     </label>
-
-                                    {/* Pelota */}
-                                    <label className={`relative flex flex-row items-center w-full gap-4 p-2.5 border border-gray-200 rounded-xl transition-colors ${hasPayment ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer hover:bg-gray-50'}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.ball}
-                                            onChange={(e) => handleInputChange('ball', e.target.checked)}
-                                            disabled={hasPayment}
-                                            className="appearance-none w-5 h-5 rounded border-2 border-gray-200 bg-gray-100/40 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0"
-                                            style={{
-                                                backgroundImage: formData.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
-                                                backgroundSize: '100% 100%',
-                                                backgroundPosition: 'center',
-                                                backgroundRepeat: 'no-repeat'
-                                            }}
-                                        />
-                                        <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
-                                            Pelota {selectedCourt?.ball_price > 0 ? `(+$${selectedCourt.ball_price})` : ''}
-                                        </span>
-                                    </label>
-                                </div>
-
-                                {selectedCourt?.racket_price > 0 && (
-                                    <div>
-                                        {/* Raquetas */}
-                                        <div className={`p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 ${hasPayment ? 'opacity-60' : ''}`}>
-                                            <label className="text-xs text-gray-600 block mb-1.5 font-medium">
-                                                Cantidad de raquetas (${selectedCourt.racket_price} c/u)
-                                            </label>
-                                            <select
-                                                value={formData.number_of_rackets}
-                                                onChange={(e) => handleInputChange('number_of_rackets', parseInt(e.target.value))}
-                                                disabled={hasPayment}
-                                                className="w-full p-1.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none disabled:cursor-not-allowed text-sm"
-                                            >
-                                                {[0, 1, 2, 3, 4].map(num => (
-                                                    <option key={num} value={num}>{num}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
                                 )}
+
+                                {/* Equipamientos */}
+                                {loadingEquipment ? (
+                                    <div className="p-4 text-center text-gray-500 text-sm">
+                                        Cargando equipamientos...
+                                    </div>
+                                ) : availableEquipment.length > 0 ? (
+                                    <div className="space-y-2">
+                                        <p className="text-xs font-medium text-gray-600 uppercase tracking-wider">Equipamientos disponibles</p>
+                                        {availableEquipment.map(equipment => {
+                                            const currentQuantity = formData.equipment_items.find(item => item.id === equipment.id)?.quantity || 0;
+                                            return (
+                                                <div key={equipment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900">{equipment.name}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            ${equipment.price_per_unit} por unidad
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEquipmentChange(equipment.id, Math.max(0, currentQuantity - 1))}
+                                                            disabled={currentQuantity === 0 || hasPayment}
+                                                            className="w-8 h-8 rounded-lg bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span className="w-8 text-center text-sm font-semibold text-gray-900">
+                                                            {currentQuantity}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleEquipmentChange(equipment.id, Math.min(equipment.stock, currentQuantity + 1))}
+                                                            disabled={currentQuantity >= equipment.stock || hasPayment}
+                                                            className="w-8 h-8 rounded-lg bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                ) : null}
                             </div>
                         </div>
 
