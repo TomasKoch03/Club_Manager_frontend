@@ -213,7 +213,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                 <div className="flex-1 min-w-0">
                     {/* Nombre de la cancha */}
                     <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2 truncate">
-                        {reservation.court.name}
+                        {reservation.court.sport} - {reservation.court.name}
                         {isPaid && (
                             <IoLockClosed
                                 size={16}
