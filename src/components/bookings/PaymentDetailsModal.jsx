@@ -1,15 +1,14 @@
-import React from 'react';
-import { Modal, Button } from 'react-bootstrap';
-import { IoCashOutline, IoCheckmarkCircleOutline, IoCardOutline } from 'react-icons/io5';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Modal } from 'react-bootstrap';
+import { IoCardOutline, IoCashOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 const PaymentDetailsModal = ({
-                                 show,
-                                 onHide,
-                                 reservation,
-                                 onApprovePayment
-                             }) => {
+    show,
+    onHide,
+    reservation,
+    onApprovePayment
+}) => {
     if (!reservation) return null;
 
     const { payment } = reservation;

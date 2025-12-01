@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useEffect, useState } from 'react';
-import { Alert, Container, Spinner, Form, Row, Col, Card, Badge, Table } from 'react-bootstrap';
-import { IoTrophyOutline, IoCalendarOutline, IoStatsChartOutline } from 'react-icons/io5';
+import { Alert, Badge, Card, Col, Container, Form, Row, Spinner, Table } from 'react-bootstrap';
+import { IoCalendarOutline, IoStatsChartOutline, IoTrophyOutline } from 'react-icons/io5';
 import { getAllReservationsFiltered } from '../services/api';
 import { formatCurrency } from '../utils/formatCurrency';
 
@@ -18,7 +18,7 @@ const CourtStatistics = () => {
         const today = new Date();
         const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
         const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        
+
         setStartDate(firstDay.toISOString().split('T')[0]);
         setEndDate(lastDay.toISOString().split('T')[0]);
     }, []);
@@ -40,15 +40,15 @@ const CourtStatistics = () => {
             };
 
             const reservations = await getAllReservationsFiltered(filters);
-            
+
             // Procesar las reservas para obtener estadísticas por cancha
             const courtMap = {};
-            
+
             reservations.forEach(reservation => {
                 const courtId = reservation.court.id;
                 const courtName = reservation.court.name;
                 const courtSport = reservation.court.sport;
-                
+
                 if (!courtMap[courtId]) {
                     courtMap[courtId] = {
                         id: courtId,
@@ -60,9 +60,9 @@ const CourtStatistics = () => {
                         totalRevenue: 0,
                     };
                 }
-                
+
                 courtMap[courtId].totalReservations++;
-                
+
                 if (reservation.payment?.status === "pagado" || reservation.payment?.status === "paid") {
                     courtMap[courtId].paidReservations++;
                     // Usar el monto del pago, no el de la cancha (incluye extras)
@@ -73,7 +73,7 @@ const CourtStatistics = () => {
             });
 
             // Convertir a array y ordenar por número de reservas (descendente)
-            const statsArray = Object.values(courtMap).sort((a, b) => 
+            const statsArray = Object.values(courtMap).sort((a, b) =>
                 b.totalReservations - a.totalReservations
             );
 
@@ -193,8 +193,8 @@ const CourtStatistics = () => {
                             </Form.Group>
                         </Col>
                         <Col xs={12} md={2} className="mt-3 mt-md-0">
-                            <div style={{ 
-                                textAlign: 'center', 
+                            <div style={{
+                                textAlign: 'center',
                                 padding: '10px',
                                 backgroundColor: '#f8f9fa',
                                 borderRadius: '8px',
@@ -260,7 +260,7 @@ const CourtStatistics = () => {
                                             <IoTrophyOutline size={24} style={{ marginRight: '10px', marginBottom: '2px' }} />
                                             Ranking de Canchas Más Solicitadas
                                         </h4>
-                                        
+
                                         <div style={{ overflowX: 'auto' }}>
                                             <Table hover responsive style={{ marginBottom: 0 }}>
                                                 <thead style={{ backgroundColor: '#f8f9fa' }}>
