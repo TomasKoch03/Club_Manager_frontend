@@ -3,9 +3,10 @@ import { IoCalendarOutline, IoFilterOutline, IoTrendingUpOutline } from 'react-i
 import EditReservationModal from '../components/bookings/EditReservationModal';
 import PaymentDetailsModal from '../components/bookings/PaymentDetailsModal';
 import ReservationCard from '../components/bookings/ReservationCard';
-import CancelReservationModal  from '../components/bookings/cancelReservationModal';
+import CancelReservationModal from '../components/bookings/cancelReservationModal';
 import { useToast } from '../hooks/useToast';
-import { getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation , cancelReservationByAdmin} from '../services/api';
+import { cancelReservationByAdmin, getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation } from '../services/api';
+import { formatCurrency } from '../utils/formatCurrency';
 
 
 const AllBookings = () => {
@@ -140,7 +141,7 @@ const AllBookings = () => {
             setIsCanceling(true);
             // Llamamos al endpoint de ADMIN
             await cancelReservationByAdmin(reservationId);
-            
+
             toast.success('Reserva cancelada exitosamente');
 
             // Recargar lista
@@ -165,7 +166,7 @@ const AllBookings = () => {
     // Handler para aprobar el pago
     const handleApprovePayment = async (reservationId) => {
         // Buscar la reserva en ambos arrays (general o de hoy)
-        const reservation = showToday 
+        const reservation = showToday
             ? todayReservations.find((r) => r.id === reservationId)
             : reservations.find((r) => r.id === reservationId);
 
@@ -179,7 +180,7 @@ const AllBookings = () => {
             toast.success('Pago aprobado exitosamente');
 
             setLoading(true);
-            
+
             // Refrescar reservas generales
             const data = await getAllReservations();
             const sortedData = data.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
@@ -429,7 +430,7 @@ const AllBookings = () => {
         }
 
         try {
-            
+
             let data = [];
 
             if (Object.keys(baseFilters).length === 0) {
@@ -438,7 +439,7 @@ const AllBookings = () => {
             } else {
                 // Si hay filtro por deporte/estado/cancha, pedir al backend por ese filtro y luego filtrar por fecha en cliente
                 const apiData = await getAllReservationsFiltered(baseFilters);
-                
+
                 if (Array.isArray(apiData)) {
                     data = apiData.filter((r) => {
                         const t = new Date(r.start_time).getTime();
@@ -739,7 +740,7 @@ const AllBookings = () => {
                         {totalIncome !== null && (
                             <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
                                 <p className="text-sm text-gray-600 mb-1">INGRESOS TOTALES</p>
-                                <p className="text-4xl font-bold text-green-700">${totalIncome.toFixed(2)}</p>
+                                <p className="text-4xl font-bold text-green-700">${formatCurrency(totalIncome)}</p>
                             </div>
                         )}
 
@@ -762,11 +763,11 @@ const AllBookings = () => {
                 {/* SECCIÓN DE RESERVAS DE HOY */}
                 {showToday && (
                     <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <IoCalendarOutline size={24} className="text-gray-700" />
-                                    <h3 className="text-lg font-semibold text-gray-900">Reservas de hoy</h3>
-                                    <span className="text-sm text-gray-500 ml-3">{todayLabel}</span>
-                                </div>
+                        <div className="flex items-center gap-3 mb-6">
+                            <IoCalendarOutline size={24} className="text-gray-700" />
+                            <h3 className="text-lg font-semibold text-gray-900">Reservas de hoy</h3>
+                            <span className="text-sm text-gray-500 ml-3">{todayLabel}</span>
+                        </div>
 
                         {/* BARRA DE FILTROS PARA HOY (sin opción de fechas) */}
                         <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-6">

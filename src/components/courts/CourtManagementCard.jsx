@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Form, Modal } from 'react-bootstrap';
 import { IoBasketballOutline, IoFootballOutline, IoPencil, IoTennisballOutline, IoTrashOutline } from 'react-icons/io5';
 import { deleteCourt, updateCourt } from '../../services/api';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
     const [showEditModal, setShowEditModal] = useState(false);
@@ -116,7 +117,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                     <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 mb-0.5">{court.name}</h3>
                         <p className="text-sm text-gray-500">
-                            ${court.base_price.toLocaleString('es-AR')} / hora
+                            ${formatCurrency(court.base_price)} / hora
                         </p>
                     </div>
                 </div>

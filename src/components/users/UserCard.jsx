@@ -1,10 +1,21 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { IoCheckmarkCircleOutline, IoCloseCircleOutline } from 'react-icons/io5';
 import { useNavigate, useParams } from 'react-router-dom';
+import { getProfileImageUrl } from '../../services/api';
+import AuthenticatedImage from './AuthenticatedImage';
 
 const UserCard = ({ user }) => {
     const { sport } = useParams();
     const navigate = useNavigate();
+    const [hasProfileImage, setHasProfileImage] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+
+    useEffect(() => {
+        if (user?.id) {
+            const url = getProfileImageUrl(user.id);
+            setImageUrl(`${url}?t=${Date.now()}`);
+        }
+    }, [user?.id]);
 
     const handleSelectUser = () => {
         navigate(`/admin/reservar/${sport}/${user.id}/calendar`);
@@ -22,11 +33,19 @@ const UserCard = ({ user }) => {
         <div className="bg-white rounded-2xl shadow-sm p-4 flex items-center justify-between transition-all hover:shadow-md border border-gray-100 mb-3">
             {/* Avatar + Info */}
             <div className="flex items-center gap-4 flex-1">
-                {/* Avatar Circular con Iniciales */}
-                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
-                    <span className="text-blue-600 font-bold text-lg">
-                        {getInitials(user.full_name)}
-                    </span>
+                {/* Avatar Circular con Iniciales o Imagen */}
+                <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center shrink-0 overflow-hidden">
+                    <AuthenticatedImage
+                        src={imageUrl}
+                        alt={user.full_name}
+                        className="w-full h-full object-cover"
+                        onError={() => setHasProfileImage(false)}
+                        fallback={
+                            <span className="text-blue-600 font-bold text-lg">
+                                {getInitials(user.full_name)}
+                            </span>
+                        }
+                    />
                 </div>
 
                 {/* Información del Usuario */}

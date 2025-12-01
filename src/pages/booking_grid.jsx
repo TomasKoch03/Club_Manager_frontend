@@ -238,8 +238,8 @@ const BookingGrid = () => {
             setShowModal(false);
             setSelectedBooking(null);
         } catch (error) {
-            console.error('Error al crear reserva:', error);
-            toast.error('No se pudo realizar la reserva.');
+            console.error('Error al crear reserva:', error.detail);
+            toast.error('No se pudo realizar la reserva ya existe una reserva en ese horario.');
         } finally {
             setLoading(false);
         }

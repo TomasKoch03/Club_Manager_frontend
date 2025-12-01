@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Container, Row, Col, Card, Form, Button, Spinner } from 'react-bootstrap';
-import { getUserData, modifyUser } from '../services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useCallback, useEffect, useState } from "react";
+import { Button, Card, Col, Container, Form, Row, Spinner } from 'react-bootstrap';
+import ProfileImageUpload from '../components/users/ProfileImageUpload';
 import { useToast } from '../hooks/useToast';
+import { getUserData, modifyUser } from '../services/api';
 
 const Profile = () => {
     const [userData, setUserData] = useState(null);
@@ -113,6 +114,17 @@ const Profile = () => {
                                 <h2 className="text-center mb-4" style={{ fontWeight: '600', color: '#000' }}>
                                     Mi Perfil
                                 </h2>
+
+                                {userData && (
+                                    <>
+                                        {/* Profile Image Upload */}
+                                        <div className="mb-5">
+                                            <ProfileImageUpload userId={userData.id} />
+                                        </div>
+
+                                        <hr className="mb-4" style={{ opacity: 0.1 }} />
+                                    </>
+                                )}
 
                                 {userData && (
                                     <Form>

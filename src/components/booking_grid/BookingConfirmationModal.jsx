@@ -1,6 +1,8 @@
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
-import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoTimeOutline } from 'react-icons/io5';
+import { IoAddCircleOutline, IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoRemoveCircleOutline, IoTimeOutline } from 'react-icons/io5';
+import { formatCurrency } from '../../utils/formatCurrency';
+import { adjustDuration as adjustDurationHelper, adjustStartTime as adjustStartTimeHelper, calculateDuration as calculateDurationHelper, recalculateEndTime } from '../../utils/timeHelpers';
 import { getEquipment } from '../../services/api';
 
 // Inicializar Mercado Pago con la public key
@@ -35,7 +37,7 @@ const BookingConfirmationModal = ({
     useEffect(() => {
         const fetchEquipment = async () => {
             if (!bookingData?.court?.sport) return;
-            
+
             try {
                 setLoadingEquipment(true);
                 const equipment = await getEquipment(bookingData.court.sport);
@@ -52,7 +54,8 @@ const BookingConfirmationModal = ({
         }
     }, [show, bookingData]);
 
-    // Inicializar tiempos cuando se abre el modal
+    // Calcular y actualizar automáticamente la hora de fin basándose en la duración de la reserva original
+    // SOLO cuando se inicializa el modal, no en cada cambio
     useEffect(() => {
         if (bookingData && show) {
             const formatForInput = (dateString) => {
@@ -71,7 +74,7 @@ const BookingConfirmationModal = ({
             if (bookingData.initialEquipment) {
                 setEquipmentItems(bookingData.initialEquipment);
             }
-            
+
             // Si hay luz inicial
             if (bookingData.initialLight !== undefined) {
                 setLight(bookingData.initialLight);
@@ -85,28 +88,19 @@ const BookingConfirmationModal = ({
 
     // Calcular duración en horas basándose en los tiempos seleccionados
     const calculateDuration = () => {
-        if (!timeSelection.startTime || !timeSelection.endTime) return 0;
-
-        const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
-        const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
-
-        const startTotalMinutes = startHours * 60 + startMinutes;
-        const endTotalMinutes = endHours * 60 + endMinutes;
-
-        const durationMinutes = endTotalMinutes - startTotalMinutes;
-        return durationMinutes > 0 ? durationMinutes / 60 : 0;
+        return calculateDurationHelper(timeSelection.startTime, timeSelection.endTime);
     };
 
     // Calcular precio total incluyendo luz, equipamientos y duración
     const calculateTotalPrice = () => {
         const duration = calculateDuration();
         let total = court?.base_price * duration || 0;
-        
+
         // Agregar precio de luz si está activada
         if (light && court?.light_price) {
             total += court.light_price;
         }
-        
+
         // Agregar precio de equipamientos
         equipmentItems.forEach(item => {
             const equipment = availableEquipment.find(e => e.id === item.id);
@@ -114,14 +108,14 @@ const BookingConfirmationModal = ({
                 total += equipment.price_per_unit * item.quantity;
             }
         });
-        
+
         return total.toFixed(2);
     };
 
     const handleEquipmentChange = (equipmentId, quantity) => {
         setEquipmentItems(prev => {
             const existing = prev.find(item => item.id === equipmentId);
-            
+
             if (quantity === 0) {
                 // Remover si la cantidad es 0
                 return prev.filter(item => item.id !== equipmentId);
@@ -138,13 +132,48 @@ const BookingConfirmationModal = ({
     };
 
     const handleTimeChange = (field, value) => {
-        setTimeSelection(prev => ({
-            ...prev,
-            [field]: value
-        }));
+        if (field === 'startTime' && timeSelection.startTime && timeSelection.endTime) {
+            const newEndTime = recalculateEndTime(timeSelection.startTime, value, timeSelection.endTime);
+
+            if (newEndTime) {
+                setTimeSelection({
+                    startTime: value,
+                    endTime: newEndTime
+                });
+            }
+        } else {
+            setTimeSelection(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        }
     };
 
-    const isValidTimeSelection = () => {
+    // Función para incrementar/decrementar la hora de inicio en 30 minutos
+    // Mantiene la duración fija, ajustando también la hora de fin
+    const adjustStartTime = (minutes) => {
+        if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
+
+        const result = adjustStartTimeHelper(timeSelection.startTime, timeSelection.endTime, minutes);
+
+        if (result) {
+            setTimeSelection(result);
+        }
+    };
+
+    // Función para incrementar/decrementar la duración en 30 minutos
+    const adjustDuration = (minutes) => {
+        if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
+
+        const newEndTime = adjustDurationHelper(timeSelection.startTime, timeSelection.endTime, minutes);
+
+        if (newEndTime) {
+            setTimeSelection(prev => ({
+                ...prev,
+                endTime: newEndTime
+            }));
+        }
+    }; const isValidTimeSelection = () => {
         if (!timeSelection.startTime || !timeSelection.endTime) return false;
 
         const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
@@ -249,30 +278,89 @@ const BookingConfirmationModal = ({
                             {/* Horario */}
                             <div className="bg-white p-4 rounded-xl border border-gray-200">
                                 <span className="text-sm font-semibold text-gray-900 block mb-3">Horario de reserva</span>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Inicio</label>
+
+                                {/* Hora de Inicio con Steppers */}
+                                <div className="mb-3">
+                                    <label className="text-xs text-gray-500 mb-1.5 block font-medium text-center">Hora de Inicio</label>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Botón Decrementar */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustStartTime(-30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Restar 30 minutos al inicio"
+                                        >
+                                            <IoRemoveCircleOutline size={20} />
+                                        </button>
+
+                                        {/* Input de Hora */}
                                         <input
                                             type="time"
                                             value={timeSelection.startTime}
                                             onChange={(e) => handleTimeChange('startTime', e.target.value)}
                                             disabled={bookingData.isExistingReservation}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                                            className="w-32 p-2.5 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none transition-all font-bold text-gray-900 text-xl disabled:opacity-60 disabled:cursor-not-allowed"
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Fin</label>
-                                        <input
-                                            type="time"
-                                            value={timeSelection.endTime}
-                                            onChange={(e) => handleTimeChange('endTime', e.target.value)}
+
+                                        {/* Botón Incrementar */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustStartTime(30)}
                                             disabled={bookingData.isExistingReservation}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                                        />
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Sumar 30 minutos al inicio"
+                                        >
+                                            <IoAddCircleOutline size={20} />
+                                        </button>
                                     </div>
                                 </div>
+
+                                {/* Duración con Steppers */}
+                                <div className="mb-2 pb-3 border-b border-gray-200">
+                                    <label className="text-xs text-gray-500 mb-1.5 block font-medium text-center">Duración</label>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Botón Decrementar Duración */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustDuration(-30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-green-400 hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Reducir duración en 30 minutos"
+                                        >
+                                            <IoRemoveCircleOutline size={20} />
+                                        </button>
+
+                                        {/* Duración Display */}
+                                        <div className="w-32 p-2.5 text-center bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg font-bold text-gray-900 text-xl">
+                                            {isValidTimeSelection() ? `${calculateDuration().toFixed(1)}h` : '--h'}
+                                        </div>
+
+                                        {/* Botón Incrementar Duración */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustDuration(30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-green-400 hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Aumentar duración en 30 minutos"
+                                        >
+                                            <IoAddCircleOutline size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Hora de Fin - Solo Informativa */}
+                                <div className="text-center">
+                                    <p className="text-xs text-gray-600">
+                                        Finaliza a las{' '}
+                                        <span className="font-bold text-gray-900 text-base">
+                                            {timeSelection.endTime || '--:--'}
+                                        </span>
+                                    </p>
+                                </div>
+
                                 {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
-                                    <p className="text-xs text-red-500 mt-2 font-medium">
+                                    <p className="text-xs text-red-500 mt-2 font-medium text-center">
                                         La hora de fin debe ser posterior a la de inicio
                                     </p>
                                 )}
@@ -295,7 +383,7 @@ const BookingConfirmationModal = ({
                                                 backgroundRepeat: 'no-repeat'
                                             }}
                                         />
-                                        <span className="text-sm font-medium text-gray-700">Luz artificial (+${court.light_price})</span>
+                                        <span className="text-sm font-medium text-gray-700">Luz artificial (+${formatCurrency(court.light_price)})</span>
                                     </label>
                                 </div>
                             )}
@@ -344,6 +432,44 @@ const BookingConfirmationModal = ({
                                     </div>
                                 </div>
                             ) : null}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {court?.ball_price > 0 && (
+                                    <label className={`flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg transition-colors ${!bookingData.isExistingReservation ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-60'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={extras.ball}
+                                            onChange={(e) => handleExtraChange('ball', e.target.checked)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
+                                            style={{
+                                                backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                backgroundSize: '100% 100%',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat'
+                                            }}
+                                        />
+                                        <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${formatCurrency(court.ball_price)})</span>
+                                    </label>
+                                )}
+
+                                {court?.racket_price > 0 && (
+                                    <div className={`p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2 ${bookingData.isExistingReservation ? 'opacity-60' : ''}`}>
+                                        <label className="text-xs text-gray-600 block mb-1.5 font-medium">
+                                            Raquetas (${formatCurrency(court.racket_price)} c/u)
+                                        </label>
+                                        <select
+                                            value={extras.number_of_rackets}
+                                            onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                            {[0, 1, 2, 3, 4].map(num => (
+                                                <option key={num} value={num}>{num}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Right Column - Resumen Financiero (1/3 del espacio) */}
@@ -353,14 +479,14 @@ const BookingConfirmationModal = ({
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-600">Precio base/hora</span>
-                                        <span className="text-gray-900 font-semibold">${court?.base_price || 0}</span>
+                                        <span className="text-gray-900 font-semibold">${formatCurrency(court?.base_price || 0)}</span>
                                     </div>
 
                                     {isValidTimeSelection() && (
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-gray-600">Subtotal cancha</span>
                                             <span className="text-gray-900 font-semibold">
-                                                ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
+                                                ${formatCurrency((court?.base_price || 0) * calculateDuration())}
                                             </span>
                                         </div>
                                     )}
@@ -371,7 +497,7 @@ const BookingConfirmationModal = ({
                                             {light && court?.light_price > 0 && (
                                                 <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Luz</span>
-                                                    <span className="text-gray-900 font-medium">${court.light_price}</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.light_price)}</span>
                                                 </div>
                                             )}
                                             {equipmentItems.map(item => {
@@ -386,13 +512,25 @@ const BookingConfirmationModal = ({
                                                     </div>
                                                 );
                                             })}
+                                            {extras.ball && court?.ball_price > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-600">Pelota</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.ball_price)}</span>
+                                                </div>
+                                            )}
+                                            {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-600">Raquetas ({extras.number_of_rackets})</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.racket_price * extras.number_of_rackets)}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
                                     <div className="pt-3 border-t border-gray-300 mt-3">
                                         <span className="text-gray-600 text-xs block mb-1">Total a pagar</span>
                                         <span className="text-3xl font-bold text-gray-900 tracking-tight">
-                                            ${calculateTotalPrice()}
+                                            ${formatCurrency(calculateTotalPrice())}
                                         </span>
                                     </div>
                                 </div>

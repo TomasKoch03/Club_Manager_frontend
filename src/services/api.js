@@ -141,8 +141,8 @@ export const getAllReservationsFiltered = async (filters = {}) => {
     if (filters.time_start)
         params.append("time_start", filters.time_start);
     if (filters.time_end)
-        params.append("time_end", filters.time_end);  
-      
+        params.append("time_end", filters.time_end);
+
     const endpoint = `/reservation/?${params.toString()}`;
     return apiRequest(endpoint, { method: 'GET' });
 };
@@ -307,5 +307,63 @@ export const updateEquipment = async (equipmentId, data) => {
     return apiRequest(`/equipment/${equipmentId}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
+    });
+};
+
+// Profile image functions
+export const uploadProfileImage = async (userId, imageFile) => {
+    const token = localStorage.getItem('accessToken');
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    const response = await fetch(`${API_BASE_URL}/user/${userId}/profile-image`, {
+        method: 'POST',
+        headers: {
+            ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: formData,
+    });
+
+    if (!response.ok) {
+        if (response.status === 401) {
+            localStorage.removeItem('accessToken');
+            window.location.href = '/';
+        }
+        const error = new Error(`HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        try {
+            const errorData = await response.json();
+            error.detail = errorData.detail || errorData.message;
+        } catch {
+            // Si no hay JSON, usar mensaje genérico
+        }
+        throw error;
+    }
+
+    return response.json();
+};
+
+export const getProfileImageUrl = (userId) => {
+    return `${API_BASE_URL}/user/${userId}/profile-image`;
+};
+
+export const checkProfileImageExists = async (userId) => {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const response = await fetch(`${API_BASE_URL}/user/${userId}/profile-image`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+};
+
+export const deleteProfileImage = async (userId) => {
+    return apiRequest(`/user/${userId}/profile-image`, {
+        method: 'DELETE',
     });
 };

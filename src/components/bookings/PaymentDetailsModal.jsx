@@ -1,14 +1,14 @@
-import React from 'react';
-import { Modal, Button } from 'react-bootstrap';
-import { IoCashOutline, IoCheckmarkCircleOutline, IoCardOutline } from 'react-icons/io5';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { Button, Modal } from 'react-bootstrap';
+import { IoCardOutline, IoCashOutline, IoCheckmarkCircleOutline } from 'react-icons/io5';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const PaymentDetailsModal = ({
-                                 show,
-                                 onHide,
-                                 reservation,
-                                 onApprovePayment
-                             }) => {
+    show,
+    onHide,
+    reservation,
+    onApprovePayment
+}) => {
     if (!reservation) return null;
 
     const { payment } = reservation;
@@ -93,7 +93,7 @@ const PaymentDetailsModal = ({
                                     </span>
                                 </div>
                                 <p style={{ fontSize: '1.5rem', color: '#000', marginLeft: '28px', marginBottom: '0', fontWeight: '700' }}>
-                                    ${payment.amount}
+                                    ${formatCurrency(payment.amount)}
                                 </p>
                             </div>
 

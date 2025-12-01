@@ -1,13 +1,34 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useEffect, useState } from 'react';
 import { Navbar as BSNavbar, Container, Nav, NavDropdown } from 'react-bootstrap';
-import { FaRegBell, FaRegUserCircle } from 'react-icons/fa';
+import { FaRegUserCircle } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom'; // <CHANGE> Importar useNavigate
-import { getUserData, logout } from '../services/api'; // <CHANGE> Importar getUserData y logout
-import NavBarItem from './NavBarItems/NavBarItem';
+import { getProfileImageUrl, getUserData, logout } from '../services/api'; // <CHANGE> Importar getUserData y logout
 import NavBarLogo from './NavBarItems/NavBarLogo';
+import AuthenticatedImage from './users/AuthenticatedImage';
 
 const Navbar = () => {
     const navigate = useNavigate(); // <CHANGE> Hook para navegación
+    const [userId, setUserId] = useState(null);
+    const [hasProfileImage, setHasProfileImage] = useState(false);
+    const [imageUrl, setImageUrl] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const userData = await getUserData();
+                setUserId(userData.id);
+
+                const url = getProfileImageUrl(userData.id);
+                setImageUrl(`${url}?t=${Date.now()}`);
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                setHasProfileImage(false);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const handleProfileClick = async () => {
         try {
@@ -60,7 +81,21 @@ const Navbar = () => {
                 <BSNavbar.Collapse id="basic-navbar-nav">
                     <Nav className="ms-auto">
                         <NavDropdown
-                            title={<FaRegUserCircle size={24} />}
+                            title={
+                                <AuthenticatedImage
+                                    src={imageUrl}
+                                    alt="Profile"
+                                    style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        objectFit: 'cover',
+                                        border: '2px solid #e9ecef',
+                                    }}
+                                    onError={() => setHasProfileImage(false)}
+                                    fallback={<FaRegUserCircle size={24} />}
+                                />
+                            }
                             id="user-dropdown"
                             align="end"
                             className="no-caret"
