@@ -123,12 +123,14 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
         yPos += 8;
 
         // Extras con el mismo formato que información de reserva
-        if (reservation.light || reservation.ball || reservation.number_of_rackets > 0) {
+        if (reservation.light || (reservation.equipment_items && reservation.equipment_items.length > 0)) {
             const extras = [];
             if (reservation.light) extras.push('Luz');
-            if (reservation.ball) extras.push('Pelota');
-            if (reservation.number_of_rackets > 0) extras.push(`Raquetas (${reservation.number_of_rackets})`);
-
+            if (reservation.equipment_items && reservation.equipment_items.length > 0) {
+                reservation.equipment_items.forEach(item => {
+                    extras.push(`${item.name} (${item.quantity})`);
+                });
+            }
             doc.text(`Extras: ${extras.join(', ')}`, 20, yPos);
             yPos += 8;
         }

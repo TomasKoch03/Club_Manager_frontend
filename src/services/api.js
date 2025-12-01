@@ -1,3 +1,5 @@
+import { buildRoute } from '../utils/routes';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const apiRequest = async (endpoint, options = {}) => {
@@ -18,7 +20,7 @@ export const apiRequest = async (endpoint, options = {}) => {
         if (response.status === 401) {
             // Token expirado o inválido
             localStorage.removeItem('accessToken');
-            window.location.href = '/';
+            window.location.href = buildRoute('/');
         }
 
         // Crear un error con el código de estado para mejor manejo
@@ -96,7 +98,7 @@ export const register = async (email, fullName, password) => {
 // Función para logout
 export const logout = () => {
     localStorage.removeItem('accessToken');
-    window.location.href = '/';
+    window.location.href = buildRoute('/');
 };
 
 // Funciones específicas
@@ -281,6 +283,30 @@ export const cancelReservationByUser = async (reservationId) => {
 export const cancelReservationByAdmin = async (reservationId) => {
     return apiRequest(`/reservation/admin/${reservationId}/cancel`, {
         method: 'DELETE',
+    });
+};
+
+// Equipment endpoints
+export const getEquipment = async (sport = null, name = null) => {
+    const params = new URLSearchParams();
+    if (sport) params.append('sport', sport);
+    if (name) params.append('name', name);
+    const queryString = params.toString();
+    const endpoint = queryString ? `/equipment/?${queryString}` : '/equipment/';
+    return apiRequest(endpoint, { method: 'GET' });
+};
+
+export const createEquipment = async (data) => {
+    return apiRequest('/equipment/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+};
+
+export const updateEquipment = async (equipmentId, data) => {
+    return apiRequest(`/equipment/${equipmentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
     });
 };
 

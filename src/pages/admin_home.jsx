@@ -1,6 +1,6 @@
 import { FaRegUserCircle } from 'react-icons/fa';
 import { IoBasketball, IoCalendarOutline, IoFootball, IoStatsChartOutline, IoTennisball } from 'react-icons/io5';
-import { MdSportsTennis } from 'react-icons/md';
+import { MdSportsTennis, MdInventory2 } from 'react-icons/md';
 import HomeActionButton from '../components/home/HomeActionButton';
 
 const AdminHome = () => {
@@ -54,8 +54,8 @@ const AdminHome = () => {
                         />
                     </div>
 
-                    {/* Container for Usuarios & Canchas - Takes other half */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Container for Usuarios, Canchas & Equipamientos - Takes other half */}
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Usuarios */}
                         <div className="h-full">
                             <HomeActionButton
@@ -72,6 +72,16 @@ const AdminHome = () => {
                                 icon={MdSportsTennis}
                                 text="Gestionar Canchas"
                                 href="/admin/canchas"
+                                variant="default"
+                            />
+                        </div>
+
+                        {/* Equipamientos */}
+                        <div className="h-full">
+                            <HomeActionButton
+                                icon={MdInventory2}
+                                text="Gestionar Equipamientos"
+                                href="/admin/equipamientos"
                                 variant="default"
                             />
                         </div>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 
 // Helper to get colors based on variant
 const getVariantStyles = (variant) => {
@@ -45,9 +46,9 @@ const HomeActionButton = ({ icon: Icon, text, onClick, href, variant = 'default'
 
     if (href) {
         return (
-            <a href={href} className={containerClasses} style={{ textDecoration: 'none' }}>
+            <Link to={href} className={containerClasses} style={{ textDecoration: 'none' }}>
                 {content}
-            </a>
+            </Link>
         );
     }
 

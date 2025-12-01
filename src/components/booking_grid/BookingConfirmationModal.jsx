@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { IoAddCircleOutline, IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoRemoveCircleOutline, IoTimeOutline } from 'react-icons/io5';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { adjustDuration as adjustDurationHelper, adjustStartTime as adjustStartTimeHelper, calculateDuration as calculateDurationHelper, recalculateEndTime } from '../../utils/timeHelpers';
+import { getEquipment } from '../../services/api';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -20,11 +21,10 @@ const BookingConfirmationModal = ({
     isLoadingPreference,
     isUserBlocked = false
 }) => {
-    const [extras, setExtras] = useState({
-        light: false,
-        ball: false,
-        number_of_rackets: 0
-    });
+    const [light, setLight] = useState(false);
+    const [equipmentItems, setEquipmentItems] = useState([]);
+    const [availableEquipment, setAvailableEquipment] = useState([]);
+    const [loadingEquipment, setLoadingEquipment] = useState(false);
 
     const [timeSelection, setTimeSelection] = useState({
         startTime: '',
@@ -32,6 +32,27 @@ const BookingConfirmationModal = ({
     });
 
     const [isLoadingClubPayment, setIsLoadingClubPayment] = useState(false);
+
+    // Cargar equipamientos disponibles
+    useEffect(() => {
+        const fetchEquipment = async () => {
+            if (!bookingData?.court?.sport) return;
+
+            try {
+                setLoadingEquipment(true);
+                const equipment = await getEquipment(bookingData.court.sport);
+                setAvailableEquipment(equipment);
+            } catch (error) {
+                console.error('Error al cargar equipamientos:', error);
+            } finally {
+                setLoadingEquipment(false);
+            }
+        };
+
+        if (show && bookingData) {
+            fetchEquipment();
+        }
+    }, [show, bookingData]);
 
     // Calcular y actualizar automáticamente la hora de fin basándose en la duración de la reserva original
     // SOLO cuando se inicializa el modal, no en cada cambio
@@ -49,9 +70,14 @@ const BookingConfirmationModal = ({
                 endTime: formatForInput(bookingData.endTime)
             });
 
-            // Si hay extras iniciales (reserva existente), establecerlos
-            if (bookingData.initialExtras) {
-                setExtras(bookingData.initialExtras);
+            // Si hay equipamiento inicial (reserva existente), establecerlo
+            if (bookingData.initialEquipment) {
+                setEquipmentItems(bookingData.initialEquipment);
+            }
+
+            // Si hay luz inicial
+            if (bookingData.initialLight !== undefined) {
+                setLight(bookingData.initialLight);
             }
         }
     }, [bookingData, show]);
@@ -65,23 +91,44 @@ const BookingConfirmationModal = ({
         return calculateDurationHelper(timeSelection.startTime, timeSelection.endTime);
     };
 
-    // Calcular precio total incluyendo extras y duración
+    // Calcular precio total incluyendo luz, equipamientos y duración
     const calculateTotalPrice = () => {
         const duration = calculateDuration();
         let total = court?.base_price * duration || 0;
-        if (extras.light && court?.light_price) total += court.light_price;
-        if (extras.ball && court?.ball_price) total += court.ball_price;
-        if (extras.number_of_rackets > 0 && court?.racket_price) {
-            total += court.racket_price * extras.number_of_rackets;
+
+        // Agregar precio de luz si está activada
+        if (light && court?.light_price) {
+            total += court.light_price;
         }
+
+        // Agregar precio de equipamientos
+        equipmentItems.forEach(item => {
+            const equipment = availableEquipment.find(e => e.id === item.id);
+            if (equipment) {
+                total += equipment.price_per_unit * item.quantity;
+            }
+        });
+
         return total.toFixed(2);
     };
 
-    const handleExtraChange = (field, value) => {
-        setExtras(prev => ({
-            ...prev,
-            [field]: value
-        }));
+    const handleEquipmentChange = (equipmentId, quantity) => {
+        setEquipmentItems(prev => {
+            const existing = prev.find(item => item.id === equipmentId);
+
+            if (quantity === 0) {
+                // Remover si la cantidad es 0
+                return prev.filter(item => item.id !== equipmentId);
+            } else if (existing) {
+                // Actualizar cantidad existente
+                return prev.map(item =>
+                    item.id === equipmentId ? { ...item, quantity } : item
+                );
+            } else {
+                // Agregar nuevo item
+                return [...prev, { id: equipmentId, quantity }];
+            }
+        });
     };
 
     const handleTimeChange = (field, value) => {
@@ -319,67 +366,72 @@ const BookingConfirmationModal = ({
                                 )}
                             </div>
 
-                            {/* Extras en Grid de 2 Columnas */}
-                            <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                <h6 className="text-sm font-semibold text-gray-900 mb-3">Extras opcionales</h6>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {court?.light_price > 0 && (
-                                        <label className={`flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg transition-colors ${!bookingData.isExistingReservation ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-60'}`}>
-                                            <input
-                                                type="checkbox"
-                                                checked={extras.light}
-                                                onChange={(e) => handleExtraChange('light', e.target.checked)}
-                                                disabled={bookingData.isExistingReservation}
-                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
-                                                style={{
-                                                    backgroundImage: extras.light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
-                                                    backgroundSize: '100% 100%',
-                                                    backgroundPosition: 'center',
-                                                    backgroundRepeat: 'no-repeat'
-                                                }}
-                                            />
-                                            <span className="text-sm font-medium text-gray-700 ml-3">Luz (+${formatCurrency(court.light_price)})</span>
-                                        </label>
-                                    )}
-
-                                    {court?.ball_price > 0 && (
-                                        <label className={`flex items-center gap-3 p-2.5 border border-gray-200 rounded-lg transition-colors ${!bookingData.isExistingReservation ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-60'}`}>
-                                            <input
-                                                type="checkbox"
-                                                checked={extras.ball}
-                                                onChange={(e) => handleExtraChange('ball', e.target.checked)}
-                                                disabled={bookingData.isExistingReservation}
-                                                className="appearance-none w-4 h-4 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
-                                                style={{
-                                                    backgroundImage: extras.ball ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
-                                                    backgroundSize: '100% 100%',
-                                                    backgroundPosition: 'center',
-                                                    backgroundRepeat: 'no-repeat'
-                                                }}
-                                            />
-                                            <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${formatCurrency(court.ball_price)})</span>
-                                        </label>
-                                    )}
-
-                                    {court?.racket_price > 0 && (
-                                        <div className={`p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2 ${bookingData.isExistingReservation ? 'opacity-60' : ''}`}>
-                                            <label className="text-xs text-gray-600 block mb-1.5 font-medium">
-                                                Raquetas (${formatCurrency(court.racket_price)} c/u)
-                                            </label>
-                                            <select
-                                                value={extras.number_of_rackets}
-                                                onChange={(e) => handleExtraChange('number_of_rackets', parseInt(e.target.value))}
-                                                disabled={bookingData.isExistingReservation}
-                                                className="w-full p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                                            >
-                                                {[0, 1, 2, 3, 4].map(num => (
-                                                    <option key={num} value={num}>{num}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    )}
+                            {/* Luz */}
+                            {court?.light_price > 0 && (
+                                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                    <label className={`flex items-start gap-3 ${!bookingData.isExistingReservation ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={light}
+                                            onChange={(e) => setLight(e.target.checked)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="appearance-none w-5 h-5 mt-0.5 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
+                                            style={{
+                                                backgroundImage: light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
+                                                backgroundSize: '100% 100%',
+                                                backgroundPosition: 'center',
+                                                backgroundRepeat: 'no-repeat'
+                                            }}
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Luz artificial (+${formatCurrency(court.light_price)})</span>
+                                    </label>
                                 </div>
-                            </div>
+                            )}
+
+                            {/* Equipamientos */}
+                            {loadingEquipment ? (
+                                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                    <p className="text-sm text-gray-500">Cargando equipamientos...</p>
+                                </div>
+                            ) : availableEquipment.length > 0 ? (
+                                <div className="bg-white p-4 rounded-xl border border-gray-200">
+                                    <h6 className="text-sm font-semibold text-gray-900 mb-3">Equipamientos disponibles</h6>
+                                    <div className="space-y-3">
+                                        {availableEquipment.map(equipment => {
+                                            const currentQuantity = equipmentItems.find(item => item.id === equipment.id)?.quantity || 0;
+                                            return (
+                                                <div key={equipment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-gray-900">{equipment.name}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            ${equipment.price_per_unit} por unidad
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleEquipmentChange(equipment.id, Math.max(0, currentQuantity - 1))}
+                                                            disabled={currentQuantity === 0 || bookingData.isExistingReservation}
+                                                            className="w-8 h-8 rounded-lg bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            -
+                                                        </button>
+                                                        <span className="w-8 text-center text-sm font-semibold text-gray-900">
+                                                            {currentQuantity}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => handleEquipmentChange(equipment.id, Math.min(equipment.stock, currentQuantity + 1))}
+                                                            disabled={currentQuantity >= equipment.stock || bookingData.isExistingReservation}
+                                                            className="w-8 h-8 rounded-lg bg-white border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ) : null}
                         </div>
 
                         {/* Right Column - Resumen Financiero (1/3 del espacio) */}
@@ -401,27 +453,27 @@ const BookingConfirmationModal = ({
                                         </div>
                                     )}
 
-                                    {(extras.light || extras.ball || extras.number_of_rackets > 0) && (
+                                    {(light || equipmentItems.length > 0) && (
                                         <div className="pt-3 border-t border-gray-300 space-y-2">
                                             <span className="text-gray-500 text-xs font-bold uppercase tracking-wider">Extras</span>
-                                            {extras.light && court?.light_price > 0 && (
+                                            {light && court?.light_price > 0 && (
                                                 <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Luz</span>
                                                     <span className="text-gray-900 font-medium">${formatCurrency(court.light_price)}</span>
                                                 </div>
                                             )}
-                                            {extras.ball && court?.ball_price > 0 && (
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-gray-600">Pelota</span>
-                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.ball_price)}</span>
-                                                </div>
-                                            )}
-                                            {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
-                                                <div className="flex justify-between text-xs">
-                                                    <span className="text-gray-600">Raquetas ({extras.number_of_rackets})</span>
-                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.racket_price * extras.number_of_rackets)}</span>
-                                                </div>
-                                            )}
+                                            {equipmentItems.map(item => {
+                                                const equipment = availableEquipment.find(e => e.id === item.id);
+                                                if (!equipment) return null;
+                                                return (
+                                                    <div key={item.id} className="flex justify-between text-xs">
+                                                        <span className="text-gray-600">{equipment.name} ({item.quantity})</span>
+                                                        <span className="text-gray-900 font-medium">
+                                                            ${(equipment.price_per_unit * item.quantity).toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
                                     )}
 
@@ -449,7 +501,7 @@ const BookingConfirmationModal = ({
                                 startTime: timeSelection.startTime,
                                 endTime: timeSelection.endTime
                             };
-                            await onPayInClub(extras, bookingWithTimes);
+                            await onPayInClub({ light, equipment_items: equipmentItems, totalAmount: parseFloat(calculateTotalPrice()) }, bookingWithTimes);
                             setIsLoadingClubPayment(false);
                         }}
                         disabled={!isValidTimeSelection() || isLoadingClubPayment || isUserBlocked}
@@ -482,7 +534,7 @@ const BookingConfirmationModal = ({
                                     startTime: timeSelection.startTime,
                                     endTime: timeSelection.endTime
                                 };
-                                onPayWithMercadoPago(extras, bookingWithTimes);
+                                onPayWithMercadoPago({ light, equipment_items: equipmentItems, totalAmount: parseFloat(calculateTotalPrice()) }, bookingWithTimes);
                             }}
                             disabled={isLoadingPreference || !isValidTimeSelection() || isUserBlocked}
                             className="w-full sm:w-auto px-6 py-2.5 rounded-xl !bg-[#009ee3] text-white font-bold hover:!bg-[#008ed0] shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm"

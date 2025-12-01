@@ -12,8 +12,6 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         sport: court.sport.toLowerCase(),
         base_price: court.base_price,
         light_price: court.light_price || 0,
-        ball_price: court.ball_price || 0,
-        racket_price: court.racket_price || 0,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -48,8 +46,6 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
             sport: court.sport.toLowerCase(),
             base_price: court.base_price,
             light_price: court.light_price || 0,
-            ball_price: court.ball_price || 0,
-            racket_price: court.racket_price || 0,
         });
         setShowEditModal(true);
         setError(null);
@@ -101,7 +97,7 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
         const { name, value } = e.target;
         setEditForm(prev => ({
             ...prev,
-            [name]: (name === 'base_price' || name === 'light_price' || name === 'ball_price' || name === 'racket_price')
+            [name]: (name === 'base_price' || name === 'light_price')
                 ? value
                 : value
         }));
@@ -215,36 +211,6 @@ const CourtManagementCard = ({ court, onCourtUpdated, onCourtDeleted }) => {
                                 type="number"
                                 name="light_price"
                                 value={editForm.light_price}
-                                onChange={handleInputChange}
-                                onWheel={(e) => e.target.blur()}
-                                min="0"
-                                step="0.01"
-                                disabled={loading}
-                                style={{ borderRadius: '8px' }}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: '500' }}>Precio Pelota</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="ball_price"
-                                value={editForm.ball_price}
-                                onChange={handleInputChange}
-                                onWheel={(e) => e.target.blur()}
-                                min="0"
-                                step="0.01"
-                                disabled={loading}
-                                style={{ borderRadius: '8px' }}
-                            />
-                        </Form.Group>
-
-                        <Form.Group className="mb-3">
-                            <Form.Label style={{ fontWeight: '500' }}>Precio por Raqueta</Form.Label>
-                            <Form.Control
-                                type="number"
-                                name="racket_price"
-                                value={editForm.racket_price}
                                 onChange={handleInputChange}
                                 onWheel={(e) => e.target.blur()}
                                 min="0"

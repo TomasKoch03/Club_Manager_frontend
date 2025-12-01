@@ -121,12 +121,12 @@ const MyBookings = () => {
                 court: court,
                 reservationId: reservation.id,
                 payment: reservation.payment, // Incluir el pago existente si lo hay
-                // Incluir los extras de la reserva existente
-                initialExtras: {
-                    light: reservation.light || false,
-                    ball: reservation.ball || false,
-                    number_of_rackets: reservation.number_of_rackets || 0
-                },
+                // Incluir los equipamientos de la reserva existente
+                initialEquipment: reservation.equipment_items?.map(item => ({
+                    id: item.id,
+                    quantity: item.quantity
+                })) || [],
+                initialLight: reservation.light || false,
                 isExistingReservation: true // Flag para indicar que es una reserva existente
             };
 
@@ -153,24 +153,15 @@ const MyBookings = () => {
         if (!selectedPaymentReservation) return;
 
         try {
-            // Calcular duración en horas
-            const startTime = new Date(selectedPaymentReservation.startTime);
-            const endTime = new Date(selectedPaymentReservation.endTime);
-            const durationHours = (endTime - startTime) / (1000 * 60 * 60);
-
-            // Calcular el monto total: precio_base * duración + extras
-            const court = selectedPaymentReservation.court;
-            let totalAmount = court.base_price * durationHours;
-            if (extras.light && court.light_price) totalAmount += court.light_price;
-            if (extras.ball && court.ball_price) totalAmount += court.ball_price;
-            if (extras.number_of_rackets > 0 && court.racket_price) {
-                totalAmount += court.racket_price * extras.number_of_rackets;
-            }
+            // El backend calcula el monto automáticamente basado en los equipamientos
+            // Solo necesitamos enviar el pago
+            // Nota: Si la reserva ya existe, no necesitamos recalcular nada
+            // El backend ya tiene toda la información
 
             await postPayment({
                 method: 'efectivo',
                 status: 'pendiente',
-                amount: totalAmount,
+                amount: 0, // El backend recalculará el monto
                 reservation_id: selectedPaymentReservation.reservationId
             });
 
