@@ -2,6 +2,7 @@ import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
 import { IoAddCircleOutline, IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoRemoveCircleOutline, IoTimeOutline } from 'react-icons/io5';
 import { formatCurrency } from '../../utils/formatCurrency';
+import { adjustDuration as adjustDurationHelper, adjustStartTime as adjustStartTimeHelper, calculateDuration as calculateDurationHelper, recalculateEndTime } from '../../utils/timeHelpers';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -61,16 +62,7 @@ const BookingConfirmationModal = ({
 
     // Calcular duración en horas basándose en los tiempos seleccionados
     const calculateDuration = () => {
-        if (!timeSelection.startTime || !timeSelection.endTime) return 0;
-
-        const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
-        const [endHours, endMinutes] = timeSelection.endTime.split(':').map(Number);
-
-        const startTotalMinutes = startHours * 60 + startMinutes;
-        const endTotalMinutes = endHours * 60 + endMinutes;
-
-        const durationMinutes = endTotalMinutes - startTotalMinutes;
-        return durationMinutes > 0 ? durationMinutes / 60 : 0;
+        return calculateDurationHelper(timeSelection.startTime, timeSelection.endTime);
     };
 
     // Calcular precio total incluyendo extras y duración
@@ -94,28 +86,14 @@ const BookingConfirmationModal = ({
 
     const handleTimeChange = (field, value) => {
         if (field === 'startTime' && timeSelection.startTime && timeSelection.endTime) {
-            // Calcular duración actual
-            const [oldStartHours, oldStartMins] = timeSelection.startTime.split(':').map(Number);
-            const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
-            const currentDurationMinutes = (endHours * 60 + endMins) - (oldStartHours * 60 + oldStartMins);
+            const newEndTime = recalculateEndTime(timeSelection.startTime, value, timeSelection.endTime);
 
-            // Aplicar nueva hora de inicio
-            const [newStartHours, newStartMins] = value.split(':').map(Number);
-            const newStartTotalMinutes = newStartHours * 60 + newStartMins;
-
-            // Calcular nueva hora de fin manteniendo la duración
-            const newEndTotalMinutes = newStartTotalMinutes + currentDurationMinutes;
-
-            // Verificar que no pase de 23:59
-            if (newEndTotalMinutes > 23 * 60 + 59) return;
-
-            const newEndHours = Math.floor(newEndTotalMinutes / 60);
-            const newEndMinutes = newEndTotalMinutes % 60;
-
-            setTimeSelection({
-                startTime: value,
-                endTime: `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`
-            });
+            if (newEndTime) {
+                setTimeSelection({
+                    startTime: value,
+                    endTime: newEndTime
+                });
+            }
         } else {
             setTimeSelection(prev => ({
                 ...prev,
@@ -129,69 +107,26 @@ const BookingConfirmationModal = ({
     const adjustStartTime = (minutes) => {
         if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
 
-        // Calcular duración actual
-        const [startHours, startMins] = timeSelection.startTime.split(':').map(Number);
-        const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
-        const currentDurationMinutes = (endHours * 60 + endMins) - (startHours * 60 + startMins);
+        const result = adjustStartTimeHelper(timeSelection.startTime, timeSelection.endTime, minutes);
 
-        // Calcular nueva hora de inicio
-        let newStartTotalMinutes = startHours * 60 + startMins + minutes;
-
-        // Asegurar que no sea negativo
-        if (newStartTotalMinutes < 0) newStartTotalMinutes = 0;
-
-        // Asegurar que no pase de 23:30
-        if (newStartTotalMinutes > 23 * 60 + 30) newStartTotalMinutes = 23 * 60 + 30;
-
-        // Calcular nueva hora de fin manteniendo la duración
-        const newEndTotalMinutes = newStartTotalMinutes + currentDurationMinutes;
-
-        // Verificar que no pase de las 23:59
-        if (newEndTotalMinutes > 23 * 60 + 59) return;
-
-        const newStartHours = Math.floor(newStartTotalMinutes / 60);
-        const newStartMinutes = newStartTotalMinutes % 60;
-        const newEndHours = Math.floor(newEndTotalMinutes / 60);
-        const newEndMinutes = newEndTotalMinutes % 60;
-
-        // Actualizar hora de inicio y fin manteniendo la duración
-        setTimeSelection({
-            startTime: `${String(newStartHours).padStart(2, '0')}:${String(newStartMinutes).padStart(2, '0')}`,
-            endTime: `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`
-        });
+        if (result) {
+            setTimeSelection(result);
+        }
     };
 
     // Función para incrementar/decrementar la duración en 30 minutos
     const adjustDuration = (minutes) => {
         if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
 
-        const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
-        let endTotalMinutes = endHours * 60 + endMins + minutes;
+        const newEndTime = adjustDurationHelper(timeSelection.startTime, timeSelection.endTime, minutes);
 
-        const [startHours, startMins] = timeSelection.startTime.split(':').map(Number);
-        const startTotalMinutes = startHours * 60 + startMins;
-
-        // Asegurar que la duración mínima sea 30 minutos
-        if (endTotalMinutes <= startTotalMinutes) {
-            endTotalMinutes = startTotalMinutes + 30;
+        if (newEndTime) {
+            setTimeSelection(prev => ({
+                ...prev,
+                endTime: newEndTime
+            }));
         }
-
-        // Asegurar que no pase de 23:59
-        if (endTotalMinutes > 23 * 60 + 59) endTotalMinutes = 23 * 60 + 59;
-
-        const newEndHours = Math.floor(endTotalMinutes / 60);
-        const newEndMinutes = endTotalMinutes % 60;
-
-        const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
-
-        // Actualizar hora de fin
-        setTimeSelection(prev => ({
-            ...prev,
-            endTime: newEndTime
-        }));
-    };
-
-    const isValidTimeSelection = () => {
+    }; const isValidTimeSelection = () => {
         if (!timeSelection.startTime || !timeSelection.endTime) return false;
 
         const [startHours, startMinutes] = timeSelection.startTime.split(':').map(Number);
