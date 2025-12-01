@@ -11,9 +11,11 @@ import {
     IoTimeOutline,
     IoTrashOutline,
 } from 'react-icons/io5';
+import { useToast } from '../../hooks/useToast';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, onCancelClick, isAdmin }) => {
+    const toast = useToast();
     // Formatear fecha corta
     const formatDateShort = (dateString) => {
         const date = new Date(dateString);
@@ -262,22 +264,48 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                 <div className="flex items-center gap-2">
                     {/* Botón de Editar/Ver */}
                     {onEditClick && (
-                        <button
-                            onClick={() => onEditClick(reservation.id)}
-                            className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-                            title={isPaid ? 'Ver detalles' : 'Editar reserva'}
-                        >
-                            <IoPencil className="w-5 h-5 text-gray-500 group-hover:text-blue-600 transition-colors" />
-                        </button>
+                        <div className="relative group/edit">
+                            <button
+                                onClick={() => {
+                                    if (isPaid) {
+                                        toast.warning('Esta reserva ya está pagada y no puede ser editada');
+                                    } else {
+                                        onEditClick(reservation.id);
+                                    }
+                                }}
+                                className={`p-2.5 rounded-lg hover:bg-gray-50 transition-colors group ${isPaid ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <IoPencil className={`w-5 h-5 text-gray-500 ${!isPaid ? 'group-hover:text-blue-600' : ''} transition-colors`} />
+                            </button>
+                            {isPaid && (
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-yellow-50 text-yellow-800 text-xs rounded-lg border border-yellow-100 whitespace-nowrap opacity-0 invisible group-hover/edit:opacity-100 group-hover/edit:visible transition-all pointer-events-none shadow-sm">
+                                    No se puede editar una reserva pagada
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-yellow-50 border-r border-b border-yellow-100 rotate-45"></div>
+                                </div>
+                            )}
+                        </div>
                     )}
-                    {!isPaid && onCancelClick && (
-                        <button
-                            onClick={() => onCancelClick(reservation.id)}
-                            className="p-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
-                            title="Cancelar reserva"
-                        >
-                            <IoTrashOutline className="w-5 h-5 text-gray-500 group-hover:text-red-600 transition-colors" />
-                        </button>
+                    {onCancelClick && (
+                        <div className="relative group/delete">
+                            <button
+                                onClick={() => {
+                                    if (isPaid) {
+                                        toast.error('No se puede cancelar una reserva que ya está pagada');
+                                    } else {
+                                        onCancelClick(reservation.id);
+                                    }
+                                }}
+                                className={`p-2.5 rounded-lg hover:bg-gray-50 transition-colors group ${isPaid ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <IoTrashOutline className={`w-5 h-5 text-gray-500 ${!isPaid ? 'group-hover:text-red-600' : ''} transition-colors`} />
+                            </button>
+                            {isPaid && (
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-yellow-50 text-yellow-800 text-xs rounded-lg border border-yellow-100 whitespace-nowrap opacity-0 invisible group-hover/delete:opacity-100 group-hover/delete:visible transition-all pointer-events-none shadow-sm">
+                                    No se puede cancelar una reserva pagada
+                                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-2 h-2 bg-yellow-50 border-r border-b border-yellow-100 rotate-45"></div>
+                                </div>
+                            )}
+                        </div>
                     )}
 
                     {/* Botón de Pagar o Comprobante */}
