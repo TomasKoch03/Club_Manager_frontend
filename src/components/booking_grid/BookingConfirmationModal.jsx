@@ -1,6 +1,6 @@
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
-import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoTimeOutline } from 'react-icons/io5';
+import { IoAddCircleOutline, IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoRemoveCircleOutline, IoTimeOutline } from 'react-icons/io5';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 // Inicializar Mercado Pago con la public key
@@ -32,7 +32,8 @@ const BookingConfirmationModal = ({
 
     const [isLoadingClubPayment, setIsLoadingClubPayment] = useState(false);
 
-    // Inicializar tiempos y extras cuando se abre el modal
+    // Calcular y actualizar automáticamente la hora de fin basándose en la duración de la reserva original
+    // SOLO cuando se inicializa el modal, no en cada cambio
     useEffect(() => {
         if (bookingData && show) {
             const formatForInput = (dateString) => {
@@ -92,9 +93,101 @@ const BookingConfirmationModal = ({
     };
 
     const handleTimeChange = (field, value) => {
+        if (field === 'startTime' && timeSelection.startTime && timeSelection.endTime) {
+            // Calcular duración actual
+            const [oldStartHours, oldStartMins] = timeSelection.startTime.split(':').map(Number);
+            const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
+            const currentDurationMinutes = (endHours * 60 + endMins) - (oldStartHours * 60 + oldStartMins);
+
+            // Aplicar nueva hora de inicio
+            const [newStartHours, newStartMins] = value.split(':').map(Number);
+            const newStartTotalMinutes = newStartHours * 60 + newStartMins;
+
+            // Calcular nueva hora de fin manteniendo la duración
+            const newEndTotalMinutes = newStartTotalMinutes + currentDurationMinutes;
+
+            // Verificar que no pase de 23:59
+            if (newEndTotalMinutes > 23 * 60 + 59) return;
+
+            const newEndHours = Math.floor(newEndTotalMinutes / 60);
+            const newEndMinutes = newEndTotalMinutes % 60;
+
+            setTimeSelection({
+                startTime: value,
+                endTime: `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`
+            });
+        } else {
+            setTimeSelection(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        }
+    };
+
+    // Función para incrementar/decrementar la hora de inicio en 30 minutos
+    // Mantiene la duración fija, ajustando también la hora de fin
+    const adjustStartTime = (minutes) => {
+        if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
+
+        // Calcular duración actual
+        const [startHours, startMins] = timeSelection.startTime.split(':').map(Number);
+        const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
+        const currentDurationMinutes = (endHours * 60 + endMins) - (startHours * 60 + startMins);
+
+        // Calcular nueva hora de inicio
+        let newStartTotalMinutes = startHours * 60 + startMins + minutes;
+
+        // Asegurar que no sea negativo
+        if (newStartTotalMinutes < 0) newStartTotalMinutes = 0;
+
+        // Asegurar que no pase de 23:30
+        if (newStartTotalMinutes > 23 * 60 + 30) newStartTotalMinutes = 23 * 60 + 30;
+
+        // Calcular nueva hora de fin manteniendo la duración
+        const newEndTotalMinutes = newStartTotalMinutes + currentDurationMinutes;
+
+        // Verificar que no pase de las 23:59
+        if (newEndTotalMinutes > 23 * 60 + 59) return;
+
+        const newStartHours = Math.floor(newStartTotalMinutes / 60);
+        const newStartMinutes = newStartTotalMinutes % 60;
+        const newEndHours = Math.floor(newEndTotalMinutes / 60);
+        const newEndMinutes = newEndTotalMinutes % 60;
+
+        // Actualizar hora de inicio y fin manteniendo la duración
+        setTimeSelection({
+            startTime: `${String(newStartHours).padStart(2, '0')}:${String(newStartMinutes).padStart(2, '0')}`,
+            endTime: `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`
+        });
+    };
+
+    // Función para incrementar/decrementar la duración en 30 minutos
+    const adjustDuration = (minutes) => {
+        if (bookingData.isExistingReservation || !timeSelection.startTime || !timeSelection.endTime) return;
+
+        const [endHours, endMins] = timeSelection.endTime.split(':').map(Number);
+        let endTotalMinutes = endHours * 60 + endMins + minutes;
+
+        const [startHours, startMins] = timeSelection.startTime.split(':').map(Number);
+        const startTotalMinutes = startHours * 60 + startMins;
+
+        // Asegurar que la duración mínima sea 30 minutos
+        if (endTotalMinutes <= startTotalMinutes) {
+            endTotalMinutes = startTotalMinutes + 30;
+        }
+
+        // Asegurar que no pase de 23:59
+        if (endTotalMinutes > 23 * 60 + 59) endTotalMinutes = 23 * 60 + 59;
+
+        const newEndHours = Math.floor(endTotalMinutes / 60);
+        const newEndMinutes = endTotalMinutes % 60;
+
+        const newEndTime = `${String(newEndHours).padStart(2, '0')}:${String(newEndMinutes).padStart(2, '0')}`;
+
+        // Actualizar hora de fin
         setTimeSelection(prev => ({
             ...prev,
-            [field]: value
+            endTime: newEndTime
         }));
     };
 
@@ -203,30 +296,89 @@ const BookingConfirmationModal = ({
                             {/* Horario */}
                             <div className="bg-white p-4 rounded-xl border border-gray-200">
                                 <span className="text-sm font-semibold text-gray-900 block mb-3">Horario de reserva</span>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Inicio</label>
+
+                                {/* Hora de Inicio con Steppers */}
+                                <div className="mb-3">
+                                    <label className="text-xs text-gray-500 mb-1.5 block font-medium text-center">Hora de Inicio</label>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Botón Decrementar */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustStartTime(-30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Restar 30 minutos al inicio"
+                                        >
+                                            <IoRemoveCircleOutline size={20} />
+                                        </button>
+
+                                        {/* Input de Hora */}
                                         <input
                                             type="time"
                                             value={timeSelection.startTime}
                                             onChange={(e) => handleTimeChange('startTime', e.target.value)}
                                             disabled={bookingData.isExistingReservation}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                                            className="w-32 p-2.5 text-center bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 outline-none transition-all font-bold text-gray-900 text-xl disabled:opacity-60 disabled:cursor-not-allowed"
                                         />
-                                    </div>
-                                    <div>
-                                        <label className="text-xs text-gray-500 mb-1.5 block font-medium">Fin</label>
-                                        <input
-                                            type="time"
-                                            value={timeSelection.endTime}
-                                            onChange={(e) => handleTimeChange('endTime', e.target.value)}
+
+                                        {/* Botón Incrementar */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustStartTime(30)}
                                             disabled={bookingData.isExistingReservation}
-                                            className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all font-medium text-gray-900 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
-                                        />
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Sumar 30 minutos al inicio"
+                                        >
+                                            <IoAddCircleOutline size={20} />
+                                        </button>
                                     </div>
                                 </div>
+
+                                {/* Duración con Steppers */}
+                                <div className="mb-2 pb-3 border-b border-gray-200">
+                                    <label className="text-xs text-gray-500 mb-1.5 block font-medium text-center">Duración</label>
+                                    <div className="flex items-center justify-center gap-2">
+                                        {/* Botón Decrementar Duración */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustDuration(-30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-green-400 hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Reducir duración en 30 minutos"
+                                        >
+                                            <IoRemoveCircleOutline size={20} />
+                                        </button>
+
+                                        {/* Duración Display */}
+                                        <div className="w-32 p-2.5 text-center bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg font-bold text-gray-900 text-xl">
+                                            {isValidTimeSelection() ? `${calculateDuration().toFixed(1)}h` : '--h'}
+                                        </div>
+
+                                        {/* Botón Incrementar Duración */}
+                                        <button
+                                            type="button"
+                                            onClick={() => adjustDuration(30)}
+                                            disabled={bookingData.isExistingReservation}
+                                            className="p-2 rounded-lg border-2 border-gray-300 bg-white hover:bg-gray-50 hover:border-green-400 hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-gray-600"
+                                            aria-label="Aumentar duración en 30 minutos"
+                                        >
+                                            <IoAddCircleOutline size={20} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Hora de Fin - Solo Informativa */}
+                                <div className="text-center">
+                                    <p className="text-xs text-gray-600">
+                                        Finaliza a las{' '}
+                                        <span className="font-bold text-gray-900 text-base">
+                                            {timeSelection.endTime || '--:--'}
+                                        </span>
+                                    </p>
+                                </div>
+
                                 {!isValidTimeSelection() && timeSelection.startTime && timeSelection.endTime && (
-                                    <p className="text-xs text-red-500 mt-2 font-medium">
+                                    <p className="text-xs text-red-500 mt-2 font-medium text-center">
                                         La hora de fin debe ser posterior a la de inicio
                                     </p>
                                 )}
