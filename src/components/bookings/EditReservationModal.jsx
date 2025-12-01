@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoPerson, IoTimeOutline } from 'react-icons/io5';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const EditReservationModal = ({
     show,
@@ -217,7 +218,7 @@ const EditReservationModal = ({
                                     </select>
                                     {selectedCourt && (
                                         <p className="mt-1 text-xs text-gray-500">
-                                            Deporte: {selectedCourt.sport} | Precio base: ${selectedCourt.base_price}
+                                            Deporte: {selectedCourt.sport} | Precio base: ${formatCurrency(selectedCourt.base_price)}
                                         </p>
                                     )}
                                 </div>
@@ -283,7 +284,7 @@ const EditReservationModal = ({
                                             }}
                                         />
                                         <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
-                                            Luz artificial {selectedCourt?.light_price > 0 ? `(+$${selectedCourt.light_price})` : ''}
+                                            Luz artificial {selectedCourt?.light_price > 0 ? `(+$${formatCurrency(selectedCourt.light_price)})` : ''}
                                         </span>
                                     </label>
 
@@ -303,7 +304,7 @@ const EditReservationModal = ({
                                             }}
                                         />
                                         <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
-                                            Pelota {selectedCourt?.ball_price > 0 ? `(+$${selectedCourt.ball_price})` : ''}
+                                            Pelota {selectedCourt?.ball_price > 0 ? `(+$${formatCurrency(selectedCourt.ball_price)})` : ''}
                                         </span>
                                     </label>
                                 </div>
@@ -313,7 +314,7 @@ const EditReservationModal = ({
                                         {/* Raquetas */}
                                         <div className={`p-2.5 rounded-xl border border-gray-200 bg-gray-50/50 ${hasPayment ? 'opacity-60' : ''}`}>
                                             <label className="text-xs text-gray-600 block mb-1.5 font-medium">
-                                                Cantidad de raquetas (${selectedCourt.racket_price} c/u)
+                                                Cantidad de raquetas (${formatCurrency(selectedCourt.racket_price)} c/u)
                                             </label>
                                             <select
                                                 value={formData.number_of_rackets}

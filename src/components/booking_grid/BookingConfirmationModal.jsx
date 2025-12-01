@@ -1,6 +1,7 @@
 import { initMercadoPago, Wallet } from '@mercadopago/sdk-react';
 import { useEffect, useState } from 'react';
 import { IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoTimeOutline } from 'react-icons/io5';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 // Inicializar Mercado Pago con la public key
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY;
@@ -250,7 +251,7 @@ const BookingConfirmationModal = ({
                                                     backgroundRepeat: 'no-repeat'
                                                 }}
                                             />
-                                            <span className="text-sm font-medium text-gray-700 ml-3">Luz (+${court.light_price})</span>
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Luz (+${formatCurrency(court.light_price)})</span>
                                         </label>
                                     )}
 
@@ -269,14 +270,14 @@ const BookingConfirmationModal = ({
                                                     backgroundRepeat: 'no-repeat'
                                                 }}
                                             />
-                                            <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${court.ball_price})</span>
+                                            <span className="text-sm font-medium text-gray-700 ml-3">Pelota (+${formatCurrency(court.ball_price)})</span>
                                         </label>
                                     )}
 
                                     {court?.racket_price > 0 && (
                                         <div className={`p-2.5 rounded-lg border border-gray-200 bg-gray-50/50 sm:col-span-2 ${bookingData.isExistingReservation ? 'opacity-60' : ''}`}>
                                             <label className="text-xs text-gray-600 block mb-1.5 font-medium">
-                                                Raquetas (${court.racket_price} c/u)
+                                                Raquetas (${formatCurrency(court.racket_price)} c/u)
                                             </label>
                                             <select
                                                 value={extras.number_of_rackets}
@@ -301,14 +302,14 @@ const BookingConfirmationModal = ({
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-600">Precio base/hora</span>
-                                        <span className="text-gray-900 font-semibold">${court?.base_price || 0}</span>
+                                        <span className="text-gray-900 font-semibold">${formatCurrency(court?.base_price || 0)}</span>
                                     </div>
 
                                     {isValidTimeSelection() && (
                                         <div className="flex justify-between items-center text-sm">
                                             <span className="text-gray-600">Subtotal cancha</span>
                                             <span className="text-gray-900 font-semibold">
-                                                ${((court?.base_price || 0) * calculateDuration()).toFixed(2)}
+                                                ${formatCurrency((court?.base_price || 0) * calculateDuration())}
                                             </span>
                                         </div>
                                     )}
@@ -319,19 +320,19 @@ const BookingConfirmationModal = ({
                                             {extras.light && court?.light_price > 0 && (
                                                 <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Luz</span>
-                                                    <span className="text-gray-900 font-medium">${court.light_price}</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.light_price)}</span>
                                                 </div>
                                             )}
                                             {extras.ball && court?.ball_price > 0 && (
                                                 <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Pelota</span>
-                                                    <span className="text-gray-900 font-medium">${court.ball_price}</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.ball_price)}</span>
                                                 </div>
                                             )}
                                             {extras.number_of_rackets > 0 && court?.racket_price > 0 && (
                                                 <div className="flex justify-between text-xs">
                                                     <span className="text-gray-600">Raquetas ({extras.number_of_rackets})</span>
-                                                    <span className="text-gray-900 font-medium">${court.racket_price * extras.number_of_rackets}</span>
+                                                    <span className="text-gray-900 font-medium">${formatCurrency(court.racket_price * extras.number_of_rackets)}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -340,7 +341,7 @@ const BookingConfirmationModal = ({
                                     <div className="pt-3 border-t border-gray-300 mt-3">
                                         <span className="text-gray-600 text-xs block mb-1">Total a pagar</span>
                                         <span className="text-3xl font-bold text-gray-900 tracking-tight">
-                                            ${calculateTotalPrice()}
+                                            ${formatCurrency(calculateTotalPrice())}
                                         </span>
                                     </div>
                                 </div>

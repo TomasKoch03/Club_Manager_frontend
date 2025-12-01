@@ -6,6 +6,7 @@ import ReservationCard from '../components/bookings/ReservationCard';
 import CancelReservationModal  from '../components/bookings/cancelReservationModal';
 import { useToast } from '../hooks/useToast';
 import { getAllReservations, getAllReservationsFiltered, getAllUsers, getCourts, getPaidReservationsByRange, getReservationById, getUserData, patchPayment, updateReservation , cancelReservationByAdmin} from '../services/api';
+import { formatCurrency } from '../utils/formatCurrency';
 
 
 const AllBookings = () => {
@@ -739,7 +740,7 @@ const AllBookings = () => {
                         {totalIncome !== null && (
                             <div className="mt-6 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
                                 <p className="text-sm text-gray-600 mb-1">INGRESOS TOTALES</p>
-                                <p className="text-4xl font-bold text-green-700">${totalIncome.toFixed(2)}</p>
+                                <p className="text-4xl font-bold text-green-700">${formatCurrency(totalIncome)}</p>
                             </div>
                         )}
 

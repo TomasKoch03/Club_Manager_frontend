@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Container, Spinner, Form, Row, Col, Card, Badge, Table } from 'react-bootstrap';
 import { IoTrophyOutline, IoCalendarOutline, IoStatsChartOutline } from 'react-icons/io5';
 import { getAllReservationsFiltered } from '../services/api';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const CourtStatistics = () => {
     const [loading, setLoading] = useState(true);
@@ -344,7 +345,7 @@ const CourtStatistics = () => {
                                                                 </Badge>
                                                             </td>
                                                             <td style={{ padding: '16px', verticalAlign: 'middle', textAlign: 'right', fontWeight: '600', color: '#28a745' }}>
-                                                                ${stat.totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                                                ${formatCurrency(stat.totalRevenue)}
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -399,7 +400,7 @@ const CourtStatistics = () => {
                                         }}>
                                             <Card.Body className="text-center p-4">
                                                 <div style={{ fontSize: '2.5rem', fontWeight: '700', color: '#28a745' }}>
-                                                    ${statistics.reduce((sum, stat) => sum + stat.totalRevenue, 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                                    ${formatCurrency(statistics.reduce((sum, stat) => sum + stat.totalRevenue, 0))}
                                                 </div>
                                                 <div style={{ fontSize: '0.9rem', color: '#6c757d', fontWeight: '500' }}>
                                                     Ingresos Totales

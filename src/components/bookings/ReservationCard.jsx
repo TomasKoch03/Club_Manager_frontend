@@ -11,6 +11,7 @@ import {
     IoTrashOutline, 
 } from 'react-icons/io5';
 import jsPDF from 'jspdf';
+import { formatCurrency } from '../../utils/formatCurrency';
 
 const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, onCancelClick, isAdmin }) => {
     // Formatear fecha corta
@@ -181,7 +182,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...primaryColor);
         doc.text('TOTAL PAGADO:', 25, yPos + 7);
-        doc.text(`$${paymentAmount.toLocaleString('es-AR')}`, pageWidth - 25, yPos + 7, { align: 'right' });
+        doc.text(`$${formatCurrency(paymentAmount)}`, pageWidth - 25, yPos + 7, { align: 'right' });
         
         yPos += 35;
         
@@ -240,7 +241,7 @@ const ReservationCard = ({ reservation, onPayClick, payButtonText, onEditClick, 
                 {/* Precio */}
                 <div className="text-right hidden md:block">
                     <div className="text-lg font-bold text-gray-900">
-                        ${paymentAmount.toLocaleString('es-AR')}
+                        ${formatCurrency(paymentAmount)}
                     </div>
                 </div>
 
