@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { IoAddCircleOutline, IoCalendarOutline, IoClose, IoLocationOutline, IoLockClosed, IoPerson, IoRemoveCircleOutline, IoTimeOutline } from 'react-icons/io5';
+import { getProfileImageUrl } from '../../services/api';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { adjustDuration as adjustDurationHelper, adjustStartTime as adjustStartTimeHelper, calculateDuration as calculateDurationHelper, isValidTimeRange, recalculateEndTime } from '../../utils/timeHelpers';
+import AuthenticatedImage from '../users/AuthenticatedImage';
 
 const EditReservationModal = ({
     show,
@@ -205,6 +207,14 @@ const EditReservationModal = ({
     const selectedCourt = courts.find(c => c.id === parseInt(formData.court_id));
     const selectedUser = users.find(u => u.id === parseInt(formData.user_id));
 
+    // Get user initials
+    const getInitials = (fullName) => {
+        if (!fullName) return 'U';
+        const names = fullName.trim().split(' ');
+        if (names.length === 1) return names[0].charAt(0).toUpperCase();
+        return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
             <div
@@ -249,33 +259,50 @@ const EditReservationModal = ({
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Columna Izquierda (Principal - 2/3) */}
                         <div className="lg:col-span-2 space-y-4">
-                            {/* Select de Usuario */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
-                                        <IoPerson size={16} />
+                            {/* Select de Usuario con Avatar - Solo mostrar si hay usuario seleccionado */}
+                            {selectedUser && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600">
+                                            <IoPerson size={16} />
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">Usuario</span>
                                     </div>
-                                    <span className="text-sm font-medium text-gray-700">Usuario</span>
+
+                                    {/* Usuario seleccionado con imagen */}
+                                    <div className="flex items-center gap-3 p-3 bg-indigo-50/50 border border-indigo-100 rounded-lg">
+                                        <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <AuthenticatedImage
+                                                src={getProfileImageUrl(selectedUser.id) + `?t=${Date.now()}`}
+                                                alt={selectedUser.full_name}
+                                                className="w-full h-full object-cover"
+                                                fallback={
+                                                    <span className="text-indigo-600 font-bold text-lg">
+                                                        {getInitials(selectedUser.full_name)}
+                                                    </span>
+                                                }
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-semibold text-gray-900 truncate">{selectedUser.full_name}</p>
+                                            <p className="text-xs text-gray-500 truncate">{selectedUser.email}</p>
+                                        </div>
+                                        {!hasPayment && (
+                                            <select
+                                                value={formData.user_id}
+                                                onChange={(e) => handleInputChange('user_id', e.target.value)}
+                                                className="p-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900"
+                                            >
+                                                {users.filter(u => u.is_active).map(user => (
+                                                    <option key={user.id} value={user.id}>
+                                                        {user.full_name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
                                 </div>
-                                <select
-                                    value={formData.user_id}
-                                    onChange={(e) => handleInputChange('user_id', e.target.value)}
-                                    disabled={hasPayment}
-                                    className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm font-medium text-gray-900 disabled:opacity-60 disabled:cursor-not-allowed"
-                                >
-                                    <option value="">Seleccionar usuario...</option>
-                                    {users.filter(u => u.is_active).map(user => (
-                                        <option key={user.id} value={user.id}>
-                                            {user.full_name} ({user.email})
-                                        </option>
-                                    ))}
-                                </select>
-                                {selectedUser && (
-                                    <p className="mt-1 text-xs text-gray-500">
-                                        Email: {selectedUser.email}
-                                    </p>
-                                )}
-                            </div>
+                            )}
 
                             {/* Tres Tarjetas de Resumen (Cancha, Fecha, Duración) */}
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Container, Form, Spinner } from 'react-bootstrap';
 import { IoCheckmarkCircleOutline, IoLockClosedOutline, IoMailOutline, IoPersonOutline } from 'react-icons/io5';
 import { useNavigate, useParams } from 'react-router-dom';
+import ProfileImageUpload from '../components/users/ProfileImageUpload';
 import { useToast } from '../hooks/useToast';
 import { blockUser, getUserById, unblockUser, updateUserById } from '../services/api';
 
@@ -238,6 +239,26 @@ const EditUser = () => {
                         </div>
                     </Card.Body>
                 </Card>
+
+                {/* Profile Image Management */}
+                <Card
+                    style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        backdropFilter: "blur(10px)",
+                        borderRadius: "16px",
+                        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+                        border: "none",
+                        marginBottom: "24px",
+                    }}
+                >
+                    <Card.Body className="p-4">
+                        <h6 style={{ fontWeight: '600', color: '#000', marginBottom: '16px' }}>
+                            Foto de Perfil
+                        </h6>
+                        <ProfileImageUpload userId={userId} />
+                    </Card.Body>
+                </Card>
+
                 {/* Formulario */}
                 <Card
                     style={{
