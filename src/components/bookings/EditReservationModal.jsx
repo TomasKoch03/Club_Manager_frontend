@@ -561,7 +561,7 @@ const EditReservationModal = ({
                                             }}
                                         />
                                         <span className="font-medium text-gray-700 text-sm leading-5 ml-2">
-                                            Luz artificial (+${selectedCourt.light_price})
+                                            Luz artificial (+${formatCurrency(selectedCourt.light_price)})
                                         </span>
                                     </label>
                                 )}
@@ -581,7 +581,7 @@ const EditReservationModal = ({
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-900">{equipment.name}</p>
                                                         <p className="text-xs text-gray-500">
-                                                            ${equipment.price_per_unit} por unidad
+                                                            ${formatCurrency(equipment.price_per_unit)} por unidad
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-2">

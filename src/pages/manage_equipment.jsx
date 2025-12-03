@@ -3,6 +3,7 @@ import { Container, Button, Form, Modal } from 'react-bootstrap';
 import { useToast } from '../hooks/useToast';
 import { getEquipment, createEquipment, updateEquipment } from '../services/api';
 import { IoAdd, IoBasketballOutline, IoFootballOutline, IoTennisballOutline } from 'react-icons/io5';
+import { formatCurrency } from '../utils/formatCurrency';
 
 const ManageEquipment = () => {
     const [equipment, setEquipment] = useState([]);
@@ -254,7 +255,7 @@ const ManageEquipment = () => {
                                         <div className="d-flex flex-column gap-2 mt-3">
                                             <div className="d-flex justify-content-between">
                                                 <span className="text-muted">Precio por unidad:</span>
-                                                <span className="fw-semibold">${item.price_per_unit}</span>
+                                                <span className="fw-semibold">${formatCurrency(item.price_per_unit)}</span>
                                             </div>
                                             <div className="d-flex justify-content-between">
                                                 <span className="text-muted">Stock disponible:</span>

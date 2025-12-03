@@ -404,7 +404,7 @@ const BookingConfirmationModal = ({
                                                     <div className="flex-1">
                                                         <p className="text-sm font-medium text-gray-900">{equipment.name}</p>
                                                         <p className="text-xs text-gray-500">
-                                                            ${equipment.price_per_unit} por unidad
+                                                            ${formatCurrency(equipment.price_per_unit)} por unidad
                                                         </p>
                                                     </div>
                                                     <div className="flex items-center gap-2">
@@ -469,7 +469,7 @@ const BookingConfirmationModal = ({
                                                     <div key={item.id} className="flex justify-between text-xs">
                                                         <span className="text-gray-600">{equipment.name} ({item.quantity})</span>
                                                         <span className="text-gray-900 font-medium">
-                                                            ${(equipment.price_per_unit * item.quantity).toFixed(2)}
+                                                            ${formatCurrency(equipment.price_per_unit * item.quantity)}
                                                         </span>
                                                     </div>
                                                 );
