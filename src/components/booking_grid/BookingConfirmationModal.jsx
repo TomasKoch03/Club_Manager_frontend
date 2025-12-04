@@ -368,25 +368,29 @@ const BookingConfirmationModal = ({
 
                             {/* Luz */}
                             {court?.light_price > 0 && (
-                                <div className="bg-white p-4 rounded-xl border border-gray-200">
-                                    <label className={`flex items-start gap-3 ${!bookingData.isExistingReservation ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}>
-                                        <input
-                                            type="checkbox"
-                                            checked={light}
-                                            onChange={(e) => setLight(e.target.checked)}
-                                            disabled={bookingData.isExistingReservation}
-                                            className="appearance-none w-5 h-5 mt-0.5 rounded border-2 border-gray-300 bg-gray-200 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer checked:bg-blue-500 checked:border-blue-500 transition-all shrink-0 disabled:cursor-not-allowed"
-                                            style={{
-                                                backgroundImage: light ? 'url("data:image/svg+xml,%3csvg viewBox=\'0 0 16 16\' fill=\'white\' xmlns=\'http://www.w3.org/2000/svg\'%3e%3cpath d=\'M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z\'/%3e%3c/svg%3e")' : 'none',
-                                                backgroundSize: '100% 100%',
-                                                backgroundPosition: 'center',
-                                                backgroundRepeat: 'no-repeat'
-                                            }}
-                                        />
-                                        <span className="text-sm font-medium text-gray-700">Luz artificial (+${formatCurrency(court.light_price)})</span>
-                                    </label>
-                                </div>
-                            )}
+                            <div
+                                onClick={() => !bookingData.isExistingReservation && setLight(!light)}
+                                className={`
+                                    p-4 rounded-xl border transition-all duration-200 flex items-center justify-between
+                                    ${!bookingData.isExistingReservation ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}
+                                    ${light
+                                        ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' // Estado Activo
+                                        : 'border-gray-200 bg-white hover:border-gray-300' // Estado Inactivo
+                                    }
+                                `}
+                            >
+                                <span className={`text-sm font-medium ${light ? 'text-blue-700' : 'text-gray-700'}`}>
+                                    Luz artificial (+${formatCurrency(court.light_price)})
+                                </span>
+
+                                {/* Icono de check que solo aparece si está activo (opcional) */}
+                                {light && (
+                                    <div className="bg-blue-500 text-white rounded-full p-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                             {/* Equipamientos */}
                             {loadingEquipment ? (
