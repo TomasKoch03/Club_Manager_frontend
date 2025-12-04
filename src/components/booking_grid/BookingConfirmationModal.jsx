@@ -379,9 +379,18 @@ const BookingConfirmationModal = ({
                                     }
                                 `}
                             >
-                                <span className={`text-sm font-medium ${light ? 'text-blue-700' : 'text-gray-700'}`}>
-                                    Luz artificial (+${formatCurrency(court.light_price)})
-                                </span>
+                                <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-medium ${light ? 'text-blue-700' : 'text-gray-700'}`}>
+                                            Luz artificial (+${formatCurrency(court.light_price)})
+                                        </span>
+                                        {!bookingData.isExistingReservation && (
+                                            <span className="text-xs text-gray-400">
+                                                · Haz clic para {light ? 'desactivar' : 'agregar'}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
 
                                 {/* Icono de check que solo aparece si está activo (opcional) */}
                                 {light && (
