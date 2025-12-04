@@ -55,34 +55,37 @@ const AdminHome = () => {
                     </div>
 
                     {/* Container for Usuarios, Canchas & Equipamientos - Takes other half */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex-1 flex flex-col gap-3">
                         {/* Usuarios */}
-                        <div className="h-full">
+                        <div className="flex-1">
                             <HomeActionButton
                                 icon={FaRegUserCircle}
                                 text="Gestionar Usuarios"
                                 href="/admin/usuarios"
                                 variant="default"
+                                horizontal={true}
                             />
                         </div>
 
                         {/* Canchas */}
-                        <div className="h-full">
+                        <div className="flex-1">
                             <HomeActionButton
                                 icon={MdSportsTennis}
                                 text="Gestionar Canchas"
                                 href="/admin/canchas"
                                 variant="default"
+                                horizontal={true}
                             />
                         </div>
 
                         {/* Equipamientos */}
-                        <div className="h-full">
+                        <div className="flex-1">
                             <HomeActionButton
                                 icon={MdInventory2}
                                 text="Gestionar Equipamientos"
                                 href="/admin/equipamientos"
                                 variant="default"
+                                horizontal={true}
                             />
                         </div>
                     </div>
