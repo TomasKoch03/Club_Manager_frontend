@@ -21,39 +21,55 @@ const HomeActionButton = ({ icon: Icon, text, onClick, href, variant = 'default'
     const isDark = variant === 'dark';
 
     const containerClasses = `
-        group relative flex ${horizontal ? 'flex-row items-center justify-start' : 'flex-col items-center justify-center'} w-full h-full ${horizontal ? 'min-h-[80px]' : 'min-h-[140px]'} py-6 px-6
+        group relative flex ${horizontal ? 'flex-row items-center justify-start' : 'flex-col items-center justify-center'} w-full h-full
         rounded-2xl transition-all duration-300
         ${isDark ? 'bg-slate-900 text-white shadow-lg' : 'bg-white text-gray-900 shadow-md border border-gray-100'}
         hover:-translate-y-1 hover:shadow-xl cursor-pointer
     `;
 
+    const containerStyle = {
+        minHeight: horizontal ? 'clamp(60px, 8vh, 100px)' : 'clamp(100px, 15vh, 180px)',
+        padding: horizontal ? 'clamp(0.75rem, 2vh, 1.5rem) clamp(1rem, 2vw, 1.5rem)' : 'clamp(1rem, 2vh, 1.5rem) clamp(1rem, 2vw, 1.5rem)'
+    };
+
+    const iconStyle = {
+        width: horizontal ? 'clamp(2rem, 5vw, 2.5rem)' : 'clamp(3rem, 10vw, 6rem)',
+        height: horizontal ? 'clamp(2rem, 5vw, 2.5rem)' : 'clamp(3rem, 10vw, 6rem)',
+        marginRight: horizontal ? 'clamp(0.75rem, 1.5vw, 1rem)' : '0',
+        marginBottom: horizontal ? '0' : 'clamp(0.75rem, 2vh, 1.5rem)'
+    };
+
     const iconClasses = `
-        ${horizontal ? 'w-10 h-10 mr-4' : 'w-24 h-24 mb-6'} transition-colors duration-300
+        transition-colors duration-300
         ${isDark ? 'text-white' : getVariantStyles(variant)}
     `;
 
+    const textStyle = {
+        fontSize: horizontal ? 'clamp(0.9rem, 1.8vw, 1.125rem)' : 'clamp(1.1rem, 2.5vw, 1.5rem)'
+    };
+
     const textClasses = `
-        ${horizontal ? 'text-lg' : 'text-2xl'} font-semibold ${horizontal ? 'text-left' : 'text-center'}
+        font-semibold ${horizontal ? 'text-left' : 'text-center'}
         ${isDark ? 'text-gray-100' : 'text-gray-900'}
     `;
 
     const content = (
         <>
-            <Icon className={iconClasses} />
-            <span className={textClasses}>{text}</span>
+            <Icon className={iconClasses} style={iconStyle} />
+            <span className={textClasses} style={textStyle}>{text}</span>
         </>
     );
 
     if (href) {
         return (
-            <Link to={href} className={containerClasses} style={{ textDecoration: 'none' }}>
+            <Link to={href} className={containerClasses} style={{ textDecoration: 'none', ...containerStyle }}>
                 {content}
             </Link>
         );
     }
 
     return (
-        <button onClick={onClick} className={containerClasses}>
+        <button onClick={onClick} className={containerClasses} style={containerStyle}>
             {content}
         </button>
     );

@@ -5,11 +5,11 @@ import HomeActionButton from '../components/home/HomeActionButton';
 
 const AdminHome = () => {
     return (
-        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(1rem, 2.5vw, 2rem)' }}>
-            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(1rem, 1.5vw, 1.5rem)', maxWidth: 'min(95vw, 1400px)' }}>
+        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(0.5rem, 1.5vh, 1.5rem)' }}>
+            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)', maxWidth: 'min(98vw, 1400px)' }}>
 
                 {/* Columna Izquierda - Reservar (2/3) */}
-                <div className="md:col-span-8 flex flex-col gap-4 h-full">
+                <div className="md:col-span-8 flex flex-col h-full" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                     {/* Fútbol - Takes 1/2 of available height */}
                     <div className="flex-1">
                         <HomeActionButton
@@ -20,7 +20,7 @@ const AdminHome = () => {
                         />
                     </div>
                     {/* Container for Paddle & Básquet - Takes other 1/2 */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                         {/* Paddle */}
                         <div className="h-full">
                             <HomeActionButton
@@ -43,7 +43,7 @@ const AdminHome = () => {
                 </div>
 
                 {/* Columna Derecha - Gestión (1/3) */}
-                <div className="md:col-span-4 flex flex-col gap-4 h-full">
+                <div className="md:col-span-4 flex flex-col h-full" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                     {/* Todas las reservas - Takes half of right column */}
                     <div className="flex-1">
                         <HomeActionButton
@@ -55,7 +55,7 @@ const AdminHome = () => {
                     </div>
 
                     {/* Container for Usuarios, Canchas & Equipamientos - Takes other half */}
-                    <div className="flex-1 flex flex-col gap-3">
+                    <div className="flex-1 flex flex-col" style={{ gap: 'clamp(0.4rem, 1vh, 0.75rem)' }}>
                         {/* Usuarios */}
                         <div className="flex-1">
                             <HomeActionButton
