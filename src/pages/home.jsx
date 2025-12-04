@@ -22,11 +22,11 @@ const Home = () => {
     }, []);
 
     return (
-        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(1rem, 2.5vw, 2rem)' }}>
-            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(1rem, 1.5vw, 1.5rem)', maxWidth: 'min(95vw, 1400px)' }}>
+        <div className="h-full w-full flex items-center justify-center" style={{ padding: 'clamp(0.5rem, 1.5vh, 1.5rem)' }}>
+            <div className="w-full h-full grid grid-cols-1 md:grid-cols-12" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)', maxWidth: 'min(98vw, 1400px)' }}>
 
                 {/* Columna Izquierda - Area de Canchas (2/3) */}
-                <div className="md:col-span-8 flex flex-col gap-4 h-full">
+                <div className="md:col-span-8 flex flex-col h-full" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                     {/* Fútbol - Takes 1/2 of available height */}
                     <div className="flex-1">
                         <HomeActionButton
@@ -37,7 +37,7 @@ const Home = () => {
                         />
                     </div>
                     {/* Container for Paddle & Básquet - Takes other 1/2 */}
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                         {/* Paddle */}
                         <div className="h-full">
                             <HomeActionButton
@@ -60,7 +60,7 @@ const Home = () => {
                 </div>
 
                 {/* Columna Derecha - Area de Gestión (1/3) */}
-                <div className="md:col-span-4 flex flex-col gap-4 h-full">
+                <div className="md:col-span-4 flex flex-col h-full" style={{ gap: 'clamp(0.5rem, 1.5vh, 1rem)' }}>
                     {/* Mis Reservas - Same height as Estado del Socio */}
                     <div className="flex-1">
                         <HomeActionButton
@@ -73,26 +73,26 @@ const Home = () => {
                     {/* Estado del Socio - Same height as Mis Reservas */}
                     <div className="flex-1">
                         <div className={`
-                            relative flex flex-col items-center justify-center w-full h-full py-6 px-6
+                            relative flex flex-col items-center justify-center w-full h-full
                             rounded-2xl shadow-lg transition-all duration-300
                             ${loading ? 'bg-gray-100 border-4 border-gray-200' :
                                 userStatus
                                     ? 'bg-green-50 border-4 border-green-500'
                                     : 'bg-red-50 border-4 border-red-500'}
-                        `}>
+                        `} style={{ padding: 'clamp(1rem, 2vh, 1.5rem)' }}>
                             {loading ? (
                                 <div className="animate-pulse flex flex-col items-center">
-                                    <div className="h-16 w-16 bg-gray-200 rounded-full mb-4"></div>
+                                    <div className="bg-gray-200 rounded-full" style={{ width: 'clamp(2.5rem, 8vw, 4rem)', height: 'clamp(2.5rem, 8vw, 4rem)', marginBottom: 'clamp(0.75rem, 2vh, 1rem)' }}></div>
                                     <div className="h-6 w-32 bg-gray-200 rounded"></div>
                                 </div>
                             ) : (
                                 <>
                                     {userStatus ? (
-                                        <IoCheckmarkCircleOutline className="w-16 h-16 mb-4 text-green-600" />
+                                        <IoCheckmarkCircleOutline className="text-green-600" style={{ width: 'clamp(2.5rem, 8vw, 4rem)', height: 'clamp(2.5rem, 8vw, 4rem)', marginBottom: 'clamp(0.75rem, 2vh, 1rem)' }} />
                                     ) : (
-                                        <IoCloseCircleOutline className="w-16 h-16 mb-4 text-red-600" />
+                                        <IoCloseCircleOutline className="text-red-600" style={{ width: 'clamp(2.5rem, 8vw, 4rem)', height: 'clamp(2.5rem, 8vw, 4rem)', marginBottom: 'clamp(0.75rem, 2vh, 1rem)' }} />
                                     )}
-                                    <span className={`text-lg font-semibold text-center ${userStatus ? 'text-green-700' : 'text-red-700'}`}>
+                                    <span className={`font-semibold text-center ${userStatus ? 'text-green-700' : 'text-red-700'}`} style={{ fontSize: 'clamp(0.9rem, 1.8vw, 1.125rem)' }}>
                                         {userStatus ? 'Socio Habilitado' : 'Socio Bloqueado'}
                                     </span>
                                 </>
